@@ -1,0 +1,9 @@
+# Hello World in EnLang
+set greeting to "Welcome to EnLang!"
+display greeting
+
+set name to "Developer"
+display "Hello, " + name + "! EnLang is running smoothly."
+
+repeat 3 times:
+    display "EnLang is natural English programming!"

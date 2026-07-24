@@ -1,0 +1,74 @@
+# ──────────────────────────────────────────────────────────
+# INDEX.ENLGF — Minimalist Portfolio & Studio (.enlgf)
+# ──────────────────────────────────────────────────────────
+
+page title "AURA — Minimalist Digital Studio"
+
+create header with class "header":
+    create nav with class "navbar":
+        create div with class "logo":
+            create h1 with text "AURA"
+        end div
+
+        create div with class "nav-links":
+            create link named nav1 with text "Manifesto", href "#hero"
+            create link named nav2 with text "Works", href "#works"
+            create link named nav3 with text "Metrics", href "#metrics"
+            create link named nav4 with text "Connect", href "#connect"
+        end div
+
+        create button named modeToggle with label "Toggle Mood" and action "toggleMood()"
+    end nav
+end header
+
+create hero with title "Crafting Digital Artifacts of Silence & Precision", subtitle "We design hyper-minimalist web experiences powered by EnLang universal architecture."
+
+create section named works with class "section":
+    create div with class "section-header":
+        create p with text "SELECTED WORKS"
+    end div
+
+    create div with class "grid-container":
+        create article named card1 with class "work-card":
+            create h2 with text "Zenith Engine"
+            create p with text "Zero-overhead distributed compute platform for real-time edge processing."
+        close article
+
+        create article named card2 with class "work-card":
+            create h2 with text "Kuro OS"
+            create p with text "Minimalist distraction-free operating interface for creative writers."
+        close article
+
+        create article named card3 with class "work-card":
+            create h2 with text "Aether Audio"
+            create p with text "Generative ambient soundscape synthesizer built on WebAudio API."
+        close article
+    end div
+end section
+
+create section named metrics with class "section metrics-section":
+    create div with class "metrics-grid":
+        create div named m1 with class "metric-card":
+            create h2 with text "0.04s"
+            create p with text "Average Latency"
+        end div
+        create div named m2 with class "metric-card":
+            create h2 with text "100%"
+            create p with text "Accessibility Rating"
+        end div
+        create div named m3 with class "metric-card":
+            create h2 with text "0KB"
+            create p with text "Framework Bloat"
+        end div
+    end div
+end section
+
+create section named connect with class "section connect-section":
+    create div with class "connect-box":
+        create form named inquiryForm with fields Full_Name, Work_Email, Project_Scope and action "submitInquiry(event)"
+    end div
+end section
+
+create footer with class "footer":
+    create p with text "© 2026 AURA Studio. Built with EnLang (.enlgf, .enlgd, .enlgs)."
+end footer

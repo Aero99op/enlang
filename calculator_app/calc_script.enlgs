@@ -1,0 +1,10 @@
+# EnLang Calculator Math Script Logic (.enlgs)
+
+log "Initializing Full Calculator Keypad Engine..."
+
+# Pre-computation validation test
+set sample_val1 to 100
+set sample_val2 to 25
+
+set sample_res to sample_val1 / sample_val2
+log "Sample Calculation (100 / 25): " + str(sample_res)

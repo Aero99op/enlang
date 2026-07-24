@@ -1,0 +1,19 @@
+# CYBER NEXUS Game Analytics & Gamer Sentiment (.enlg)
+
+display("=== EnLang Game Match Analytics & Gamer Feedback NLP ===")
+
+set gamer_feedback1 to "CyberPunk 2088 has mindblowing graphics, insane raytracing and super intense action!"
+analyze sentiment of gamer_feedback1 and store in sentiment1
+extract keywords from gamer_feedback1 into keywords1
+
+display("Feedback 1: " + gamer_feedback1)
+display("EnLang NLP Sentiment: " + sentiment1)
+display("Extracted Keywords: " + str(keywords1))
+
+set gamer_feedback2 to "Server lag was bad and latency caused terrible frame drops during match."
+analyze sentiment of gamer_feedback2 and store in sentiment2
+extract keywords from gamer_feedback2 into keywords2
+
+display("Feedback 2: " + gamer_feedback2)
+display("EnLang NLP Sentiment: " + sentiment2)
+display("Extracted Keywords: " + str(keywords2))

@@ -1,0 +1,14 @@
+# EnLang Universal Quantum Calculator Application (app.enlg)
+
+display("==================================================")
+display("Launching Full EnLang Quantum Calculator...")
+display("==================================================")
+
+# 1. Link UI Design Specification (.enlgd)
+include design "calculator_ui.enlgd"
+
+# 2. Link Math Processing Logic Script (.enlgs)
+link script "calc_script.enlgs"
+
+# 3. Start EnLang Web Server on Port 8075
+start web server on port 8075

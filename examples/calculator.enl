@@ -1,0 +1,16 @@
+# Math & Functions in EnLang
+
+define function add_numbers with num1 and num2:
+    set total to num1 plus num2
+    return total
+
+define function calculate_discount with price and percentage:
+    set discount_amount to price times percentage divided by 100
+    set final_price to price minus discount_amount
+    return final_price
+
+call add_numbers with 45 and 55 and store in sum_result
+display "Sum of 45 and 55 is: " + sum_result
+
+call calculate_discount with 1000 and 15 and store in discounted
+display "Final price after 15% discount on 1000: $" + discounted

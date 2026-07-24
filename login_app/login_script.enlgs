@@ -1,0 +1,13 @@
+# Login Authentication Script (.enlgs)
+
+log "Initializing Login Script Engine..."
+
+# Demo Master Credentials
+set master_user to "admin"
+set master_pass to "12345"
+
+log "Master Authentication Record Ready for User: " + master_user
+
+# SHA256 Password Hash Calculation
+hash master_pass with sha256 and store in master_hash
+log "Master Password SHA256 Hash Generated"

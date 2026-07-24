@@ -1,0 +1,8 @@
+# Casio ClassWiz fx-991CW Application (.enlg)
+
+display("==================================================")
+display("Launching Casio ClassWiz fx-991CW Engine...")
+display("==================================================")
+
+# Start Web Server on Port 8095
+start web server on port 8095

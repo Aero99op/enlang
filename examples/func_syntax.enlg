@@ -1,0 +1,7 @@
+# Using 'func' keyword in EnLang (.enlg)
+
+func calculate_total(price, tax):
+    return price plus tax
+
+total = calculate_total(1000, 180)
+display "Total Price: ", total

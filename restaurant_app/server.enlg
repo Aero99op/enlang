@@ -1,0 +1,17 @@
+# EnLang Fullstack Restaurant Web Server (.enlg)
+
+display("==================================================")
+display("EnLang Fullstack Restaurant Server Launching...")
+display("==================================================")
+
+connect to database "restaurant.db" as db
+display("Database Connection Established: restaurant.db")
+
+set secret_admin_pass to "AuraGourmet2026!"
+hash secret_admin_pass with sha256 and store in admin_token
+display("Admin Security Token: " + admin_token)
+
+set server_port to 8050
+display("Starting EnLang Fullstack Web Server on Port: " + server_port)
+
+start web server on port 8050

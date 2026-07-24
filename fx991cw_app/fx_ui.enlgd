@@ -1,0 +1,82 @@
+# Casio ClassWiz fx-991CW Scientific Calculator UI Specification (.enlgd)
+
+define theme with primary "#3b82f6", background "#0e1117"
+
+style body:
+    background-color: "#0a0c10"
+    color: "#e2e8f0"
+    font-family: "Outfit"
+
+style layout-enlgd:
+    max-width: "480px"
+    background: "linear-gradient(165deg, #1e2638 0%, #0f1420 100%)"
+    border: "3px solid #2d3748"
+    border-radius: "28px"
+    padding: "24px"
+    box-shadow: "0 25px 60px rgba(0,0,0,0.85)"
+
+# Header Branding
+create hero named casio_header with title "CASIO ClassWiz", subtitle "fx-991CW HIGH-RESOLUTION SCIENTIFIC"
+
+# Screen Display Card
+create card named screen_display with title "0", description "READY"
+
+# Scientific Keypad Buttons
+create button named btn_shift with label "SHIFT" and action "toggleShift()"
+create button named btn_optn with label "OPTN" and action "openOptn()"
+create button named btn_mode with label "DEG/RAD" and action "toggleAngleUnit()"
+create button named btn_sto with label "STO" and action "storeMem()"
+create button named btn_rcl with label "RCL" and action "recallMem()"
+create button named btn_back with label "BACK" and action "pressBack()"
+
+# Function Keys
+create button named btn_inv with label "x^-1" and action "appendFx('^(-1)')"
+create button named btn_sqrt with label "sqrt(x)" and action "appendFx('sqrt(')"
+create button named btn_sqr with label "x^2" and action "appendFx('^2')"
+create button named btn_pow with label "x^n" and action "appendFx('^')"
+create button named btn_log with label "log" and action "appendFx('log(')"
+create button named btn_ln with label "ln" and action "appendFx('ln(')"
+
+# Trigonometry Keys
+create button named btn_sin with label "sin" and action "appendFx('sin(')"
+create button named btn_cos with label "cos" and action "appendFx('cos(')"
+create button named btn_tan with label "tan" and action "appendFx('tan(')"
+create button named btn_pi with label "pi" and action "appendFx('pi')"
+create button named btn_e with label "e" and action "appendFx('e')"
+create button named btn_fact with label "n!" and action "appendFx('!')"
+
+# Brackets and Special Keys
+create button named btn_lparen with label "(" and action "appendFx('(')"
+create button named btn_rparen with label ")" and action "appendFx(')')"
+create button named btn_comma with label "," and action "appendFx(',')"
+create button named btn_abs with label "Abs" and action "appendFx('abs(')"
+create button named btn_cbrt with label "cbrt(x)" and action "appendFx('cbrt(')"
+create button named btn_percent with label "%" and action "appendFx('%')"
+
+# Main Keypad (7-9, 4-6, 1-3, 0)
+create button named btn_7 with label "7" and action "appendNum('7')"
+create button named btn_8 with label "8" and action "appendNum('8')"
+create button named btn_9 with label "9" and action "appendNum('9')"
+create button named btn_del with label "DEL" and action "deleteChar()"
+create button named btn_ac with label "AC" and action "clearAll()"
+
+create button named btn_4 with label "4" and action "appendNum('4')"
+create button named btn_5 with label "5" and action "appendNum('5')"
+create button named btn_6 with label "6" and action "appendNum('6')"
+create button named btn_mul with label "*" and action "appendOp('*')"
+create button named btn_div with label "/" and action "appendOp('/')"
+
+create button named btn_1 with label "1" and action "appendNum('1')"
+create button named btn_2 with label "2" and action "appendNum('2')"
+create button named btn_3 with label "3" and action "appendNum('3')"
+create button named btn_add with label "+" and action "appendOp('+')"
+create button named btn_sub with label "-" and action "appendOp('-')"
+
+create button named btn_0 with label "0" and action "appendNum('0')"
+create button named btn_dot with label "." and action "appendNum('.')"
+create button named btn_exp with label "x10^x" and action "appendFx('*10^')"
+create button named btn_ans with label "Ans" and action "appendFx('Ans')"
+create button named btn_exe with label "EXE" and action "calculateFx991()"
+
+# Render Full Keypad Layout
+render layout with casio_header, screen_display, btn_shift, btn_optn, btn_mode, btn_sto, btn_rcl, btn_back, btn_inv, btn_sqrt, btn_sqr, btn_pow, btn_log, btn_ln, btn_sin, btn_cos, btn_tan, btn_pi, btn_e, btn_fact, btn_lparen, btn_rparen, btn_comma, btn_abs, btn_cbrt, btn_percent, btn_7, btn_8, btn_9, btn_del, btn_ac, btn_4, btn_5, btn_6, btn_mul, btn_div, btn_1, btn_2, btn_3, btn_add, btn_sub, btn_0, btn_dot, btn_exp, btn_ans, btn_exe

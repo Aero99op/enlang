@@ -1,0 +1,60 @@
+
+
+set page title to "Modern Website"
+
+<header>
+    <nav>
+        <h2 class="logo">AERO</h2>
+
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+
+        <div class="menu">&#9776;</div>
+    </nav>
+</header>
+
+<section class="hero" id="home">
+    <div class="hero-content">
+        <h1>Build Amazing Websites</h1>
+        <p>Create beautiful experiences using HTML, CSS & JavaScript.</p>
+        <button id="exploreBtn">Explore</button>
+    </div>
+</section>
+
+<section id="about" class="section">
+    <h2>About</h2>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+</section>
+
+<section id="services" class="section">
+    <h2>Services</h2>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Web Design</h3>
+            <p>Modern responsive design.</p>
+        </div>
+
+        <div class="card">
+            <h3>Development</h3>
+            <p>Fast and optimized websites.</p>
+        </div>
+
+        <div class="card">
+            <h3>SEO</h3>
+            <p>Rank higher in search engines.</p>
+        </div>
+
+    </div>
+
+</section>
+
+<section id="contact" class="section">
+    <h2>Contact</h2>
+    <button id="contactBtn">Say Hello</button>
+</section>

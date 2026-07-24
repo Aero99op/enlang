@@ -1,0 +1,219 @@
+# Casio ClassWiz fx-991CW Client Script Engine (.enlgs)
+
+# State Variables
+set fx_expr to ""
+set fx_res to "0"
+set angle_unit to "DEG"
+set shift_active to false
+set ans_val to "0"
+set mem_val to "0"
+
+log "Casio fx-991CW Scientific Engine Initialized"
+
+function initFx991():
+    log "Injecting Casio LCD Display & Keypad Layout Styles..."
+end
+
+# JS Implementation code injected into output script
+function updateFxDisplay():
+    let exprElem = document.getElementById("fx-screen-expr");
+    let resElem = document.getElementById("fx-screen-res");
+    let badgeAngle = document.getElementById("badge-angle");
+    let badgeShift = document.getElementById("badge-shift");
+    let badgeMem = document.getElementById("badge-mem");
+
+    if (exprElem) exprElem.innerText = fx_expr === "" ? " " : fx_expr;
+    if (resElem) resElem.innerText = fx_res;
+    if (badgeAngle) badgeAngle.innerText = angle_unit;
+    if (badgeShift) badgeShift.style.display = shift_active ? "inline" : "none";
+    if (badgeMem) badgeMem.style.display = mem_val !== "0" ? "inline" : "none";
+end
+
+function toggleShift():
+    shift_active = !shift_active;
+    updateFxDisplay();
+end
+
+function toggleAngleUnit():
+    angle_unit = angle_unit === "DEG" ? "RAD" : "DEG";
+    updateFxDisplay();
+end
+
+function storeMem():
+    mem_val = fx_res;
+    updateFxDisplay();
+end
+
+function recallMem():
+    fx_expr = fx_expr + mem_val;
+    updateFxDisplay();
+end
+
+function appendNum(num):
+    fx_expr = fx_expr + num;
+    updateFxDisplay();
+end
+
+function appendOp(op):
+    fx_expr = fx_expr + op;
+    updateFxDisplay();
+end
+
+function appendFx(fnStr):
+    if (shift_active) {
+        if (fnStr === "sin(") fnStr = "asin(";
+        else if (fnStr === "cos(") fnStr = "acos(";
+        else if (fnStr === "tan(") fnStr = "atan(";
+        else if (fnStr === "^2") fnStr = "^3";
+        else if (fnStr === "sqrt(") fnStr = "cbrt(";
+        shift_active = false;
+    }
+    fx_expr = fx_expr + fnStr;
+    updateFxDisplay();
+end
+
+function clearAll():
+    fx_expr = "";
+    fx_res = "0";
+    shift_active = false;
+    updateFxDisplay();
+end
+
+function deleteChar():
+    if (fx_expr.length > 0) {
+        fx_expr = fx_expr.slice(0, -1);
+    }
+    updateFxDisplay();
+end
+
+function pressBack():
+    deleteChar();
+end
+
+function openOptn():
+    alert("CASIO fx-991CW Options:\n• Angle: " + angle_unit + "\n• Memory: " + mem_val + "\n• Last Ans: " + ans_val);
+end
+
+# Factorial helper
+function factorial(n):
+    if (n < 0) return NaN;
+    if (n === 0 || n === 1) return 1;
+    let r = 1;
+    for (let i = 2; i <= n; i++) r *= i;
+    return r;
+end
+
+function calculateFx991():
+    try {
+        let parseExpr = fx_expr;
+        parseExpr = parseExpr.replace(/×/g, "*").replace(/÷/g, "/");
+        parseExpr = parseExpr.replace(/π/g, "Math.PI").replace(/e/g, "Math.E");
+        parseExpr = parseExpr.replace(/Ans/g, "(" + ans_val + ")");
+        
+        # Replace exponents (a^b -> Math.pow(a,b))
+        parseExpr = parseExpr.replace(/([0-9\.]+|\([^\)]+\))\^([0-9\.]+|\([^\)]+\)|-[0-9\.]+)/g, "Math.pow($1, $2)");
+        parseExpr = parseExpr.replace(/\^2/g, "**2").replace(/\^3/g, "**3").replace(/\^\(-1\)/g, "**(-1)");
+
+        # Handle Trigonometry DEG vs RAD
+        if (angle_unit === "DEG") {
+            parseExpr = parseExpr.replace(/sin\(([^)]+)\)/g, "Math.sin(($1) * Math.PI / 180)");
+            parseExpr = parseExpr.replace(/cos\(([^)]+)\)/g, "Math.cos(($1) * Math.PI / 180)");
+            parseExpr = parseExpr.replace(/tan\(([^)]+)\)/g, "Math.tan(($1) * Math.PI / 180)");
+            parseExpr = parseExpr.replace(/asin\(([^)]+)\)/g, "(Math.asin($1) * 180 / Math.PI)");
+            parseExpr = parseExpr.replace(/acos\(([^)]+)\)/g, "(Math.acos($1) * 180 / Math.PI)");
+            parseExpr = parseExpr.replace(/atan\(([^)]+)\)/g, "(Math.atan($1) * 180 / Math.PI)");
+        } else {
+            parseExpr = parseExpr.replace(/sin\(/g, "Math.sin(");
+            parseExpr = parseExpr.replace(/cos\(/g, "Math.cos(");
+            parseExpr = parseExpr.replace(/tan\(/g, "Math.tan(");
+            parseExpr = parseExpr.replace(/asin\(/g, "Math.asin(");
+            parseExpr = parseExpr.replace(/acos\(/g, "Math.acos(");
+            parseExpr = parseExpr.replace(/atan\(/g, "Math.atan(");
+        }
+
+        parseExpr = parseExpr.replace(/sqrt\(/g, "Math.sqrt(");
+        parseExpr = parseExpr.replace(/cbrt\(/g, "Math.cbrt(");
+        parseExpr = parseExpr.replace(/log\(/g, "Math.log10(");
+        parseExpr = parseExpr.replace(/ln\(/g, "Math.log(");
+        parseExpr = parseExpr.replace(/abs\(/g, "Math.abs(");
+
+        # Factorials
+        parseExpr = parseExpr.replace(/([0-9]+)!/g, "factorial($1)");
+
+        let computed = eval(parseExpr);
+        if (typeof computed === 'number') {
+            if (!isFinite(computed)) {
+                fx_res = "Math Error";
+            } else {
+                # Format long decimals cleanly
+                fx_res = Number(computed.toFixed(10)).toString();
+                ans_val = fx_res;
+            }
+        } else {
+            fx_res = "Error";
+        }
+    } catch(e) {
+        fx_res = "Syntax ERROR";
+    }
+    updateFxDisplay();
+end
+
+# Auto Setup Casio Screen DOM Insertion on DOM Load
+window.addEventListener("DOMContentLoaded", function() {
+    let screenCard = document.querySelector(".card-enlgd");
+    if (screenCard) {
+        screenCard.innerHTML = '<div style="background:#8b9bb4; border:3px solid #0f131a; border-radius:10px; padding:12px 16px; color:#080b10; text-align:left; box-shadow:inset 0 3px 8px rgba(0,0,0,0.4);"><div style="display:flex; justify-space-between; font-size:0.75rem; font-weight:800; color:#1e293b; margin-bottom:4px;"><span>CASIO ClassWiz</span><div><span id="badge-shift" style="display:none; background:#d97706; color:#fff; padding:1px 4px; border-radius:3px; font-size:0.65rem; margin-right:4px;">S</span><span id="badge-mem" style="display:none; background:#2563eb; color:#fff; padding:1px 4px; border-radius:3px; font-size:0.65rem; margin-right:4px;">M</span><span id="badge-angle" style="background:#0f172a; color:#f8fafc; padding:1px 5px; border-radius:3px; font-size:0.65rem;">DEG</span></div></div><div id="fx-screen-expr" style="font-family:monospace; font-size:1.1rem; min-height:24px; color:#0f172a;"></div><div id="fx-screen-res" style="font-family:monospace; font-size:1.9rem; font-weight:900; text-align:right; color:#020617; min-height:36px;">0</div></div>';
+    }
+
+    # Style layout grid for Casio keys
+    let layout = document.querySelector(".layout-enlgd");
+    if (layout) {
+        layout.style.maxWidth = "480px";
+        layout.style.background = "linear-gradient(165deg, #1e2638 0%, #0f1420 100%)";
+        layout.style.border = "3px solid #2d3748";
+        layout.style.borderRadius = "28px";
+        layout.style.padding = "24px";
+        layout.style.boxShadow = "0 25px 60px rgba(0,0,0,0.85)";
+    }
+
+    # Style all buttons as Casio Keypad keys
+    let btns = document.querySelectorAll(".btn-enlgd");
+    btns.forEach(function(b) {
+        let txt = b.innerText.trim();
+        b.style.width = "calc(20% - 0.6rem)";
+        b.style.minWidth = "54px";
+        b.style.padding = "10px 0";
+        b.style.fontSize = "0.95rem";
+        b.style.borderRadius = "12px";
+        b.style.border = "none";
+        b.style.boxShadow = "0 4px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)";
+        b.style.cursor = "pointer";
+        b.style.fontWeight = "700";
+
+        if (txt === "SHIFT") {
+            b.style.background = "linear-gradient(135deg, #d97706, #b45309)";
+            b.style.color = "#fff";
+        } else if (txt === "OPTN" || txt === "DEG/RAD" || txt === "STO" || txt === "RCL" || txt === "BACK") {
+            b.style.background = "linear-gradient(135deg, #2563eb, #1d4ed8)";
+            b.style.color = "#fff";
+            b.style.fontSize = "0.8rem";
+        } else if (txt === "DEL" || txt === "AC") {
+            b.style.background = "linear-gradient(135deg, #dc2626, #b91c1c)";
+            b.style.color = "#fff";
+        } else if (txt === "EXE") {
+            b.style.background = "linear-gradient(135deg, #059669, #047857)";
+            b.style.color = "#fff";
+            b.style.width = "calc(20% - 0.6rem)";
+        } else if (["7","8","9","4","5","6","1","2","3","0","."].includes(txt)) {
+            b.style.background = "linear-gradient(135deg, #334155, #1e293b)";
+            b.style.color = "#f8fafc";
+            b.style.fontSize = "1.2rem";
+        } else {
+            b.style.background = "linear-gradient(135deg, #1e293b, #0f172a)";
+            b.style.color = "#94a3b8";
+            b.style.fontSize = "0.85rem";
+        }
+    });
+
+    updateFxDisplay();
+});

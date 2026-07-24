@@ -1,0 +1,17 @@
+# Dynamic Fibonacci Function in EnLang (.enlg)
+
+define function get_fibonacci with n_terms:
+    create list series with 0, 1
+    set a to 0
+    set b to 1
+    
+    repeat n_terms minus 2 times:
+        set c to a plus b
+        add c to list series
+        set a to b
+        set b to c
+        
+    return series
+
+call get_fibonacci with 12 and store in fib_result
+display "Fibonacci series up to 12 terms: " + fib_result

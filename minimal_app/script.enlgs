@@ -1,0 +1,31 @@
+# ──────────────────────────────────────────────────────────
+# SCRIPT.ENLGS — Minimalist Interactive Script (.enlgs)
+# ──────────────────────────────────────────────────────────
+
+define constant STUDIO_NAME as "AURA Studio"
+
+log "Loaded script.enlgs for AURA Studio"
+
+# Mood Toggle Handler
+function toggleMood():
+    const body = document.body
+    if (body.style.backgroundColor === 'rgb(248, 250, 252)' || body.style.backgroundColor === 'white') {
+        body.style.backgroundColor = '#090d16'
+        body.style.color = '#f8fafc'
+        alert("Switched to Obsidian Minimalist Dark Mood")
+    } else {
+        body.style.backgroundColor = '#f8fafc'
+        body.style.color = '#0f172a'
+        alert("Switched to Light Paper Mood")
+    }
+
+# Inquiry Form Handler
+function submitInquiry(e):
+    if (e && e.preventDefault) {
+        e.preventDefault()
+    }
+    alert("Thank you! Your minimalist project inquiry has been received by AURA Studio.")
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("AURA Minimalist Engine initialized successfully.");
+});

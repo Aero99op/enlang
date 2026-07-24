@@ -1,0 +1,7 @@
+# Earth Multi-Page Web App Launcher (.enlg)
+display "========================================="
+display "🌍 Planet Earth Interactive Web Portal"
+display "Starting EnLang Universal Web Server..."
+display "========================================="
+
+start web server on port 8096

@@ -1,0 +1,27 @@
+# ──────────────────────────────────────────────────────────
+# BOOK_DISTRIBUTION.ENLG — Student Book Distribution System
+# ──────────────────────────────────────────────────────────
+
+display "=============================================="
+display "       STUDENT BOOK DISTRIBUTION SYSTEM       "
+display "=============================================="
+
+# Ask for user input (student grade / class)
+ask "Enter student class/grade (1-12): " and store in student_class
+
+# Convert string input to integer
+set student_class to int(student_class)
+
+# EnLang Conditional Logic
+if student_class is greater than 6 then:
+    display "----------------------------------------------"
+    display "Student Class: " + str(student_class)
+    display "Assigned Queue: Please go stand in Line No. 5!"
+    display "----------------------------------------------"
+otherwise:
+    display "----------------------------------------------"
+    display "Student Class: " + str(student_class)
+    display "Assigned Queue: Please go stand in Line No. 1!"
+    display "----------------------------------------------"
+
+display "Book distribution token issued successfully."

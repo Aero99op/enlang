@@ -1,0 +1,19 @@
+# EnLang NLP Sentiment & Feedback Engine (.enlg)
+
+display("=== EnLang Culinary NLP Review Analysis ===")
+
+set review1 to "The Truffle Wagyu Steak was an awesome, fantastic and superb culinary experience!"
+analyze sentiment of review1 and store in s1
+extract keywords from review1 into kw1
+
+display("Customer Review 1: " + review1)
+display("NLP Sentiment Result: " + s1)
+display("Extracted Keywords: " + kw1)
+
+set review2 to "The service was slow and the soup was terrible and awful."
+analyze sentiment of review2 and store in s2
+extract keywords from review2 into kw2
+
+display("Customer Review 2: " + review2)
+display("NLP Sentiment Result: " + s2)
+display("Extracted Keywords: " + kw2)

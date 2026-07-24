@@ -1,0 +1,45 @@
+# ──────────────────────────────────────────────────────────
+# BOOK_DISTRIBUTION_V2.ENLG — Advanced Book Allocation System
+# ──────────────────────────────────────────────────────────
+
+display "=================================================="
+display "     ADVANCED SMART BOOK DISTRIBUTION SYSTEM      "
+display "=================================================="
+
+# Function to determine queue line & book package
+function get_distribution_info(student_class):
+    if student_class is greater than 10 then:
+        queue_line = 10
+        section = "Senior Secondary (Science/Commerce/Arts)"
+    otherwise if student_class is greater than 6 then:
+        queue_line = 5
+        section = "Middle & High School"
+    otherwise:
+        queue_line = 1
+        section = "Primary School"
+
+    return [queue_line, section]
+
+# Prompt for Student Details
+ask "Enter Student Name: " and store in student_name
+ask "Enter Student Class/Grade (1-12): " and store in raw_class
+
+# Convert input to integer
+set grade to int(raw_class)
+
+# Get queue and section info via EnLang function
+info = get_distribution_info(grade)
+get item 0 from info store in line_number
+get item 1 from info store in section_name
+
+display ""
+display "--------------------------------------------------"
+display "STUDENT BOOK ALLOCATION SLIP"
+display "--------------------------------------------------"
+display "Student Name   : " + student_name
+display "Class / Grade  : Class " + str(grade)
+display "School Section : " + section_name
+display "Assigned Queue : PLEASE GO TO LINE NO. " + str(line_number)
+display "--------------------------------------------------"
+display "Status: Ready for Book Collection."
+display "=================================================="

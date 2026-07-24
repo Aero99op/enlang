@@ -1,0 +1,17 @@
+# CYBER NEXUS Universal Fullstack Gaming Hub Application (app.enlg)
+
+display("==================================================")
+display("Launching CYBER NEXUS Gaming Engine...")
+display("==================================================")
+
+# 1. Link Database Schema (.enlgdb)
+include database "gaming_db.enlgdb"
+
+# 2. Link Game Analytics & NLP Script (.enlg)
+link script "game_stats.enlg"
+
+# 3. Link UI Design & Cyberpunk CSS Specification (.enlgd)
+include design "gaming_ui.enlgd"
+
+# 4. Start Gaming Web Server on Port 8090
+start web server on port 8090

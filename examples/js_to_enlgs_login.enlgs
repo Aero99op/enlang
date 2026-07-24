@@ -1,0 +1,22 @@
+# EnLang Login Validation Script (.enlgs)
+
+note: 1-to-1 English conversion of login.js to EnLang Script
+
+# 1. Inputs & Credentials
+set username to "admin"
+set password to "12345"
+
+set correct_username to "admin"
+set correct_password to "12345"
+
+# 2. Form Validation Check
+if username is equal to "" OR password is equal to "":
+    display("Please fill in all fields.")
+
+else if username is equal to correct_username AND password is equal to correct_password:
+    display("Login Successful!")
+    log "Redirecting user to dashboard.html..."
+    set redirect_url to "dashboard.html"
+
+else:
+    display("Invalid Username or Password")

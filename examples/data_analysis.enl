@@ -1,0 +1,22 @@
+# AI & Data Science Analysis in EnLang
+
+display "=== EnLang Data Science & AI Helper ==="
+
+set dataset to [12.5, 45.0, 67.8, 89.1, 23.4, 98.2, 54.3]
+
+set total_sum to 0
+for each val in dataset do:
+    increment total_sum by val
+
+set count to len(dataset)
+set mean_value to total_sum divided by count
+
+display "Dataset Total Sum: " + total_sum
+display "Dataset Average (Mean): " + mean_value
+
+set high_values to []
+for each val in dataset do:
+    if val is greater than mean_value then:
+        add val to list high_values
+
+display "Values Above Average: " + high_values

@@ -1,0 +1,9 @@
+# Design & UI Layout File (.enlgd) - Glassmorphic UI Components
+
+note: Defining Glassmorphic Dashboard UI Components in Natural English
+
+create card named profile_card with title "User Profile Dashboard"
+create button named save_btn with label "Save Changes" and action "alert('Saved!')"
+create button named cancel_btn with label "Cancel" and action "console.log('Cancelled')"
+
+render layout with profile_card, save_btn, cancel_btn

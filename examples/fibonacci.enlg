@@ -1,0 +1,18 @@
+# Fibonacci Series Generator in EnLang (.enlg)
+
+display "=== Fibonacci Series in EnLang ==="
+
+set terms to 10
+display "Generating first " + terms + " Fibonacci numbers:"
+
+set first_num to 0
+set second_num to 1
+
+display "Term 1: " + first_num
+display "Term 2: " + second_num
+
+repeat 8 times:
+    set next_num to first_num plus second_num
+    display "Next Term: " + next_num
+    set first_num to second_num
+    set second_num to next_num

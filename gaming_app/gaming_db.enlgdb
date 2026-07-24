@@ -1,0 +1,22 @@
+# CYBER NEXUS Gaming Hub Database Schema & Seed Data (.enlgdb)
+
+note: SQLite Schema for Games, Tournaments, Leaderboards & Registrations
+
+connect to database "gaming_hub.db" as db
+
+define table games with columns id INTEGER PRIMARY KEY, title TEXT, genre TEXT, rating REAL, price TEXT
+
+insert record into games with values 1, "CyberPunk 2088: Neon Protocol", "Action RPG", 4.9, "FREE"
+insert record into games with values 2, "Valorant Apex: Zero Hour", "Tactical FPS", 4.8, "FREE"
+insert record into games with values 3, "Shadow Realm: Elden Souls", "Dark Fantasy", 4.95, "$59.99"
+insert record into games with values 4, "Overdrive Velocity 2099", "Sci-Fi Racing", 4.7, "$29.99"
+insert record into games with values 5, "Galaxy Conquerors Online", "MMO Strategy", 4.6, "FREE"
+
+define table tournaments with columns id INTEGER PRIMARY KEY, title TEXT, prize_pool TEXT, slots TEXT, status TEXT
+
+insert record into tournaments with values 1, "CyberNexus World Championship 2026", "$250,000", "64 / 64 Teams", "LIVE"
+insert record into tournaments with values 2, "Valorant Protocol Masters", "$100,000", "16 / 32 Teams", "OPEN"
+insert record into tournaments with values 3, "Apex Vanguard Solo Showdown", "$50,000", "128 / 256 Players", "OPEN"
+
+display("=== Initialized CYBER NEXUS Gaming Database (.enlgdb) ===")
+display("Successfully Seeded 5 AAA Games & 3 Esports Tournaments!")

@@ -1,0 +1,24 @@
+# Normal Code File (.enlg) - Business Logic & NLP Engine
+
+display "=== EnLang Logic & NLP Demonstration (.enlg) ==="
+
+# Natural NLP Sentiment Analysis
+set user_feedback to "EnLang is an awesome, smooth and fantastic programming language!"
+analyze sentiment of user_feedback and store in feedback_sentiment
+display "User Feedback: " + user_feedback
+display "NLP Sentiment Analysis Result: " + feedback_sentiment
+
+# NLP Keyword Extraction
+set article to "Artificial intelligence and natural language processing are revolutionizing web application development."
+extract keywords from article into key_terms
+display "Extracted Key Terms: " + key_terms
+
+# NLP Text Similarity
+set sentence1 to "Python programming language"
+set sentence2 to "Natural English EnLang programming language"
+calculate similarity between sentence1 and sentence2 and store in sim_score
+display "Jaccard Text Similarity Score: " + sim_score
+
+# Conversational Fuzzy Phrasing
+please assign "Spandan" to lead_developer
+say "Lead Developer assigned via NLP Fuzzy Intent: " + lead_developer

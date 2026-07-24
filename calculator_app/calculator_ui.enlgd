@@ -1,0 +1,44 @@
+# EnLang Universal Quantum Calculator UI Specification (.enlgd)
+
+style QuantumCalculatorTheme:
+    background_color: "#080c14"
+    card_bg: "rgba(15, 23, 42, 0.95)"
+    accent_blue: "#38bdf8"
+    font_family: "Orbitron"
+
+# Calculator Header & Display Screen
+create hero named calc_header with title "QUANTUM CALCULATOR", subtitle "EnLang Precision Math Engine"
+
+create card named calc_screen with title "0", description "Enter expression to compute"
+
+# Row 1: Operations
+create button named btn_ac with label "AC" and action "clearCalcScreen()"
+create button named btn_del with label "DEL" and action "deleteCalcChar()"
+create button named btn_mod with label "%" and action "appendCalcOp('%')"
+create button named btn_div with label "÷" and action "appendCalcOp('/')"
+
+# Row 2: 7, 8, 9, ×
+create button named btn_7 with label "7" and action "appendCalcNum('7')"
+create button named btn_8 with label "8" and action "appendCalcNum('8')"
+create button named btn_9 with label "9" and action "appendCalcNum('9')"
+create button named btn_mul with label "×" and action "appendCalcOp('*')"
+
+# Row 3: 4, 5, 6, -
+create button named btn_4 with label "4" and action "appendCalcNum('4')"
+create button named btn_5 with label "5" and action "appendCalcNum('5')"
+create button named btn_6 with label "6" and action "appendCalcNum('6')"
+create button named btn_sub with label "-" and action "appendCalcOp('-')"
+
+# Row 4: 1, 2, 3, +
+create button named btn_1 with label "1" and action "appendCalcNum('1')"
+create button named btn_2 with label "2" and action "appendCalcNum('2')"
+create button named btn_3 with label "3" and action "appendCalcNum('3')"
+create button named btn_add with label "+" and action "appendCalcOp('+')"
+
+# Row 5: 0, ., =
+create button named btn_0 with label "0" and action "appendCalcNum('0')"
+create button named btn_dot with label "." and action "appendCalcNum('.')"
+create button named btn_eq with label "=" and action "evalCalcResult()"
+
+# Render Full Calculator Layout
+render layout with calc_header, calc_screen, btn_ac, btn_del, btn_mod, btn_div, btn_7, btn_8, btn_9, btn_mul, btn_4, btn_5, btn_6, btn_sub, btn_1, btn_2, btn_3, btn_add, btn_0, btn_dot, btn_eq

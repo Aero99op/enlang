@@ -1,0 +1,68 @@
+# ──────────────────────────────────────────────────────────
+# MAIN.ENLG — EnLang Pure English Python Domain Program
+# ──────────────────────────────────────────────────────────
+
+display "=========================================="
+display "       ENLANG CORE DOMAIN DEMO (.enlg)    "
+display "=========================================="
+
+# 1. Variables & Natural Math
+set principal to 1000
+set rate to 5
+set years to 3
+
+interest = principal times rate times years divided by 100
+display "Simple Interest Calculated:"
+display interest
+
+# 2. Arrays / Lists Operations
+array tech_stack with items "Python", "HTML5", "CSS3", "JavaScript"
+add "SQLite" to tech_stack
+add "EnLang Engine" to tech_stack
+
+sort tech_stack
+length of tech_stack store in total_techs
+
+display "Total Components in Tech Stack:"
+display total_techs
+
+display "Sorted Tech Stack Items:"
+for each tech in tech_stack:
+    display tech
+
+# 3. Maps / Dictionaries Operations
+create map system_status
+set key "server" in system_status to "Online"
+set key "port" in system_status to 8080
+set key "active_users" in system_status to 1250
+
+get key "server" from system_status store in status_val
+display "Server Status:"
+display status_val
+
+# 4. EnLang Functions & Conditionals
+function calculate_discount(price, member_status):
+    if member_status is true then:
+        discount = price times 0.20
+        return price minus discount
+    otherwise:
+        discount = price times 0.05
+        return price minus discount
+
+set item_price to 500
+set is_vip to true
+
+final_price = calculate_discount(item_price, is_vip)
+display "Final VIP Price:"
+display final_price
+
+# 5. NLP Sentiment Analysis Engine
+set review to "EnLang is an incredibly powerful, smooth, and enjoyable programming language!"
+analyze sentiment of review and store in sentiment_result
+
+display "Review Sentiment Score:"
+display sentiment_result
+
+display "=========================================="
+display "         DEMO EXECUTED SUCCESSFULLY!      "
+display "=========================================="

@@ -1,0 +1,21 @@
+# Cybersecurity & Security Automation in EnLang
+
+display "=== Cybersecurity Toolkit in EnLang ==="
+
+set raw_password to "SuperSecretPass123!"
+hash raw_password with sha256 and store in hashed_password
+display "Original Password: " + raw_password
+display "SHA-256 Hash: " + hashed_password
+
+hash raw_password with md5 and store in md5_hash
+display "MD5 Checksum: " + md5_hash
+
+set target_ip to "127.0.0.1"
+set ports to [21, 22, 80, 443, 8080]
+
+display "Scanning common security ports on " + target_ip + ":"
+for each port in ports do:
+    if port is equal to 80 or port is equal to 443 then:
+        display "Port " + port + ": OPEN (HTTP/HTTPS)"
+    otherwise:
+        display "Port " + port + ": FILTERED / SECURED"

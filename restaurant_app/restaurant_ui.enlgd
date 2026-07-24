@@ -1,0 +1,51 @@
+# AURA Fine Dining Restaurant UI Design & Styling Specification (.enlgd)
+
+# 1. EnLang CSS Styling Blocks (Python-inspired Syntax)
+
+style LuxuryTheme:
+    background_color: "#070a12"
+    accent_primary: "#f59e0b"
+    accent_glow: "rgba(245, 158, 11, 0.45)"
+    card_background: "rgba(18, 24, 38, 0.85)"
+    font_heading: "Playfair Display"
+    font_body: "Outfit"
+
+style HeroCard:
+    background: "rgba(245, 158, 11, 0.08)"
+    border: "1px solid rgba(245, 158, 11, 0.45)"
+    border_radius: "24px"
+    padding: "2.5rem"
+    margin_bottom: "1.5rem"
+    backdrop_filter: "blur(16px)"
+
+style DishCard:
+    background: "rgba(18, 24, 38, 0.85)"
+    border: "1px solid rgba(255, 255, 255, 0.08)"
+    border_radius: "20px"
+    padding: "1.75rem"
+    backdrop_filter: "blur(16px)"
+    box_shadow: "0 10px 30px rgba(0, 0, 0, 0.4)"
+    hover_transform: "translateY(-5px)"
+
+style GoldButton:
+    background: "linear-gradient(135deg, #f59e0b, #d97706)"
+    color: "#000000"
+    font_weight: "700"
+    border_radius: "25px"
+    padding: "0.85rem 1.8rem"
+    box_shadow: "0 4px 15px rgba(245, 158, 11, 0.45)"
+    hover_transform: "translateY(-2px)"
+
+# 2. UI Layout Components
+
+create hero named main_hero with title "AURA - Fine Dining Gastronomy" and subtitle "Experience Michelin-Starred Gourmet Culinary Artistry"
+
+create dish card named wagyu_card with title "Truffle Wagyu Steak", price "$48.50", description "Aged Wagyu ribeye with black truffle butter and rosemary reduction."
+create dish card named risotto_card with title "Saffron Seafood Risotto", price "$34.00", description "Arborio rice in lobster bisque with tiger prawns and saffron sprigs."
+create dish card named salad_card with title "Burrata & Heirloom Salad", price "$18.50", description "Italian burrata, heirloom tomatoes, and aged balsamic glaze."
+create dish card named dessert_card with title "Gold Leaf Chocolate Sphere", price "$22.00", description "Dark Belgian chocolate melted with warm caramel praline."
+
+create button named book_btn with label "Reserve A Table Now" and action "switchTab('reservation')"
+create button named order_btn with label "Explore Gourmet Menu" and action "switchTab('menu')"
+
+render layout with main_hero, wagyu_card, risotto_card, salad_card, dessert_card, book_btn, order_btn

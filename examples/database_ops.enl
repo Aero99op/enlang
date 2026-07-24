@@ -1,0 +1,17 @@
+# Database & SQL Operations in EnLang
+
+display "=== EnLang Database Engine ==="
+
+connect to database ":memory:" as my_db
+
+execute query "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, role TEXT)" on database my_db
+display "Database table 'users' created."
+
+execute query "INSERT INTO users (name, role) VALUES ('Admin User', 'Administrator')" on database my_db
+execute query "INSERT INTO users (name, role) VALUES ('Spandan', 'Security Lead')" on database my_db
+display "Records inserted."
+
+execute query "SELECT * FROM users" on database my_db and store in all_users
+display "Fetched users from Database:"
+for each user in all_users do:
+    display "User Record: " + user

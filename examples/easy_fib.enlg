@@ -1,0 +1,9 @@
+# Clean Natural Fibonacci in EnLang (.enlg)
+
+function fibonacci(n):
+    series = [0, 1]
+    repeat n - 2 times:
+        add series[-1] plus series[-2] to series
+    return series
+
+display "First 10 Fibonacci Numbers: ", fibonacci(10)

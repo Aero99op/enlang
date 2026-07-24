@@ -1,0 +1,26 @@
+# Number Guessing Game in EnLang (.enlg)
+
+import module random
+
+display "=== Welcome to EnLang Number Guessing Game! ==="
+display "I have chosen a secret number between 1 and 50."
+
+set secret_number to random.randint(1, 50)
+set attempts to 0
+set guessed to false
+
+while guessed is false do:
+    ask "Enter your guess (1-50): " and store in user_input
+    set guess to int(user_input)
+    increment attempts by 1
+
+    if guess is equal to secret_number then:
+        display "🎉 Congratulations! You guessed the secret number: " + secret_number
+        display "Total attempts taken: " + attempts
+        set guessed to true
+    otherwise if guess is greater than secret_number then:
+        display "📉 Too high! Try a smaller number."
+    otherwise:
+        display "📈 Too low! Try a larger number."
+
+display "Game Over! Thanks for playing EnLang Number Guessing Game."

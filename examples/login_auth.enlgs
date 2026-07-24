@@ -1,0 +1,24 @@
+# EnLang User Login & Authentication Script (.enlgs)
+
+log "Starting User Authentication Pipeline..."
+
+# 1. Parse Input Login Credentials
+set input_user to "admin"
+set input_pass to "AuraPass2026!"
+
+log "Processing login request for user: " + input_user
+
+# 2. Hash Password for Security Verification
+hash input_pass with sha256 and store in hashed_password
+log "Generated Password SHA256 Hash: " + hashed_password
+
+# 3. Credentials Verification
+set stored_user to "admin"
+hash "AuraPass2026!" with sha256 and store in stored_hash
+
+if input_user is equal to stored_user AND hashed_password is equal to stored_hash:
+    log "Authentication SUCCESS: User " + input_user + " logged in!"
+    set session_token to "TOKEN_AUTH_SUCCESS_2026"
+    log "Session Auth Token: " + session_token
+else:
+    log "Authentication FAILED: Invalid Username or Password!"

@@ -1,0 +1,14 @@
+# EnLang Simple Login Application (app.enlg)
+
+display("==================================================")
+display("Starting EnLang Simple Login Application...")
+display("==================================================")
+
+# 1. Link UI Design Specification (.enlgd)
+include design "login_ui.enlgd"
+
+# 2. Link Authentication Logic Script (.enlgs)
+link script "login_script.enlgs"
+
+# 3. Start Web Server on Port 8088
+start web server on port 8088

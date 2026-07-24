@@ -1,0 +1,14 @@
+# Simple Palindrome Checker in EnLang (.enlg)
+
+display("=== Simple Palindrome Checker ===")
+
+store "racecar" in word
+display("Original Word: " + word)
+
+store word[::-1] in reversed_word
+display("Reversed Word: " + reversed_word)
+
+if word is equal to reversed_word then:
+    display("Result: '" + word + "' IS a Palindrome!")
+else:
+    display("Result: '" + word + "' IS NOT a Palindrome.")

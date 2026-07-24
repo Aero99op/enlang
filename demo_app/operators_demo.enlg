@@ -1,0 +1,107 @@
+# ──────────────────────────────────────────────────────────
+# OPERATORS_DEMO.ENLG — Comprehensive EnLang Operators Showcase
+# ──────────────────────────────────────────────────────────
+
+display "=================================================="
+display "       ENLANG ALL OPERATORS DEMONSTRATION         "
+display "=================================================="
+
+# 1. ARITHMETIC OPERATORS
+set a to 20
+set b to 6
+
+display "--- 1. ARITHMETIC OPERATORS ---"
+display "a = 20, b = 6"
+
+set sum_val to a plus b
+display "a plus b = " + str(sum_val)
+
+set diff_val to a minus b
+display "a minus b = " + str(diff_val)
+
+set prod_val to a times b
+display "a times b = " + str(prod_val)
+
+set div_val to a divided by b
+display "a divided by b = " + str(div_val)
+
+set mod_val to a modulo b
+display "a modulo b = " + str(mod_val)
+
+set pow_val to 2 power of 5
+display "2 power of 5 = " + str(pow_val)
+
+
+# 2. COMPARISON OPERATORS
+display ""
+display "--- 2. COMPARISON OPERATORS ---"
+
+if a is greater than b then:
+    display "20 is greater than 6: True"
+
+if b is less than a then:
+    display "6 is less than 20: True"
+
+if a is greater than or equal to 20 then:
+    display "20 is greater than or equal to 20: True"
+
+if b is less than or equal to 10 then:
+    display "6 is less than or equal to 10: True"
+
+if a is equal to 20 then:
+    display "20 is equal to 20: True"
+
+if a is not equal to b then:
+    display "20 is not equal to 6: True"
+
+
+# 3. MEMBERSHIP OPERATORS (is in / is not in)
+display ""
+display "--- 3. MEMBERSHIP OPERATORS ---"
+array fruits with items "apple", "banana", "mango"
+
+if "apple" is in fruits then:
+    display "'apple' is in fruits: True"
+
+if "orange" is not in fruits then:
+    display "'orange' is not in fruits: True"
+
+
+# 4. LOGICAL OPERATORS (and, or, not)
+display ""
+display "--- 4. LOGICAL OPERATORS ---"
+
+set x to 15
+set y to 25
+
+if x is greater than 10 and y is greater than 20 then:
+    display "(x > 10 and y > 20): True"
+
+if x is equal to 10 or y is equal to 25 then:
+    display "(x == 10 or y == 25): True"
+
+if not (x is equal to 0) then:
+    display "not (x == 0): True"
+
+
+# 5. INCREMENT & DECREMENT OPERATORS
+display ""
+display "--- 5. INCREMENT & DECREMENT OPERATORS ---"
+set score to 50
+display "Initial Score: " + str(score)
+
+increment score by 10
+display "After 'increment score by 10': " + str(score)
+
+decrement score by 5
+display "After 'decrement score by 5': " + str(score)
+
+
+# 6. USER INPUT WITH FLUSHED PLACEHOLDER
+display ""
+display "--- 6. USER INPUT OPERATOR ---"
+ask "Enter your name to test input placeholder: " and store in user_name
+
+display ""
+display "Hello " + user_name + "! All EnLang operators executed successfully."
+display "=================================================="

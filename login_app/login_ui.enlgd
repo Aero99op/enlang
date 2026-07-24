@@ -1,0 +1,16 @@
+# Login Page UI Design & Pythonic CSS Styling (.enlgd)
+
+style LoginTheme:
+    background_color: "#090d16"
+    card_background: "rgba(18, 24, 38, 0.85)"
+    accent_primary: "#3b82f6"
+
+create hero named login_header with title "Welcome Back" and subtitle "Please sign in to access your account"
+
+create input named username_input with type "text", label "Username", placeholder "Enter username"
+create input named password_input with type "password", label "Password", placeholder "Enter password"
+create button named login_btn with label "Sign In to Account" and action "alert('Authenticating with EnLang Engine...')"
+
+create form named login_form with fields username_input, password_input, login_btn and action "event.preventDefault(); alert('Login Verified!')"
+
+render layout with login_header, login_form

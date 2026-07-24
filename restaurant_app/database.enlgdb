@@ -1,0 +1,18 @@
+# Restaurant Database Schema & Seed File (.enlgdb)
+
+display("=== Initializing EnLang Restaurant Database (.enlgdb) ===")
+
+connect to database "restaurant.db" as rest_db
+
+define table menu_items with columns id as integer, name as text, category as text, price as float, description as text
+define table reservations with columns id as integer, guest_name as text, guests as integer, date_time as text, status as text
+define table reviews with columns id as integer, customer as text, comment as text, rating as integer
+
+execute query "INSERT INTO menu_items VALUES (1, 'Truffle Wagyu Steak', 'Mains', 48.50, 'Aged Wagyu ribeye infused with black truffle butter and rosemary glaze')" on database rest_db
+execute query "INSERT INTO menu_items VALUES (2, 'Saffron Seafood Risotto', 'Mains', 34.00, 'Arborio rice cooked in lobster bisque with tiger prawns and saffron')" on database rest_db
+execute query "INSERT INTO menu_items VALUES (3, 'Burrata & Heirloom Salad', 'Starters', 18.50, 'Fresh Italian burrata, heirloom tomatoes, aged balsamic reduction')" on database rest_db
+execute query "INSERT INTO menu_items VALUES (4, 'Gold Leaf Chocolate Sphere', 'Desserts', 22.00, 'Dark Belgian chocolate melted with warm caramel and hazelnut praline')" on database rest_db
+execute query "INSERT INTO menu_items VALUES (5, 'Smoked Rosemary Old Fashioned', 'Drinks', 16.00, 'Bourbon whisky, aromatic bitters, flame-smoked rosemary sprig')" on database rest_db
+
+execute query "SELECT * FROM menu_items" on database rest_db and store in all_menu
+display("Successfully Seeded " + len(all_menu) + " Gourmet Menu Items!")

@@ -1,0 +1,28 @@
+# AERO Website Script (.enlgs)
+
+const menu = document.querySelector(".menu");
+const nav = document.querySelector(".nav-links");
+
+when menu clicked do:
+    nav.classList.toggle("active");
+end
+
+when exploreBtn clicked do:
+    document.getElementById("about").scrollIntoView({ behavior: "smooth" });
+end
+
+when contactBtn clicked do:
+    alert("Thanks for visiting! 😊");
+end
+
+const cards = document.querySelectorAll(".card");
+
+cards.forEach(function(card) {
+    card.addEventListener("mouseenter", function() {
+        card.style.boxShadow = "0 0 25px #38bdf8";
+    });
+
+    card.addEventListener("mouseleave", function() {
+        card.style.boxShadow = "none";
+    });
+});

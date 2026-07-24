@@ -1,0 +1,16 @@
+# Database & Schema File (.enlgdb) - Table Definitions & Queries
+
+display "=== EnLang Database Operations (.enlgdb) ==="
+
+connect to database ":memory:" as main_db
+
+define table members with columns id as integer, username as text, email as text
+
+execute query "INSERT INTO members VALUES (101, 'Spandan', 'spandan@enlang.org')" on database main_db
+execute query "INSERT INTO members VALUES (102, 'DevLead', 'dev@enlang.org')" on database main_db
+
+execute query "SELECT * FROM members" on database main_db and store in member_records
+
+display "Queried Member Records from Database:"
+for each member in member_records do:
+    display "Member Entry: " + member

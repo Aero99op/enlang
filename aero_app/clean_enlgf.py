@@ -1,0 +1,8 @@
+f = open('aero.enlgf', 'r', encoding='utf-8')
+c = f.read()
+f.close()
+c = c.replace('@on <frontend>', '').replace('@on frontend', '')
+f = open('aero.enlgf', 'w', encoding='utf-8')
+f.write(c)
+f.close()
+print('done')

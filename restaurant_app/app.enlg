@@ -1,0 +1,17 @@
+# EnLang Universal Fullstack Restaurant Application (app.enlg)
+
+display("==================================================")
+display("Launching AURA Fine Dining Fullstack Engine...")
+display("==================================================")
+
+# 1. Link Database Schema (.enlgdb)
+include database "database.enlgdb"
+
+# 2. Link NLP Review Sentiment Script (.enlg)
+link script "reviews_nlp.enlg"
+
+# 3. Link UI Design Specification (.enlgd)
+include design "restaurant_ui.enlgd"
+
+# 4. Start Fullstack Web Server on Port 8050
+start web server on port 8050

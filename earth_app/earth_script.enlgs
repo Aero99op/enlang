@@ -1,0 +1,303 @@
+// Earth Portal Interactive Client Script (.enlgs)
+
+// 1. Multi-Page Navigation Handler
+function switchPage(pageId) {
+    const navBtns = document.querySelectorAll('.nav-btn');
+    navBtns.forEach(btn => btn.classList.remove('active'));
+
+    const pages = document.querySelectorAll('.page-section');
+    pages.forEach(pg => pg.classList.remove('active-page'));
+
+    const activeBtn = document.getElementById('nav-' + pageId);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+
+    const targetPage = document.getElementById('page-' + pageId);
+    if (targetPage) {
+        targetPage.classList.add('active-page');
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 2. Earth Internal Layers Interactive Details
+const layerData = {
+    'crust': {
+        name: 'Earth Crust & Lithosphere',
+        depth: '0 - 70 km',
+        temp: '0°C to 400°C',
+        composition: 'Silicates, Granitic & Basaltic Rock',
+        state: 'Solid brittle rock layer',
+        desc: 'The outermost terrestrial layer divided into Oceanic Crust (5-10 km thick, dense basalt) and Continental Crust (30-70 km thick, lighter granite). Holds all human civilization and oceans.'
+    },
+    'mantle': {
+        name: 'Earth Mantle (Upper & Lower)',
+        depth: '70 - 2,890 km',
+        temp: '1,000°C to 3,700°C',
+        composition: 'Peridotite, Olivine, Magnesium-Iron Silicates',
+        state: 'Viscous semi-fluid / Plastic solid',
+        desc: 'Comprises 84% of Earth\'s total volume. Convective motion within the asthenosphere drives continental drift, earthquakes, and volcanic activity worldwide.'
+    },
+    'outer-core': {
+        name: 'Liquid Outer Core',
+        depth: '2,890 - 5,150 km',
+        temp: '4,000°C to 5,700°C',
+        composition: 'Liquid Iron & Nickel with Trace Sulfur/Oxygen',
+        state: 'Low-viscosity molten liquid metal',
+        desc: 'A turbulent liquid metallic ocean. The rotational motion of liquid iron creates electrical currents that power Earth\'s protective Geodynamo Magnetosphere.'
+    },
+    'inner-core': {
+        name: 'Solid Inner Core',
+        depth: '5,150 - 6,371 km',
+        temp: '5,200°C to 6,000°C (As hot as the Sun\'s surface)',
+        composition: 'Solid Crystalline Iron-Nickel Alloy',
+        state: 'Solid dense sphere (under 3.6 million atm pressure)',
+        desc: 'Immense gravitational pressure prevents the scorching iron from melting. The inner core grows by about 1 millimeter per year as the outer core gradually cools.'
+    }
+};
+
+function selectLayer(key) {
+    const btns = document.querySelectorAll('.layer-btn');
+    btns.forEach(b => b.classList.remove('active'));
+
+    event.target.classList.add('active');
+
+    const data = layerData[key];
+    const detailBox = document.getElementById('layer-detail-box');
+    if (detailBox && data) {
+        detailBox.innerHTML = `
+            <h3 style="color: #60a5fa; font-size: 1.4rem; margin-bottom: 0.8rem;">${data.name}</h3>
+            <p style="color: #cbd5e1; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.2rem;">${data.desc}</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; background: rgba(15, 23, 42, 0.6); padding: 1.2rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                <div><span style="display:block; font-size:0.75rem; color:#9ca3af;">DEPTH RANGE</span><strong style="color:#fff; font-size:1.05rem;">${data.depth}</strong></div>
+                <div><span style="display:block; font-size:0.75rem; color:#9ca3af;">TEMPERATURE</span><strong style="color:#f59e0b; font-size:1.05rem;">${data.temp}</strong></div>
+                <div><span style="display:block; font-size:0.75rem; color:#9ca3af;">PHYSICAL STATE</span><strong style="color:#34d399; font-size:1.05rem;">${data.state}</strong></div>
+                <div><span style="display:block; font-size:0.75rem; color:#9ca3af;">PRIMARY ELEMENTS</span><strong style="color:#93c5fd; font-size:0.95rem;">${data.composition}</strong></div>
+            </div>
+        `;
+    }
+}
+
+// Initial layer setup
+document.addEventListener('DOMContentLoaded', () => {
+    selectLayer('crust');
+    calculateWeights();
+    initQuiz();
+    startGlobeAnimation();
+});
+
+// 3. Planetary Weight Converter Logic
+function calculateWeights() {
+    const input = document.getElementById('user-weight-input');
+    const container = document.getElementById('weight-results-grid');
+    if (!input || !container) return;
+
+    const w = parseFloat(input.value) || 70;
+    const planets = [
+        { name: '🌙 Moon', factor: 0.166 },
+        { name: '🔴 Mars', factor: 0.377 },
+        { name: '♀️ Venus', factor: 0.904 },
+        { name: '⚡ Jupiter', factor: 2.364 },
+        { name: '🪐 Saturn', factor: 1.064 },
+        { name: '☀️ Sun', factor: 27.01 }
+    ];
+
+    container.innerHTML = planets.map(p => `
+        <div class="weight-card">
+            <span class="w-planet">${p.name}</span>
+            <span class="w-val">${(w * p.factor).toFixed(1)} kg</span>
+        </div>
+    `).join('');
+}
+
+// 4. Interactive Quiz Challenge Engine
+const quizQuestions = [
+    {
+        q: "What percentage of Earth's surface is covered by liquid water?",
+        options: ["50.5%", "70.8%", "85.2%", "92.0%"],
+        answer: 1,
+        explanation: "Earth's hydrosphere covers about 70.8% of the surface, mostly in oceans."
+    },
+    {
+        q: "Which atmospheric layer contains the protective Ozone Layer?",
+        options: ["Troposphere", "Stratosphere", "Thermosphere", "Exosphere"],
+        answer: 1,
+        explanation: "The Stratosphere (12-50 km altitude) contains high concentration of Ozone (O₃)."
+    },
+    {
+        q: "What generates Earth's protective magnetic field (Geodynamo)?",
+        options: ["Solar radiation", "Convective flow in liquid outer core", "Ocean tides", "Crust tectonic movement"],
+        answer: 1,
+        explanation: "Convection of liquid iron/nickel in the molten outer core creates electrical currents generating the magnetosphere."
+    },
+    {
+        q: "What is the most abundant gas in Earth's dry atmosphere?",
+        options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Argon"],
+        answer: 2,
+        explanation: "Nitrogen (N₂) makes up approximately 78.08% of Earth's dry atmospheric volume."
+    }
+];
+
+let currentQ = 0;
+let score = 0;
+
+function initQuiz() {
+    currentQ = 0;
+    score = 0;
+    renderQuestion();
+}
+
+function renderQuestion() {
+    const qBox = document.getElementById('quiz-question');
+    const optBox = document.getElementById('quiz-options');
+    const feedbackBox = document.getElementById('quiz-feedback');
+    const nextBtn = document.getElementById('quiz-next-btn');
+
+    if (!qBox || !optBox) return;
+
+    if (currentQ >= quizQuestions.length) {
+        qBox.innerHTML = `🎉 Quiz Completed! You scored <strong>${score} out of ${quizQuestions.length}</strong>!`;
+        optBox.innerHTML = `<button class="btn-primary" onclick="initQuiz()">Restart Quiz 🔄</button>`;
+        feedbackBox.innerHTML = '';
+        if (nextBtn) nextBtn.style.display = 'none';
+        return;
+    }
+
+    const q = quizQuestions[currentQ];
+    qBox.textContent = `${currentQ + 1}. ${q.q}`;
+    feedbackBox.textContent = '';
+    if (nextBtn) nextBtn.style.display = 'none';
+
+    optBox.innerHTML = q.options.map((opt, idx) => `
+        <button class="quiz-opt-btn" onclick="checkAnswer(${idx})">${opt}</button>
+    `).join('');
+}
+
+function checkAnswer(chosenIdx) {
+    const q = quizQuestions[currentQ];
+    const buttons = document.querySelectorAll('.quiz-opt-btn');
+    const feedbackBox = document.getElementById('quiz-feedback');
+    const nextBtn = document.getElementById('quiz-next-btn');
+
+    buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.answer) {
+            btn.classList.add('correct');
+        } else if (i === chosenIdx) {
+            btn.classList.add('wrong');
+        }
+    });
+
+    if (chosenIdx === q.answer) {
+        score++;
+        feedbackBox.style.color = '#34d399';
+        feedbackBox.textContent = '✅ Correct! ' + q.explanation;
+    } else {
+        feedbackBox.style.color = '#fca5a5';
+        feedbackBox.textContent = '❌ Incorrect. ' + q.explanation;
+    }
+
+    document.getElementById('score-num').textContent = score;
+    if (nextBtn) nextBtn.style.display = 'inline-block';
+}
+
+function nextQuestion() {
+    currentQ++;
+    renderQuestion();
+}
+
+// 5. Dynamic 3D Canvas Spinning Globe Animation
+function startGlobeAnimation() {
+    const canvas = document.getElementById('globe-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const radius = width / 2 - 10;
+    const cx = width / 2;
+    const cy = height / 2;
+
+    let rotation = 0;
+
+    function drawGlobe() {
+        ctx.clearRect(0, 0, width, height);
+
+        // 1. Atmosphere Outer Glow
+        const atmosGrad = ctx.createRadialGradient(cx, cy, radius - 5, cx, cy, radius + 15);
+        atmosGrad.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
+        atmosGrad.addColorStop(1, 'rgba(59, 130, 246, 0)');
+        ctx.fillStyle = atmosGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius + 15, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. Ocean Sphere
+        const oceanGrad = ctx.createRadialGradient(cx - radius * 0.3, cy - radius * 0.3, radius * 0.1, cx, cy, radius);
+        oceanGrad.addColorStop(0, '#3b82f6');
+        oceanGrad.addColorStop(0.7, '#1d4ed8');
+        oceanGrad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = oceanGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 3. Grid Lines & Continent Shapes
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.clip();
+
+        // Latitude lines
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1;
+        for (let lat = -60; lat <= 60; lat += 30) {
+            const y = cy + (lat / 90) * radius;
+            const rLat = Math.sqrt(Math.max(0, radius * radius - (y - cy) * (y - cy)));
+            ctx.beginPath();
+            ctx.ellipse(cx, y, rLat, rLat * 0.25, 0, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        // Longitude lines & Continents
+        ctx.fillStyle = '#10b981';
+        ctx.strokeStyle = '#34d399';
+
+        const continents = [
+            { x: -0.6, y: -0.2, r: 35 }, // N America
+            { x: -0.4, y: 0.3, r: 30 },  // S America
+            { x: 0.1, y: -0.1, r: 32 },  // Europe/Africa
+            { x: 0.5, y: -0.2, r: 45 },  // Asia
+            { x: 0.7, y: 0.4, r: 25 }    // Australia
+        ];
+
+        continents.forEach(c => {
+            const lon = (c.x + rotation) % 2;
+            const screenX = cx + (lon - 1) * radius * 1.8;
+            const screenY = cy + c.y * radius;
+
+            if (screenX > cx - radius - 20 && screenX < cx + radius + 20) {
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, c.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        // 4. Shading / Night Shadow
+        const shadowGrad = ctx.createLinearGradient(cx - radius, cy - radius, cx + radius, cy + radius);
+        shadowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
+        shadowGrad.addColorStop(0.5, 'rgba(0, 0, 0, 0)');
+        shadowGrad.addColorStop(1, 'rgba(3, 7, 18, 0.85)');
+        ctx.fillStyle = shadowGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+
+        rotation += 0.005;
+        requestAnimationFrame(drawGlobe);
+    }
+
+    drawGlobe();
+}

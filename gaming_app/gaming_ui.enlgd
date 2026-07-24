@@ -1,0 +1,51 @@
+# CYBER NEXUS Gaming Hub UI Design & Styling Specification (.enlgd)
+
+# 1. EnLang Cyberpunk CSS Styling Blocks
+
+style CyberTheme:
+    background_color: "#0a0b10"
+    accent_cyan: "#00f3ff"
+    accent_magenta: "#ff0055"
+    card_bg: "rgba(16, 20, 32, 0.85)"
+    font_heading: "Orbitron"
+    font_body: "Outfit"
+
+style HeroCard:
+    background: "rgba(0, 243, 255, 0.08)"
+    border: "1px solid rgba(0, 243, 255, 0.4)"
+    border_radius: "24px"
+    padding: "2.5rem"
+    margin_bottom: "1.5rem"
+    backdrop_filter: "blur(16px)"
+
+style GameCard:
+    background: "rgba(16, 20, 32, 0.85)"
+    border: "1px solid rgba(255, 0, 85, 0.25)"
+    border_radius: "20px"
+    padding: "1.75rem"
+    backdrop_filter: "blur(16px)"
+    box_shadow: "0 10px 30px rgba(0, 0, 0, 0.6)"
+    hover_transform: "translateY(-5px)"
+
+style CyanButton:
+    background: "linear-gradient(135deg, #00f3ff, #0066ff)"
+    color: "#000000"
+    font_weight: "800"
+    border_radius: "25px"
+    padding: "0.85rem 1.8rem"
+    box_shadow: "0 4px 20px rgba(0, 243, 255, 0.5)"
+    hover_transform: "translateY(-2px)"
+
+# 2. UI Components
+
+create hero named main_hero with title "CYBER NEXUS - Ultimate Gaming Hub" and subtitle "Next-Gen AAA Games, Live Esports Tournaments & Global Rankings"
+
+create dish card named cp_game with title "CyberPunk 2088: Neon Protocol", price "FREE", description "Ray-traced open world cyberpunk action RPG with full raytracing and DLSS 3.5."
+create dish card named val_game with title "Valorant Apex: Zero Hour", price "FREE", description "5v5 character-based tactical FPS with 128-tick high performance esports servers."
+create dish card named shadow_game with title "Shadow Realm: Elden Souls", price "$59.99", description "Dark fantasy open-world action RPG with intense boss battles and multiplayer coop."
+create dish card named racer_game with title "Overdrive Velocity 2099", price "$29.99", description "High speed futuristic hovercraft racing with custom weapon powerups."
+
+create button named play_btn with label "Enter Esports Arena" and action "switchTab('tournaments')"
+create button named explore_btn with label "Explore Games Vault" and action "switchTab('games')"
+
+render layout with main_hero, cp_game, val_game, shadow_game, racer_game, play_btn, explore_btn
