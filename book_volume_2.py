@@ -129,7 +129,62 @@ def get_volume_2_elements():
         p3 = f"Design considerations for Chapter #{c_num} focus on responsive layout breakpoints, DOM performance, asynchronous fetch routines, and database index optimization."
         p4 = f"Browser compatibility for Chapter #{c_num} ensures 100% compliance with modern evergreen browsers (Chrome, Firefox, Safari, Edge) without legacy polyfill bloat."
 
-        if c_num <= 125:
+        if c_num == 176:
+            c_title = "EnLang Natural Database Engine (.enlgdb) & Formatted ASCII Tables"
+            p1 = "EnLang's database transpiler engine (.enlgdb) parses natural English table definitions, schema constraints, and queries, transpiling them into 1:1 ANSI SQL. It automatically compiles SQLite binary database files (.db) and renders formatted ASCII data tables directly in the terminal."
+            p2 = "Supported statements include 'define table <name> with columns...', 'insert into <name> columns (...) values (...)', 'select all from <name>', 'add column', 'truncate table', and 'drop table'."
+            p3 = "The terminal table formatter (format_ascii_table) dynamically calculates column widths, draws clean ASCII borders, formats NULL values, and displays total row statistics."
+            p4 = "Full compatibility with SQLite, PostgreSQL, and MySQL engines with zero SQL injection risks."
+            src_lines = ["# EnLang Database Schema (.enlgdb)", "define table students with columns id INTEGER PRIMARY KEY AUTOINCREMENT, student_name TEXT NOT NULL, roll_number INTEGER NOT NULL UNIQUE, grade TEXT NOT NULL, gpa REAL NOT NULL", "insert into students columns (student_name, roll_number, grade, gpa) values ('Aarav Sharma', 101, 'A+', 3.90)", "select all from students"]
+            tgt_lines = ["-- Transpiled ANSI SQL Output", "CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY AUTOINCREMENT, student_name TEXT NOT NULL, roll_number INTEGER NOT NULL UNIQUE, grade TEXT NOT NULL, gpa REAL NOT NULL);", "INSERT INTO students (student_name, roll_number, grade, gpa) VALUES ('Aarav Sharma', 101, 'A+', 3.90);", "SELECT * FROM students;"]
+            log_lines = ["============================================================", " TABLE: STUDENTS (Total Rows: 1)", "============================================================", "+----+--------------+-------------+-------+------+", "| id | student_name | roll_number | grade | gpa  |", "+----+--------------+-------------+-------+------+", "| 1  | Aarav Sharma | 101         | A+    | 3.9  |", "+----+--------------+-------------+-------+------+"]
+            test_lines = ["enlang run examples/students.enlgdb", "[SUCCESS] Transpiled 'examples/students.enlgdb' -> 'examples/students.sql'", "[SUCCESS] Database synced -> 'examples/students.db'"]
+
+        elif c_num == 177:
+            c_title = "Zero-Config Web Application Runner & Custom Port Server"
+            p1 = "The EnLang web runner provides single-command web application compilation and live execution. Executing 'enlang run file.enlgf' automatically builds all associated web files (.enlgf -> .html, .enlgd -> .css, .enlgs -> .js) in the directory."
+            p2 = "It launches the built-in EnLang HTTP Dev Server with automatic free port detection and hot-reload support."
+            p3 = "Developers can explicitly override the server port using the '-p' or '--p' flag (e.g. 'enlang run aether.enlgf --p 3000')."
+            p4 = "Serves modern HTML5, CSS3 glassmorphism design systems, and ES6+ JavaScript client scripts with zero external server dependencies."
+            src_lines = ["# Launching EnLang Web Application", "enlang run index.enlgf --p 3000"]
+            tgt_lines = ["[SUCCESS] Transpiled '.\\index.enlgf' -> '.\\index.html'", "[SUCCESS] Transpiled '.\\style.enlgd' -> '.\\style.css'", "[SUCCESS] Transpiled '.\\app.enlgs' -> '.\\app.js'", "[LIVE URL] http://localhost:3000/index.html"]
+            log_lines = ["[OK] EnLang Web Server running -> http://localhost:3000/", "[OK] Serving from: D:\\my-app", "127.0.0.1 - - [2026-07-25] \"GET /index.html HTTP/1.1\" 200 OK"]
+            test_lines = ["test('Web Server Port Binding', () => {", "  expect(server.port).toBe(3000);", "  expect(response.status).toBe(200);", "});"]
+
+        elif c_num == 178:
+            c_title = "PyPI Version Registry Inspection & Live Status Engine"
+            p1 = "EnLang features a built-in PyPI version inspector that fetches all published releases of EnLang directly from the official PyPI registry via REST API."
+            p2 = "Running 'enlang versions' or 'epm versions' outputs an ASCII table listing all published releases (e.g. 1.0.0, 2.0.0, 2.0.6) and highlights the currently active version."
+            p3 = "The version inspector includes non-blocking asynchronous checks that notify developers when a newer release is published on PyPI."
+            p4 = "Network timeouts (1-3 seconds) prevent CLI slowdowns if the developer is offline."
+            src_lines = ["# Query PyPI Package Registry", "enlang versions"]
+            tgt_lines = ["[INFO] Fetching published versions for 'enlang' from PyPI...", "==================================================", " ENLANG PUBLISHED VERSIONS (PyPI Registry)", "==================================================", "      v2.0.0", "      v2.0.6", "  --> v1.0.0.post3  <-- [INSTALLED / CURRENT]", "=================================================="]
+            log_lines = ["Usage to install a specific version:", "  enlang install 2.0.0      OR  pip install enlang==2.0.0", "  enlang update             OR  pip install --upgrade enlang"]
+            test_lines = ["test('PyPI Version Fetcher', async () => {", "  const versions = await fetchPypiVersions();", "  expect(versions).toContain('1.0.0.post3');", "});"]
+
+        elif c_num == 179:
+            c_title = "Cross-Platform Detached Auto-Update & Upgrade Engine"
+            p1 = "EnLang provides seamless single-command updates across Windows, Linux, and macOS environments via 'enlang update' or 'epm update'."
+            p2 = "On Windows OS, active executables are locked by the operating system. EnLang resolves this by spawning a detached background process that waits for the active CLI process to cleanly exit before executing 'pip install --upgrade --user enlang'."
+            p3 = "On Linux and macOS, upgrades execute directly and synchronously via pip."
+            p4 = "This architecture guarantees that auto-updates never fail with '[WinError 5] Access is denied' errors for end users on Windows."
+            src_lines = ["# Upgrade EnLang to Latest Release", "enlang update"]
+            tgt_lines = ["[INFO] Current installed version: v1.0.0", "[INFO] Latest PyPI version: v1.0.0.post3", "[INFO] Upgrading EnLang to v1.0.0.post3 via pip...", "[SUCCESS] Update initiated in background! EnLang will be updated in 1 second."]
+            log_lines = ["Requirement already satisfied: enlang in %AppData%\\Python\\Python313\\site-packages", "Successfully uninstalled enlang-1.0.0", "Successfully installed enlang-1.0.0.post3"]
+            test_lines = ["test('Windows Detached Auto-Update', () => {", "  expect(os.name === 'nt' ? spawnedBackgroundProcess : directProcess).toBe(true);", "});"]
+
+        elif c_num == 180:
+            c_title = "Explicit Version Installation & EPM Dependency Management"
+            p1 = "EnLang allows developers to install any historical or specific version of EnLang using 'enlang install <version>' or 'epm install <version>'."
+            p2 = "EnLang Package Manager (EPM) handles multi-target project dependencies including native EnLang modules, Python PyPI packages ('epm add py:<pkg>'), and Web NPM packages ('epm add web:<pkg>')."
+            p3 = "Running 'epm init' generates the standard enlang.json manifest file containing project metadata, entry files, and dependency trees."
+            p4 = "Executing 'epm install' reads enlang.json and installs all required Python and Web JS/CSS dependencies in one command."
+            src_lines = ["# Install Specific Version & Dependency Management", "enlang install 2.0.0", "epm add py:requests", "epm add web:chart.js"]
+            tgt_lines = ["[INFO] Installing specific EnLang version '2.0.0'...", "Installing collected packages: enlang-2.0.0", "[SUCCESS] Added 'py:requests' to enlang.json manifest", "[SUCCESS] Added 'web:chart.js' to enlang.json manifest"]
+            log_lines = ["[EPM] Installing Python dependencies: requests", "[EPM] Installing Web dependencies: chart.js", "[SUCCESS] All project dependencies installed!"]
+            test_lines = ["test('EPM Manifest Sync', () => {", "  const manifest = JSON.parse(fs.readFileSync('enlang.json'));", "  expect(manifest.dependencies.python).toContain('requests');", "});"]
+
+        elif c_num <= 125:
             src_lines = [f"# EnLang Markup Source (.enlgf) #{c_num}", "page title \"Web Module " + str(c_num) + "\"", "create section with class \"card-module\":", f"    create h2 with text \"Module Title #{c_num}\"", "    create p with text \"Content text for web module.\"", "close section"]
             tgt_lines = ["<!-- Transpiled HTML5 Output -->", "<section class=\"card-module\">", f"  <h2>Module Title #{c_num}</h2>", "  <p>Content text for web module.</p>", "</section>"]
         elif c_num <= 150:
