@@ -127,15 +127,11 @@ def build_file(file_path: str):
         sys.exit(1)
 
     try:
+        from .interpreter import EnLangInterpreter
         from .transpiler import EnLangTranspiler
     except ImportError:
+        from enlang_core.interpreter import EnLangInterpreter
         from enlang_core.transpiler import EnLangTranspiler
-
-    t = EnLangTranspiler()
-    with open(file_path, "r", encoding="utf-8") as f:
-        code = f.read()
-
-    transpiled = t.transpile(code, file_path=file_path)
 
     ext = os.path.splitext(file_path)[1].lower()
     target_ext_map = {
@@ -148,8 +144,22 @@ def build_file(file_path: str):
     target_ext = target_ext_map.get(ext, ".py")
     out_file = os.path.splitext(file_path)[0] + target_ext
 
+    with open(file_path, "r", encoding="utf-8") as f:
+        code = f.read()
+
+    if ext in (".enlgf", ".enlgd", ".enlgs", ".enlgdb"):
+        interp = EnLangInterpreter()
+        ok, stdout, stderr, _ = interp.run_code(code, file_path=file_path)
+        if not ok and stderr:
+            print(f"[ERROR] Sub-transpilation failed:\n{stderr}", file=sys.stderr)
+            sys.exit(1)
+        final_output = stdout
+    else:
+        t = EnLangTranspiler()
+        final_output = t.transpile(code, file_path=file_path)
+
     with open(out_file, "w", encoding="utf-8") as f:
-        f.write(transpiled)
+        f.write(final_output)
 
     print(f"[SUCCESS] Transpiled '{file_path}' -> '{out_file}'")
 

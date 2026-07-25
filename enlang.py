@@ -78,11 +78,28 @@ def main():
         with open(args.filename, "r", encoding="utf-8") as f:
             source = f.read()
 
-        py_code = transpiler.transpile(source, file_path=args.filename)
-        out_path = args.output if args.output else os.path.splitext(args.filename)[0] + ".py"
+        ext = os.path.splitext(args.filename)[1].lower()
+        target_ext_map = {
+            ".enlg": ".py",
+            ".enlgf": ".html",
+            ".enlgd": ".css",
+            ".enlgs": ".js",
+            ".enlgdb": ".sql"
+        }
+        default_ext = target_ext_map.get(ext, ".py")
+        out_path = args.output if args.output else os.path.splitext(args.filename)[0] + default_ext
+
+        if ext in (".enlgf", ".enlgd", ".enlgs", ".enlgdb"):
+            ok, stdout, stderr, _ = interpreter.run_code(source, file_path=args.filename)
+            if not ok and stderr:
+                print(f"[ERROR] Sub-transpilation failed:\n{stderr}", file=sys.stderr)
+                sys.exit(1)
+            final_output = stdout
+        else:
+            final_output = transpiler.transpile(source, file_path=args.filename)
 
         with open(out_path, "w", encoding="utf-8") as f:
-            f.write(py_code)
+            f.write(final_output)
 
         print(f"Successfully compiled '{args.filename}' -> '{out_path}'")
 
