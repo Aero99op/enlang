@@ -147,6 +147,43 @@ def run_file(file_path: str, custom_port: int = None):
             start_enlang_server(port, directory=directory)
         return
 
+    # If running a database file (.enlgdb), auto-build to .sql and execute against SQLite
+    if ext == ".enlgdb":
+        import sqlite3
+        build_file(file_path)
+        sql_file = os.path.splitext(file_path)[0] + ".sql"
+        db_file = os.path.splitext(file_path)[0] + ".db"
+        with open(sql_file, "r", encoding="utf-8") as f:
+            sql_script = f.read()
+        
+        print(f"\n[INFO] Executing EnLang Database Schema '{file_path}'...")
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+        cursor.executescript(sql_script)
+        conn.commit()
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = [r[0] for r in cursor.fetchall() if not r[0].startswith("sqlite_")]
+        print(f"[SUCCESS] Database created & synced -> '{db_file}'")
+        print(f"[TABLES CREATED] {', '.join(tables)}\n")
+
+        for stmt in sql_script.split(";"):
+            stmt_clean = stmt.strip()
+            if stmt_clean.upper().startswith("SELECT"):
+                try:
+                    cursor.execute(stmt_clean)
+                    rows = cursor.fetchall()
+                    cols = [desc[0] for desc in cursor.description] if cursor.description else []
+                    print(f"[QUERY] {stmt_clean};")
+                    print(f"  Columns: {cols}")
+                    for r in rows:
+                        print(f"  Row -> {r}")
+                    print()
+                except Exception:
+                    pass
+        conn.close()
+        return
+
     try:
         from .interpreter import EnLangInterpreter
     except ImportError:

@@ -55,7 +55,7 @@ def main():
             sys.exit(1)
 
         ext = os.path.splitext(args.filename)[1].lower()
-        if ext in (".enlgf", ".enlgd", ".enlgs"):
+        if ext in (".enlgf", ".enlgd", ".enlgs", ".enlgdb"):
             from enlang_core.cli import run_file
             run_file(args.filename, custom_port=args.port)
             sys.exit(0)
