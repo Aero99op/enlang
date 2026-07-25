@@ -1,0 +1,15 @@
+# students.enlgdb — Student Records Database in Natural EnLang (.enlgdb)
+# Defines a Students table with 5 attributes and seeds 5 student records
+
+# 1. Define Students Table (5 Attributes: id, student_name, roll_number, grade, gpa)
+define table students with columns id INTEGER PRIMARY KEY AUTOINCREMENT, student_name TEXT NOT NULL, roll_number INTEGER NOT NULL UNIQUE, grade TEXT NOT NULL, gpa REAL NOT NULL
+
+# 2. Insert 5 Student Records
+insert into students columns (student_name, roll_number, grade, gpa) values ('Aarav Sharma', 101, 'A+', 3.90)
+insert into students columns (student_name, roll_number, grade, gpa) values ('Diya Patel', 102, 'A', 3.80)
+insert into students columns (student_name, roll_number, grade, gpa) values ('Kabir Verma', 103, 'O', 4.00)
+insert into students columns (student_name, roll_number, grade, gpa) values ('Ananya Roy', 104, 'A', 3.75)
+insert into students columns (student_name, roll_number, grade, gpa) values ('Rohan Gupta', 105, 'A+', 3.95)
+
+# 3. Queries to fetch student records
+select all from students
