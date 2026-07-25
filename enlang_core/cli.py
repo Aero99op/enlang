@@ -15,7 +15,7 @@ import sys
 import os
 import argparse
 
-VERSION = "2.0.5 — Enterprise Specification Edition"
+VERSION = "2.0.6 — Enterprise Specification Edition"
 
 def format_ascii_table(title: str, headers: list, rows: list) -> str:
     if not headers:
