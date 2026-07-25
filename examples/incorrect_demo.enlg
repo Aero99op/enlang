@@ -1,0 +1,18 @@
+# Incorrect EnLang Demo File
+# Intentionally contains common syntax errors for testing linter & checker
+
+# Error 1: Unclosed string quote
+set username to "Spandan
+
+# Error 2: Missing colon on block header + Error 3: Invalid comparison phrase 'is bigger than'
+if score is bigger than 50
+  # Error 4: Invalid indentation (2 spaces instead of 4)
+  display "High Score"
+
+# Error 5: Unsupported phrasing 'assign ... to ...'
+assign 100 to total_points
+
+# Error 6: Unclosed match block (missing 'end match')
+match user_role:
+    case "admin":
+        display "Admin User"
