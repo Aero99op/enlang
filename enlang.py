@@ -88,7 +88,7 @@ def main():
         with open(args.filename, "r", encoding="utf-8") as f:
             source = f.read()
 
-        if args.show_python:
+        if getattr(args, "show_python", False):
             py_code = transpiler.transpile(source, file_path=args.filename)
             print(f"--- Generated Python Code ({args.filename}) ---")
             print(py_code)

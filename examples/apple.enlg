@@ -1,0 +1,12 @@
+# apple.enlg — EnLang ASCII Apple Art Generator
+# Demonstrates EnLang natural display statements for ASCII graphics
+
+display "          .:'"
+display "      __ :'__"
+display "   .'`  `\"\"`  `'."
+display "  /              \\"
+display " |                |"
+display " :                ;"
+display "  \\              /"
+display "   `'a.      .a'`"
+display "     `\"======\"`"

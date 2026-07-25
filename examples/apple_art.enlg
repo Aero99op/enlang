@@ -1,0 +1,16 @@
+# apple_art.enlg — ASCII Apple Art with Function & Natural EnLang Syntax
+
+function draw_apple:
+    display "          .:'"
+    display "      __ :'__"
+    display "   .'`  `\"\"`  `'."
+    display "  /              \\"
+    display " |   E N L A N G  |"
+    display " :     A P P L E  ;"
+    display "  \\              /"
+    display "   `'a.      .a'`"
+    display "     `\"======\"`"
+
+display "Rendering EnLang ASCII Apple Art:"
+display "---------------------------------"
+call draw_apple

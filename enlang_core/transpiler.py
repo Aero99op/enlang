@@ -629,11 +629,23 @@ class EnLangTranspiler:
             name, params = m.group(1), m.group(2)
             return f"def {name}({params}):"
 
+        # 2b. Parameterless function: function foo:
+        m = re.match(r'^(?:function|func|action|task|procedure|process)\s+([a-zA-Z_]\w*)\s*:?\s*$', line, re.IGNORECASE)
+        if m:
+            name = m.group(1)
+            return f"def {name}():"
+
         # 3. Invocation: start foo from 1 / start foo with 1 / call foo with 1 / run foo with 1
         m = re.match(r'^(?:start|call|run|execute|begin|perform|next|apply)\s+([a-zA-Z_]\w*)\s+(?:from|with|using|for)\s+(.+)$', line, re.IGNORECASE)
         if m:
             name, val = m.group(1), clean_expression(m.group(2))
             return f"{name}({val})"
+
+        # 3b. Parameterless Invocation: call foo / run foo / start foo
+        m = re.match(r'^(?:start|call|run|execute|begin|perform)\s+([a-zA-Z_]\w*)\s*$', line, re.IGNORECASE)
+        if m:
+            name = m.group(1)
+            return f"{name}()"
 
         m = re.match(r'^return\s+(.+)$', line, re.IGNORECASE)
         if m:
