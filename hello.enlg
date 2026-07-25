@@ -1,0 +1,8 @@
+# EnLang Hello World Program
+# File: hello.enlg
+
+define text greeting as "Hello, World!"
+
+display greeting
+display "Welcome to EnLang Natural English Programming!"
+display "hello duniya"

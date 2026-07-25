@@ -30,9 +30,10 @@
 14. **Chapter 14: Database Schemas & Queries (`.enlgdb` → SQL)**
 15. **Chapter 15: Native NLP & AI Primitives**
 16. **Chapter 16: EnLang Web Server & Multi-File Architecture**
-17. **Chapter 17: Complete Production Case Study — Lumina Workspace**
-18. **Appendix A: Universal Natural Syntax Cheatsheet**
-19. **Appendix B: CLI & EnLang Package Manager (EPM) Manual**
+17. **Chapter 17: Canonical Grammar Rules, Order & Syntax Layout Specification**
+18. **Chapter 18: Complete Production Case Study — Lumina Workspace**
+19. **Appendix A: Universal Natural Syntax Cheatsheet**
+20. **Appendix B: CLI & EnLang Package Manager (EPM) Manual**
 
 ---
 
@@ -44,18 +45,6 @@ For over seven decades, software development has required human engineers to ada
 **EnLang** was designed by **Spandan Prayas Patra** to invert this paradigm: to allow developers to write application logic in **pure, clear, expressive natural English**, while maintaining **100% deterministic compilation** into battle-tested native target languages (Python 3, HTML5, CSS3, JavaScript ES6+, SQL).
 
 EnLang is **not** a pseudo-code generator or an LLM wrapper. It is a **deterministic, multi-target compiler and runtime engine**.
-
-## 1.2 Multi-Domain Extension Architecture
-
-```
-Extension  Domain Purpose                   Native Target   Output Format
-─────────  ───────────────────────────────  ──────────────  ───────────────────────
-.enlg      Core Backend Logic & Algorithms  Python 3        Executable Script
-.enlgf     Frontend Structural Markup       HTML5           Semantic HTML Document
-.enlgd     Design, Theme & Styling          CSS3            CSS Stylesheet Block
-.enlgs     Client-Side Scripting & DOM      JS (ES6+)       JavaScript Client Script
-.enlgdb    Database Schema & Queries        SQL (SQLite)    SQL DDL / DML Statements
-```
 
 ---
 
@@ -89,48 +78,10 @@ define set unique_ids as {101, 102}
 
 # CHAPTER 3: THE 3-LEVEL NATIVE INTERACTIVITY ARCHITECTURE (v2.0)
 
-To achieve 100% zero-ambiguity execution when embedding native code expressions, EnLang defines a **Clean 3-Level Hierarchy**:
-
 ```
 Level 1: Pure EnLang (Default)         ➔ set area to width times height
 Level 2: Inline Native Marker          ➔ set root to @python(math.sqrt(144))
 Level 3: Multi-Line Native Block       ➔ python: ... end python
-```
-
-## 3.1 Level 1: Pure EnLang Syntax (Default)
-Standard expressive natural English — ideal for 95% of application logic:
-```enlang
-set width to 10
-set height to 20
-set area to width times height
-display area
-```
-
-## 3.2 Level 2: Inline Native Markers (`@python(...)`, `@js(...)`, `@sql(...)`)
-When executing a single-line native expression, inline decorators provide 100% explicit, zero-ambiguity parsing across all target domains:
-
-```enlang
-# Backend (.enlg) — Native Python Expression
-import module math
-set root to @python(math.sqrt(144))
-display root  # Output: 12.0
-
-# Frontend Script (.enlgs) — Native JavaScript Expression
-log @js(window.innerWidth)
-
-# Database Query (.enlgdb) — Native SQL Expression
-set total to @sql(SELECT count(*) FROM users)
-```
-
-## 3.3 Level 3: Multi-Line Native Blocks (`python: ... end python`)
-For large raw code snippets (e.g. complex asyncio loops, raw SQL migrations, custom CSS rules), block directives bypass transpilation entirely:
-
-```enlang
-python:
-    import math
-    x = math.factorial(5)
-    print(f"Factorial of 5 is {x}")
-end python
 ```
 
 ---
@@ -170,9 +121,6 @@ class UserSession implements Authenticatable:
     function logout():
         display "Session closed"
 end class
-
-s = UserSession()
-display str(isinstance(s, Authenticatable))  # True
 ```
 
 ## 5.2 Async & Await Primitives (v2.0)
@@ -227,16 +175,73 @@ throw error "Authentication failure"
 
 ---
 
-# CHAPTER 17: PRODUCTION CASE STUDY — LUMINA WORKSPACE
+# CHAPTER 17: CANONICAL GRAMMAR RULES, ORDER & SYNTAX LAYOUT SPECIFICATION (v2.0)
+
+To prevent errors caused by arbitrary English phrasing, EnLang enforces strict **Canonical Grammar Rules, Precedence, and Structural Layout Boundaries**.
+
+## 17.1 Block Indentation & Scope Rules
+1. **Indentation**: All indented blocks (`if`, `for`, `while`, `function`, `class`, `match`, `try`) MUST use **4 spaces per level**.
+2. **Colon Signifier**: Every block header MUST terminate with a colon (`:`).
+3. **Closing Tags**: Explicit block terminators (`end match`, `end interface`) MUST align with the starting indentation column.
+
+### Correct Block Layout
+```enlang
+function process(items):
+    for each item in items do:
+        if item is greater than 0 then:
+            display item
+```
+
+### Incorrect Block Layout (WILL CAUSE SYNTAX ERROR)
+```enlang
+function process(items)     # ERROR: Missing trailing colon ':'
+  display items             # ERROR: Must use 4 spaces, not 2
+```
+
+## 17.2 Valid vs. Invalid Natural Phrase Variants
+
+### Variable Declarations
+- ✅ **Valid**: `set x to 10`, `let x = 10`, `store 10 in x`, `define number x as 10`
+- ❌ **Invalid**: `assign 10 to variable x` (Syntax Error: use `set` or `store`)
+
+### Comparison Operators
+- ✅ **Valid**: `is equal to`, `is not equal to`, `is greater than`, `is less than`, `is greater than or equal to`
+- ❌ **Invalid**: `is bigger than` (Syntax Error: use `is greater than`)
+- ❌ **Invalid**: `is same as` (Syntax Error: use `is equal to`)
+
+### Arithmetic Operators
+- ✅ **Valid**: `plus`, `minus`, `times`, `divided by`, `modulo`, `power of`
+- ❌ **Invalid**: `add x and y` in expressions (Use `x plus y` for inline expressions; `add x to list` is reserved for collection append).
+
+## 17.3 Statement Ordering & Module Import Precedence
+1. **Top-of-File Imports**: All `import module <name>` statements MUST be placed at the top of the file before function or class definitions.
+2. **Interface Definitions Before Implementation**: Interfaces MUST be declared before any class using `implements <Interface>`.
+3. **Base Class Definitions Before Subclasses**: Parent classes MUST be defined before child classes using `extends <BaseClass>`.
+
+## 17.4 Operator Precedence Table
+
+| Precedence | Natural Operator | Native Equivalent | Association |
+| :--- | :--- | :--- | :--- |
+| **1 (Highest)**| `()` | Grouping | Left-to-Right |
+| **2** | `power of` | `**` | Right-to-Left |
+| **3** | `times`, `divided by`, `modulo` | `*`, `/`, `%` | Left-to-Right |
+| **4** | `plus`, `minus` | `+`, `-` | Left-to-Right |
+| **5** | `is equal to`, `is greater than`, etc. | `==`, `>`, etc. | Left-to-Right |
+| **6** | `not` | `not` | Right-to-Left |
+| **7 (Lowest)** | `and`, `or` | `and`, `or` | Left-to-Right |
+
+---
+
+# CHAPTER 18: PRODUCTION CASE STUDY — LUMINA WORKSPACE
 
 ### `server.enlg`
 ```enlang
-# Using Level 2 Inline Native Marker & Level 3 Block
-set version_tag to @python("v" + str(2.0))
+import module json
 
-python:
-    print(f"Booting Lumina Server {version_tag}...")
-end python
+set app_name to "Lumina Workspace"
+set version to "2.0.0"
+
+display "Booting " plus app_name plus " v" plus version
 
 start web server on port 8000
 ```
@@ -245,16 +250,14 @@ start web server on port 8000
 
 # APPENDIX A: UNIVERSAL SYNTAX REFERENCE
 
-| Feature Level | EnLang Syntax Example | Native Transpilation |
+| Category | EnLang Syntax Example | Native Transpilation |
 | :--- | :--- | :--- |
 | **Level 1 (Pure)** | `set area to width times height` | `area = width * height` |
-| **Level 2 (Inline Marker)**| `set val to @python(math.sqrt(25))` | `val = math.sqrt(25)` |
-| **Level 3 (Native Block)** | `python:` ... `end python` | Verbatim Block Execution |
+| **Level 2 (Marker)**| `set val to @python(math.sqrt(25))` | `val = math.sqrt(25)` |
+| **Level 3 (Block)** | `python:` ... `end python` | Verbatim Block Execution |
 | **Interface** | `interface Authenticatable:` ... `end interface` | Abstract Contract Class |
 | **Implements** | `class UserSession implements Authenticatable:` | Multi-Inheritance Class |
 | **Async Func** | `async function fetch_data():` | `async def fetch_data():` |
-| **Await Expr** | `set res to await fetch_data()` | `res = await fetch_data()` |
-| **Pattern Match**| `match role:` `case "admin":` `default:` `end match` | Non-fallthrough Branching |
 
 ---
 
