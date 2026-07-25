@@ -2,10 +2,10 @@
 # Recursively prints numbers from n to 10
 
 function print_numbers(n):
-    if n is greater than 10 then:
+    if n>10 then:
         return
     display n
-    print_numbers(n plus 1)
+    print_numbers(n+1)
+     print_numbers(2)
 
-# Start recursion from 1
-print_numbers(1)
+
