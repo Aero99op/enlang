@@ -447,7 +447,7 @@ def translate_html_line(line: str) -> str:
         tag = m.group(1).lower()
         var = m.group(2)
         cls = _strip_quotes(m.group(3)) if m.group(3) else None
-        id_explicit = m.group(4)
+        id_explicit = _strip_quotes(m.group(4)) if m.group(4) else None
         txt = _strip_quotes(m.group(5)) if m.group(5) else None
         href = _strip_quotes(m.group(6)) if m.group(6) else None
         src = _strip_quotes(m.group(7)) if m.group(7) else None
