@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, price REAL NOT NULL, stock INTEGER DEFAULT 0, category TEXT DEFAULT 'General', created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, total_amount REAL NOT NULL, status TEXT DEFAULT 'Pending', created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS order_items (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER NOT NULL, unit_price REAL NOT NULL);
+CREATE TABLE IF NOT EXISTS reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, product_id INTEGER NOT NULL, rating INTEGER CHECK(rating >= 1 AND rating <= 5), comment TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
+INSERT INTO users (username, email, password_hash) VALUES ('spandan_admin', 'spandan@enlang.org', '$pbkdf2$hash_value_99');
+INSERT INTO products (title, price, stock, category) VALUES ('EnLang Master Course', 99.99, 100, 'Books');
+INSERT INTO orders (user_id, total_amount, status) VALUES (1, 99.99, 'Completed');
+INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES (1, 1, 1, 99.99);
+INSERT INTO reviews (user_id, product_id, rating, comment) VALUES (1, 1, 5, 'Top tier natural English programming system!');
+SELECT * FROM users WHERE id = 1;
+SELECT * FROM products WHERE category = 'Books' ORDER BY price desc LIMIT 10;
