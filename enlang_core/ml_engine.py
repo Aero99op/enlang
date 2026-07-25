@@ -713,10 +713,13 @@ def translate_ml_line(line: str) -> str | None:
         top_n = int(m.group(2)) if m.group(2) else 15
         mv = _ctx.model_registry.get(algo, _ctx.model_var)
         vv = _ctx.vectorizer_var
+        ds = _ctx.dataset_var
         return (
             f"import numpy as np; "
             f"_fi = {mv}.feature_importances_ if hasattr({mv}, 'feature_importances_') else np.abs({mv}.coef_[0]); "
-            f"_fn = {vv}.get_feature_names_out() if hasattr({vv}, 'get_feature_names_out') else [str(i) for i in range(len(_fi))]; "
+            f"_fn = list({vv}.get_feature_names_out()) if '{vv}' in globals() and hasattr({vv}, 'get_feature_names_out') "
+            f"else list({ds}.drop(columns=['{_ctx.label_column}']).columns) if '{ds}' in globals() and hasattr({ds}, 'columns') "
+            f"else [f'feature_{{i}}' for i in range(len(_fi))]; "
             f"_top_idx = np.argsort(_fi)[::-1][:{top_n}]; "
             f"print(f'\\n=== Top {top_n} Features ({algo}) ==='); "
             f"[print(f'  {{_fn[i]:<30}} {{_fi[i]:.4f}}') for i in _top_idx]"

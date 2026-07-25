@@ -1,0 +1,114 @@
+# crop_growth_predictor.enlg
+# Smart AI Crop Recommendation & Growth Predictor
+# Built entirely using EnLang ML & Data Science Engine Natural Syntax
+
+display "================================================================"
+display "       SMART FARMING: AI CROP GROWTH & RECOMMENDATION           "
+display "        EnLang ML & Data Science Engine Natural Syntax          "
+display "================================================================"
+display ""
+
+# ── 1. LOAD DATASET & EDA ──────────────────────────────────────────────────────
+
+display "[STEP 1] Loading Soil & Climate Agriculture Dataset..."
+load dataset from "d:/enlangg/examples/crop_predictor/crop_recommendation.csv" with labels column crop
+display ""
+
+display "[STEP 2] Running Automated EDA & Statistical Profiling..."
+generate eda report
+display ""
+
+display "[STEP 3] Target Class Distribution (Crops Count):"
+show distribution of crop
+display ""
+
+display "[STEP 4] Statistical ANOVA Test: Is Rainfall significantly different across Crops?"
+run anova on rainfall grouped by crop
+display ""
+
+# ── 2. PREPROCESSING & SPLIT ──────────────────────────────────────────────────
+
+display "[STEP 5] Performing 80/20 Stratified Train-Test Split..."
+stratified split into 80 percent training and 20 percent testing with seed 42
+display ""
+
+display "[STEP 6] Feature Scaling via StandardScaler..."
+scale features using standard scaler
+display ""
+
+# ── 3. MULTI-MODEL CLASSIFIER TRAINING ────────────────────────────────────────
+
+display "[STEP 7] Training Multiple Machine Learning Models..."
+display ""
+
+train random_forest classifier on training data
+train knn classifier on training data
+train neural_network classifier on training data
+train decision_tree classifier on training data
+train gradient_boosting classifier on training data
+
+display ""
+
+# ── 4. MODEL EVALUATION & COMPARISON ──────────────────────────────────────────
+
+display "[STEP 8] Model Comparison & Performance Benchmark:"
+evaluate all classifiers and show comparison
+display ""
+
+display "[STEP 9] Detailed Classification Report (Random Forest):"
+show report for random_forest
+display ""
+
+display "[STEP 10] Key Soil & Weather Factors (Feature Importance):"
+show feature importance of random_forest top 7
+display ""
+
+# ── 5. ENSEMBLE VOTING CLASSIFIER ──────────────────────────────────────────────
+
+display "[STEP 11] Creating Soft Voting Ensemble Model..."
+use soft ensemble of all trained classifiers
+display ""
+
+# ── 6. LIVE CROP RECOMMENDATION PREDICTOR ──────────────────────────────────────
+
+display "================================================================"
+display "         LIVE FARMER SOIL & CLIMATE CROP RECOMMENDATION         "
+display "================================================================"
+display ""
+
+python:
+# High-level helper for farmer soil input recommendation
+def recommend_crop(n, p, k, temp, hum, ph, rain):
+    input_df = pd.DataFrame([{
+        'N': n, 'P': p, 'K': k,
+        'temperature': temp, 'humidity': hum,
+        'ph': ph, 'rainfall': rain
+    }])
+    input_scaled = _enlg_scaler.transform(input_df.values)
+    best_crop = _enlg_model_randomforest.predict(input_scaled)[0]
+    probs = _enlg_model_randomforest.predict_proba(input_scaled)[0]
+    classes = _enlg_model_randomforest.classes_
+    top_prob = round(max(probs) * 100, 1)
+
+    print(f"Soil & Weather Inputs:")
+    print(f"  N: {n} | P: {p} | K: {k} | Temp: {temp}°C | Humidity: {hum}% | pH: {ph} | Rainfall: {rain}mm")
+    print(f"  >>> RECOMMENDED CROP: [{best_crop.upper()}] (Confidence: {top_prob}%)")
+    print("-" * 65)
+
+print("[FARM SAMPLE 1] High Moisture & Rainfall Heavy Soil:")
+recommend_crop(n=90, p=45, k=40, temp=24.5, hum=85.0, ph=6.5, rain=240.0)
+
+print("[FARM SAMPLE 2] High Potassium & Dry Climate Soil:")
+recommend_crop(n=30, p=70, k=80, temp=18.5, hum=17.0, ph=7.2, rain=75.0)
+
+print("[FARM SAMPLE 3] High Nitrogen & Warm Humid Soil:")
+recommend_crop(n=120, p=45, k=20, temp=25.0, hum=80.0, ph=6.8, rain=90.0)
+
+print("[FARM SAMPLE 4] Tropical Fruit Conditions (High N & P):")
+recommend_crop(n=105, p=80, k=50, temp=27.0, hum=80.0, ph=6.0, rain=110.0)
+end python
+
+display ""
+display "================================================================"
+display "               CROP GROWTH PREDICTION COMPLETE                  "
+display "================================================================"
