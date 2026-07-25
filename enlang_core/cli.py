@@ -100,10 +100,43 @@ def main():
             print_help()
             sys.exit(1)
 
+def find_free_port(start_port=8080):
+    import socket
+    for port in range(start_port, start_port + 100):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            if s.connect_ex(('localhost', port)) != 0:
+                return port
+    return start_port
+
 def run_file(file_path: str):
     if not os.path.exists(file_path):
         print(f"Error: File '{file_path}' not found.")
         sys.exit(1)
+
+    ext = os.path.splitext(file_path)[1].lower()
+
+    # If running a web file (.enlgf, .enlgd, .enlgs), auto-build all web files in dir and serve
+    if ext in (".enlgf", ".enlgd", ".enlgs"):
+        directory = os.path.dirname(file_path) or "."
+        # Build all .enlgf, .enlgd, .enlgs in directory
+        for item in os.listdir(directory):
+            if item.endswith((".enlgf", ".enlgd", ".enlgs")):
+                item_path = os.path.join(directory, item)
+                build_file(item_path)
+
+        html_file = os.path.splitext(os.path.basename(file_path))[0] + ".html"
+        port = find_free_port(8080)
+        print(f"\n[SUCCESS] Web application compiled successfully!")
+        print(f"[INFO] Launching EnLang Dev Web Server on port {port}...")
+        print(f"[LIVE URL] http://localhost:{port}/{html_file}\n")
+        
+        try:
+            from .web_server import start_enlang_server
+            start_enlang_server(port, directory=directory)
+        except ImportError:
+            from enlang_core.web_server import start_enlang_server
+            start_enlang_server(port, directory=directory)
+        return
 
     try:
         from .interpreter import EnLangInterpreter

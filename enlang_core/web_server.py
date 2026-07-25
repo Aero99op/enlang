@@ -76,8 +76,10 @@ def _build_error_page(title: str, message: str, code: int = 500) -> str:
 </html>"""
 
 
-def start_enlang_server(port=8000):
+def start_enlang_server(port=8000, directory="."):
     port = int(port)
+    if directory and os.path.exists(directory):
+        os.chdir(directory)
 
     class EnLangHTTPHandler(http.server.SimpleHTTPRequestHandler):
 

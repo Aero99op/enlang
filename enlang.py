@@ -54,6 +54,12 @@ def main():
             print(f"Error: File '{args.filename}' not found.", file=sys.stderr)
             sys.exit(1)
 
+        ext = os.path.splitext(args.filename)[1].lower()
+        if ext in (".enlgf", ".enlgd", ".enlgs"):
+            from enlang_core.cli import run_file
+            run_file(args.filename)
+            sys.exit(0)
+
         with open(args.filename, "r", encoding="utf-8") as f:
             source = f.read()
 
