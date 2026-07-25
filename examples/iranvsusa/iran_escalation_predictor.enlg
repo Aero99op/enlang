@@ -1,0 +1,151 @@
+# iran_escalation_predictor.enlg
+# Iran-USA Conflict Escalation Chance Predictor
+# Written ENTIRELY using EnLang ML Engine Natural Syntax
+# Dataset: iran_us_news_dataset.csv (2286 news articles)
+# Models: Logistic Regression, Random Forest, Naive Bayes, SVM, Gradient Boosting
+# + Ensemble Soft Voting
+
+import warnings
+warnings.filterwarnings('ignore')
+
+display "================================================================"
+display "  IRAN-USA CONFLICT ESCALATION PREDICTOR  "
+display "  EnLang ML Engine — Full Natural Syntax  "
+display "================================================================"
+display ""
+
+# ── STEP 1: Load Dataset ──────────────────────────────────────────────────────
+
+display "[STEP 1] Loading Iran-USA News Dataset..."
+load dataset from "d:/enlangg/examples/iranvsusa/iran_us_news_dataset.csv" into df
+show dataset info
+display ""
+
+# ── STEP 2: Engineer Labels via Python Block (complex custom logic) ───────────
+
+display "[STEP 2] Engineering Escalation Labels from news content..."
+
+python:
+import warnings
+warnings.filterwarnings('ignore')
+
+def assign_escalation(row):
+    kw = str(row.get('_keyword', '')).lower()
+    ct = str(row.get('content', ''))[:400].lower()
+    title = str(row.get('title', '')).lower()
+
+    high_kw = ['war', 'attack', 'nuclear', 'hormuz', 'midnight hammer',
+               'twelve-day', 'fordow', 'israel war', 'khamenei death', 'strike', 'invasion']
+    low_kw  = ['ceasefire', 'peace', 'deal', 'diplomacy', 'negotiations',
+               'sanctions', 'cooperation', 'agreement', 'dialogue', 'trump']
+
+    hs = sum(1 for k in high_kw if k in kw or k in title)
+    ls = sum(1 for k in low_kw  if k in kw or k in title)
+    hs += sum(0.5 for k in high_kw if k in ct)
+    ls += sum(0.5 for k in low_kw  if k in ct)
+
+    return 1 if hs > ls else 0
+
+df['escalation'] = df.apply(assign_escalation, axis=1)
+
+# Build combined feature text
+df['combined'] = (
+    df['title'].fillna('') + ' ' +
+    df['_keyword'].fillna('') + ' ' +
+    df['content'].fillna('').str[:300]
+)
+
+X = df['combined'].tolist()
+y = df['escalation'].tolist()
+
+esc_count = sum(y)
+de_count  = len(y) - esc_count
+print(f"[INFO] Escalation: {esc_count} | De-escalation: {de_count} | Total: {len(y)}")
+end python
+
+display ""
+
+# ── STEP 3: Stratified 80/20 Split ───────────────────────────────────────────
+
+display "[STEP 3] Stratified 80/20 Train-Test Split..."
+stratified split into 80 percent training and 20 percent testing with seed 42
+display ""
+
+# ── STEP 4: TF-IDF Vectorization (unigrams + bigrams) ────────────────────────
+
+display "[STEP 4] TF-IDF Vectorization (1-gram + 2-gram, 8000 features)..."
+vectorize text using tfidf with max features 8000 and ngrams 1 to 2
+display ""
+
+# ── STEP 5: Train All 5 Classifiers ──────────────────────────────────────────
+
+display "[STEP 5] Training all classifiers..."
+display ""
+
+train logistic_regression classifier on training data
+train random_forest classifier on training data
+train naive_bayes classifier on training data
+train svm classifier on training data
+train gradient_boosting classifier on training data
+
+display ""
+
+# ── STEP 6: Multi-Model Comparison ───────────────────────────────────────────
+
+display "[STEP 6] Evaluating all models..."
+evaluate all classifiers and show comparison
+display ""
+
+# ── STEP 7: Detailed Report for Best Models ───────────────────────────────────
+
+display "[STEP 7] Detailed reports..."
+show report for gradient_boosting
+show report for random_forest
+display ""
+
+# ── STEP 8: Feature Importance ────────────────────────────────────────────────
+
+display "[STEP 8] Top escalation signals from Random Forest..."
+show feature importance of random_forest top 10
+display ""
+
+# ── STEP 9: Ensemble Soft Voting ──────────────────────────────────────────────
+
+display "[STEP 9] Ensemble Soft Voting (LR + RF + NB + SVM)..."
+use soft ensemble of all trained classifiers
+display ""
+
+# ── STEP 10: Live Predictions Using Ensemble ──────────────────────────────────
+
+display "================================================================"
+display "  LIVE HEADLINE ESCALATION PREDICTOR (Ensemble)  "
+display "================================================================"
+display ""
+
+predict escalation from "Iran launches missile attack on US military base in Iraq" using ensemble
+display ""
+
+predict escalation from "Iran and US reach historic nuclear ceasefire agreement in Geneva" using ensemble
+display ""
+
+predict escalation from "US imposes new sanctions on Iran oil exports amid nuclear tensions" using ensemble
+display ""
+
+predict escalation from "Iran threatens to close Strait of Hormuz after US warship deployment" using ensemble
+display ""
+
+predict escalation from "Iran supreme leader calls for peaceful dialogue with Washington" using ensemble
+display ""
+
+predict escalation from "Operation Midnight Hammer: US destroys Iran nuclear facility at Fordow" using ensemble
+display ""
+
+predict escalation from "Iran and US hold high-level talks in Oman mediated by Sultan Haitham" using ensemble
+display ""
+
+predict escalation from "Iranian IRGC seizes British oil tanker in Persian Gulf" using ensemble
+display ""
+
+display "================================================================"
+display "  ANALYSIS COMPLETE  "
+display "================================================================"
