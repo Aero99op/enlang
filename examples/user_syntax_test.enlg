@@ -1,0 +1,9 @@
+# User's Proposed Natural Function Syntax Test
+
+function numbers using n:
+    if n is greater than 10 then:
+        return
+    display n
+    call numbers with (n plus 1)
+
+start numbers from 1

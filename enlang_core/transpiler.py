@@ -578,14 +578,9 @@ class EnLangTranspiler:
             return f"import os; {var} = os.listdir({path})"
 
         # ── Shell Command ────────────────────────────────────────────────
-        m = re.match(r'^(?:run|execute)\s+command\s+(.+)$', line, re.IGNORECASE)
+        m = re.match(r'^(?:run|execute)\s+(?:command\s+)?(.+)$', line, re.IGNORECASE)
         if m:
             cmd = clean_expression(m.group(1))
-            return f"import subprocess; subprocess.run({cmd}, shell=True)"
-
-        m = re.match(r'^(?:run|execute)\s+["\'](.+?)["\']$', line, re.IGNORECASE)
-        if m:
-            cmd = clean_expression(m.group(0)[len(m.group(0).split()[0]):].strip())
             return f"import subprocess; subprocess.run({cmd}, shell=True)"
 
         # ── Control Flow ──────────────────────────────────────────────────
@@ -621,52 +616,26 @@ class EnLangTranspiler:
             cond = clean_expression(m.group(1).rstrip(":"))
             return f"while {cond}:"
 
-        # ── Functions (Legacy + Modern + Signature EnLang Syntaxes) ──────
-        # 1. fn name(args):  /  function name(args):  /  func name(args):
-        m = re.match(r'^(?:function|func|fn)\s+([a-zA-Z_]\w*)\s*\(([^)]*)\)\s*:?\s*$', line, re.IGNORECASE)
+        # ── Functions ─────────────────────────────────────────────────────
+        # 1. Standard: function foo(n): or func foo(n):
+        m = re.match(r'^(?:function|func)\s+([a-zA-Z_]\w*)\s*\(([^)]*)\)\s*:?\s*$', line, re.IGNORECASE)
         if m:
             name, params = m.group(1), m.group(2)
             return f"def {name}({params}):"
 
-        # 2. define function name taking args:  /  action name taking args:  /  to name with args:
-        m = re.match(r'^(?:define\s+)?(?:function|action|task)\s+([a-zA-Z_]\w*)\s+(?:taking|with|using)\s+(.+?)\s*:?\s*$', line, re.IGNORECASE)
+        # 2. Natural English: function foo using n: / function foo taking n: / function foo given n:
+        m = re.match(r'^(?:function|func|action|task|procedure|process)\s+([a-zA-Z_]\w*)\s+(?:using|taking|given|with|for)\s+([a-zA-Z_]\w*(?:\s*,\s*[a-zA-Z_]\w*)*)\s*:?\s*$', line, re.IGNORECASE)
         if m:
-            name, params_raw = m.group(1), m.group(2).rstrip(":")
-            # params can be a, b or (a, b)
-            params_clean = params_raw.strip("()").strip()
-            return f"def {name}({params_clean}):"
+            name, params = m.group(1), m.group(2)
+            return f"def {name}({params}):"
 
-        m = re.match(r'^to\s+([a-zA-Z_]\w*)\s+(?:with|taking|using)\s+(.+?)\s*:?\s*$', line, re.IGNORECASE)
+        # 3. Invocation: start foo from 1 / start foo with 1 / call foo with 1 / run foo with 1
+        m = re.match(r'^(?:start|call|run|execute|begin|perform|next|apply)\s+([a-zA-Z_]\w*)\s+(?:from|with|using|for)\s+(.+)$', line, re.IGNORECASE)
         if m:
-            name, params_raw = m.group(1), m.group(2).rstrip(":")
-            params_clean = params_raw.strip("()").strip()
-            return f"def {name}({params_clean}):"
+            name, val = m.group(1), clean_expression(m.group(2))
+            return f"{name}({val})"
 
-        # 3. Natural Function Calls:
-        # call name with (args) and store in var / run name with args and store in var
-        m = re.match(r'^(?:call|run|do|perform)\s+([a-zA-Z_]\w*)\s+with\s+(.+?)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
-        if m:
-            name, args_raw, var = m.group(1), m.group(2), m.group(3)
-            args_clean = clean_expression(args_raw).strip("()")
-            return f"{var} = {name}({args_clean})"
-
-        # call name with (args) / run name with args / do name with args
-        m = re.match(r'^(?:call|run|do|perform)\s+([a-zA-Z_]\w*)\s+with\s+(.+)$', line, re.IGNORECASE)
-        if m:
-            name, args_raw = m.group(1), m.group(2)
-            args_clean = clean_expression(args_raw)
-            if not args_clean.startswith("(") or not args_clean.endswith(")"):
-                args_clean = f"({args_clean})"
-            return f"{name}{args_clean}"
-
-        m = re.match(r'^(?:call|run|do|perform)\s+([a-zA-Z_]\w*)\s*\(([^)]*)\)$', line, re.IGNORECASE)
-        if m:
-            name, args_raw = m.group(1), m.group(2)
-            args_clean = clean_expression(args_raw)
-            return f"{name}({args_clean})"
-
-        # 4. Natural Return Statements
-        m = re.match(r'^(?:result\s+is|give\s+back|return)\s+(.+)$', line, re.IGNORECASE)
+        m = re.match(r'^return\s+(.+)$', line, re.IGNORECASE)
         if m:
             expr = clean_expression(m.group(1))
             return f"return {expr}"
