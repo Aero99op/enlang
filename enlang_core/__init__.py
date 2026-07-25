@@ -6,5 +6,5 @@ Natural English Programming Language Transpiler, Interpreter & Domain Helpers.
 from .transpiler import EnLangTranspiler
 from .interpreter import EnLangInterpreter
 
-__version__ = "2.0.2"
+__version__ = "2.0.3"
 __all__ = ["EnLangTranspiler", "EnLangInterpreter"]
