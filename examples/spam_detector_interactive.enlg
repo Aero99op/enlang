@@ -1,0 +1,82 @@
+# spam_detector_interactive.enlg — Interactive Spam Email Classifier in EnLang (.enlg)
+# 80/20 Train-Test Split with Live User Input Prompting
+
+import module csv
+import module random
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+display "============================================================"
+display " ENLANG SPAM EMAIL CLASSIFIER (INTERACTIVE DEMO) "
+display "============================================================"
+display ""
+
+# 1. Load Dataset
+define text dataset_path as "d:/enlangg/examples/spam email labeling/emails.csv"
+display "[INFO] Loading dataset from: " + dataset_path
+
+define list emails as []
+define list labels as []
+
+with open(dataset_path, "r", encoding="utf-8", errors="ignore") as f:
+    set reader to csv.reader(f)
+    next(reader)
+    for each row in reader:
+        if len(row) >= 2 then:
+            define text email_text as row[0]
+            define number label as int(row[1])
+            emails.append(email_text)
+            labels.append(label)
+
+define number total_samples as len(emails)
+display "[INFO] Loaded " + total_samples + " samples. Splitting 80% train / 20% test..."
+
+# 2. 80/20 Split & Training
+X_train, X_test, y_train, y_test = train_test_split(emails, labels, test_size=0.20, random_state=42)
+
+set vectorizer to TfidfVectorizer(stop_words="english", max_features=5000)
+set X_train_vec to vectorizer.fit_transform(X_train)
+set X_test_vec to vectorizer.transform(X_test)
+
+set model to MultinomialNB()
+model.fit(X_train_vec, y_train)
+
+set y_pred to model.predict(X_test_vec)
+define number acc as accuracy_score(y_test, y_pred) * 100
+round acc to 2 decimal places and store in acc_rounded
+
+display "[SUCCESS] Trained model on " + len(X_train) + " samples! Test Accuracy: " + acc_rounded + "%"
+display ""
+
+function classify_email using mail_content:
+    set input_vec to vectorizer.transform([mail_content])
+    set pred to model.predict(input_vec)[0]
+    set proba to model.predict_proba(input_vec)[0]
+
+    if pred is equal to 1 then:
+        define number conf as proba[1] * 100
+        round conf to 2 decimal places and store in conf_round
+        display "[RESULT] [SPAM DETECTED] (Confidence: " + conf_round + "%)"
+    else:
+        define number conf as proba[0] * 100
+        round conf to 2 decimal places and store in conf_round
+        display "[RESULT] [NOT SPAM / HAM] (Confidence: " + conf_round + "%)"
+
+# Interactive Loop
+display "============================================================"
+display " ENTER YOUR EMAIL TEXT TO TEST "
+display "============================================================"
+display "Type 'exit' to quit."
+display ""
+
+while true:
+    ask "Enter Email Text: " and store in user_email
+    if user_email is equal to "exit" or user_email is equal to "quit" then:
+        display "Exiting Spam Classifier. Goodbye!"
+        break
+    if len(user_email.strip()) is equal to 0 then:
+        continue
+    call classify_email using user_email
+    display ""
