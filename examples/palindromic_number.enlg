@@ -1,0 +1,7 @@
+# EnLang Program to print 12345678987654321
+
+# Method 1: Mathematical Square Precision (111111111 * 111111111)
+set base_number to 111111111
+set palindrome_result to base_number times base_number
+
+display palindrome_result

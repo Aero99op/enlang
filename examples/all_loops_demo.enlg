@@ -1,0 +1,24 @@
+# All Loop Types Demo in EnLang
+
+display "--- 1. Repeat N Times Loop ---"
+repeat 3 times do:
+    display "Hello EnLang"
+
+display "\n--- 2. For Each Collection Loop ---"
+create list items with items "Apple", "Banana", "Cherry"
+for each item in items do:
+    display item
+
+display "\n--- 3. While Condition Loop ---"
+set count to 1
+while count is less than or equal to 3 do:
+    display "Count: " plus str(count)
+    increment count by 1
+
+display "\n--- 4. Loop Control (Break & Continue) ---"
+for each num in [1, 2, 3, 4, 5] do:
+    if num is equal to 2 then:
+        continue
+    if num is equal to 4 then:
+        break
+    display num

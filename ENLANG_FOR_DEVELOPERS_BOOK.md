@@ -15,9 +15,9 @@
 ## TABLE OF CONTENTS
 
 1. **Chapter 1: Introduction & Philosophical Architecture**
-2. **Chapter 2: Variables, Optional Types & Expression Syntax**
+2. **Chapter 2: Variables, Optional Types, Output & Expression Syntax**
 3. **Chapter 3: The 3-Level Native Interactivity Architecture**
-4. **Chapter 4: Control Flow & Iteration**
+4. **Chapter 4: Comprehensive Loop Taxonomy (For, While, Repeat, Recursion)**
 5. **Chapter 5: Functions, Natural Declarations, Interfaces & Async / Await**
 6. **Chapter 6: Pattern Matching & Decision Engine**
 7. **Chapter 7: Exception Handling & Error Control**
@@ -48,7 +48,7 @@ EnLang is **not** a pseudo-code generator or an LLM wrapper. It is a **determini
 
 ---
 
-# CHAPTER 2: VARIABLES, OPTIONAL TYPES & EXPRESSIONS
+# CHAPTER 2: VARIABLES, OPTIONAL TYPES, OUTPUT & EXPRESSIONS
 
 ## 2.1 Natural Expressive Flexibility
 EnLang supports multiple natural syntaxes for variable assignment:
@@ -60,6 +60,99 @@ store 100 in score
 score is 100
 ```
 
+## 2.2 Terminal Output & Display Syntaxes
+EnLang provides 4 natural synonyms for printing output to the console:
+
+```enlang
+display "Hello World"   # Primary keyword
+print "Hello World"     # Direct alias
+show "Hello World"      # Direct alias
+output "Hello World"    # Direct alias
+```
+
+## 2.3 Optional Type System (v2.0 Specification)
+Type annotations are completely optional:
+
+```enlang
+define number age as 20
+define decimal price as 99.50
+define text username as "Spandan"
+define boolean isActive as true
+define list fruits as ["Apple", "Banana"]
+define array tags as ["ai", "nlp"]
+define dictionary profile as {"name": "Spandan"}
+define set unique_ids as {101, 102}
+```
+
+---
+
+# CHAPTER 3: THE 3-LEVEL NATIVE INTERACTIVITY ARCHITECTURE (v2.0)
+
+```
+Level 1: Pure EnLang (Default)         ➔ set area to width times height
+Level 2: Inline Native Marker          ➔ set root to @python(math.sqrt(144))
+Level 3: Multi-Line Native Block       ➔ python: ... end python
+```
+
+---
+
+# CHAPTER 4: COMPREHENSIVE LOOP TAXONOMY (FOR, WHILE, REPEAT, RECURSION)
+
+EnLang provides 5 distinct loop constructs to handle every algorithmic scenario:
+
+## 4.1 Repeat Count Loop (`repeat N times do:`)
+```enlang
+repeat 5 times do:
+    display "Processing batch item..."
+```
+
+## 4.2 For-Each & Direct For Loops
+```enlang
+# Natural English For-Each
+for each fruit in ["Apple", "Banana", "Cherry"] do:
+    display fruit
+
+# Direct For Loop
+for item in ["Apple", "Banana", "Cherry"]:
+    display item
+```
+
+## 4.3 While Conditional Loops
+```enlang
+# Direct While Loop
+set i to 1
+while i <= 5:
+    display i
+    increment i by 1
+
+# Natural English While Loop
+set count to 1
+while count is less than or equal to 5 do:
+    display count
+    increment count by 1
+```
+
+## 4.4 Loop Control Statements (`break` & `continue`)
+```enlang
+for each num in [1, 2, 3, 4, 5] do:
+    if num is equal to 2 then:
+        continue     # Skip 2
+    if num is equal to 4 then:
+        break        # Terminate loop at 4
+    display num
+```
+
+## 4.5 Recursive Loops (Function-Based Repetition)
+```enlang
+function count_down using n:
+    if n is less than 1 then:
+        return
+    display n
+    call count_down with (n minus 1)
+
+start count_down from 5
+```
+
 ---
 
 # CHAPTER 5: FUNCTIONS, NATURAL DECLARATIONS, INTERFACES & ASYNC / AWAIT
@@ -67,7 +160,7 @@ score is 100
 ## 5.1 Flexible Function Declarations & Invocations
 EnLang supports both standard parameter signatures and expressive natural English declarations:
 
-### Standard Declaration
+### Standard Declaration & Call
 ```enlang
 function print_numbers(n):
     if n is greater than 10 then:
@@ -93,18 +186,38 @@ Supported Natural Syntaxes:
 - Declarations: `function foo using n:`, `function foo taking n:`, `action foo given n:`, `task foo for n:`
 - Invocations: `start foo from 1`, `start foo with 1`, `call foo with 1`, `run foo using 1`
 
+## 5.2 Enterprise Interfaces & Implements (v2.0)
+```enlang
+interface Authenticatable:
+    function login(credentials)
+    function logout()
+end interface
+
+class UserSession implements Authenticatable:
+    function login(credentials):
+        display "User authenticated"
+
+    function logout():
+        display "Session closed"
+end class
+```
+
 ---
 
 # CHAPTER 17: CANONICAL GRAMMAR RULES, ORDER & SYNTAX LAYOUT SPECIFICATION (v2.0)
 
-## 17.1 Function Declarations & Invocations
+## 17.1 Loop & Output Grammar Summary
 
-| Syntax Style | Function Header | Execution Call | Transpiled Output |
-| :--- | :--- | :--- | :--- |
-| **Standard** | `function foo(n):` | `foo(1)` | `def foo(n):` / `foo(1)` |
-| **Natural English**| `function foo using n:` | `start foo from 1` | `def foo(n):` / `foo(1)` |
-| **Directive** | `action foo given n:` | `call foo with 1` | `def foo(n):` / `foo(1)` |
-| **Task** | `task foo for n:` | `run foo using 1` | `def foo(n):` / `foo(1)` |
+| Category | EnLang Syntax Variant | Native Transpiled Code |
+| :--- | :--- | :--- |
+| **Output** | `display x` / `print x` / `show x` / `output x` | `print(x)` |
+| **Repeat Loop** | `repeat 5 times do:` | `for _ in range(5):` |
+| **For Loop** | `for each x in list do:` / `for x in list:` | `for x in list:` |
+| **While Loop** | `while x <= 5:` / `while x is less than 5 do:` | `while x <= 5:` |
+| **Loop Break** | `break` | `break` |
+| **Loop Skip** | `continue` | `continue` |
+| **Function Def** | `function foo(n):` / `function foo using n:` | `def foo(n):` |
+| **Function Call**| `foo(1)` / `start foo from 1` / `call foo with 1` | `foo(1)` |
 
 ---
 
@@ -112,6 +225,9 @@ Supported Natural Syntaxes:
 
 | Category | EnLang Syntax Example | Native Transpilation |
 | :--- | :--- | :--- |
+| **Output** | `display "Hello"` / `print "Hello"` | `print("Hello")` |
+| **For Loop** | `for item in items:` | `for item in items:` |
+| **While Loop** | `while count <= 5:` | `while count <= 5:` |
 | **Natural Function** | `function numbers using n:` | `def numbers(n):` |
 | **Natural Call** | `start numbers from 1` / `call numbers with 1` | `numbers(1)` |
 
