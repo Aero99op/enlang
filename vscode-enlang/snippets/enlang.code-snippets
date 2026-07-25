@@ -1,0 +1,78 @@
+{
+  "Define Variable": {
+    "prefix": "def",
+    "body": [
+      "define ${1|text,number,boolean,list,dictionary|} ${2:variableName} as ${3:value}"
+    ],
+    "description": "Define a natural EnLang variable"
+  },
+  "Define Function": {
+    "prefix": "fn",
+    "body": [
+      "function ${1:functionName} using ${2:param}:",
+      "    ${3:# function body}",
+      "    return ${4:result}"
+    ],
+    "description": "Define a natural EnLang function"
+  },
+  "If Condition": {
+    "prefix": "if",
+    "body": [
+      "if ${1:condition} then:",
+      "    ${2:# action}",
+      "else:",
+      "    ${3:# fallback}"
+    ],
+    "description": "If-Else condition block"
+  },
+  "Repeat Loop": {
+    "prefix": "repeat",
+    "body": [
+      "repeat ${1:5} times:",
+      "    ${2:# loop body}"
+    ],
+    "description": "Repeat N times loop"
+  },
+  "HTML Page Header": {
+    "prefix": "page",
+    "body": [
+      "page title \"${1:My Web Application}\"",
+      "include stylesheet \"${2:style.css}\"",
+      "create script with src \"${3:app.js}\"",
+      "",
+      "create main with class \"hero\":",
+      "    create h1 with text \"${4:Welcome to EnLang Web}\"",
+      "close main"
+    ],
+    "description": "Create EnLang HTML Frontend Markup (.enlgf)"
+  },
+  "CSS Style Block": {
+    "prefix": "style",
+    "body": [
+      "style \"${1:.container}\":",
+      "    display: \"flex\"",
+      "    padding: \"16px 24px\"",
+      "    background: \"#0f172a\"",
+      "    border-radius: \"8px\""
+    ],
+    "description": "Create EnLang CSS Styling Block (.enlgd)"
+  },
+  "Client Event Handler": {
+    "prefix": "on",
+    "body": [
+      "on click \"${1:btnSubmit}\" do:",
+      "    log \"${2:Button clicked!}\"",
+      "    alert \"${3:Action completed}\""
+    ],
+    "description": "Create EnLang Client Script Event Handler (.enlgs)"
+  },
+  "Database Table Definition": {
+    "prefix": "table",
+    "body": [
+      "define table ${1:users} with columns id INTEGER PRIMARY KEY AUTOINCREMENT, ${2:username} TEXT NOT NULL, ${3:email} TEXT NOT NULL UNIQUE",
+      "insert into ${1:users} columns (${2:username}, ${3:email}) values ('${4:Spandan}', '${5:spandan@enlang.org}')",
+      "select all from ${1:users}"
+    ],
+    "description": "Define EnLang Database Table & Query (.enlgdb)"
+  }
+}

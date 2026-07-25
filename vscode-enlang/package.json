@@ -1,0 +1,156 @@
+{
+  "name": "enlang",
+  "displayName": "EnLang — Natural English Language Support",
+  "description": "Official VS Code extension for EnLang: Syntax Highlighting, Colorization, Snippets & Tooling for .enlg, .enlgf, .enlgd, .enlgs, .enlgdb files.",
+  "version": "1.0.0",
+  "publisher": "SpandanPrayasPatra",
+  "license": "MIT",
+  "homepage": "https://github.com/Aero99op/enlang",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aero99op/enlang.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Aero99op/enlang/issues"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Linters",
+    "Formatters"
+  ],
+  "keywords": [
+    "enlang",
+    "natural-english",
+    "transpiler",
+    "syntax-highlighting",
+    "html5",
+    "css3",
+    "javascript",
+    "sql"
+  ],
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:enlang",
+    "onLanguage:enlangf",
+    "onLanguage:enlangd",
+    "onLanguage:enlags",
+    "onLanguage:enlangdb"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "enlang",
+        "aliases": ["EnLang", "enlang"],
+        "extensions": [".enlg"],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "enlangf",
+        "aliases": ["EnLang Markup", "enlangf"],
+        "extensions": [".enlgf"],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "enlangd",
+        "aliases": ["EnLang Design", "enlangd"],
+        "extensions": [".enlgd"],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "enlgs",
+        "aliases": ["EnLang Script", "enlgs"],
+        "extensions": [".enlgs"],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "enlangdb",
+        "aliases": ["EnLang Database", "enlangdb"],
+        "extensions": [".enlgdb"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "enlang",
+        "scopeName": "source.enlg",
+        "path": "./syntaxes/enlang.tmLanguage.json"
+      },
+      {
+        "language": "enlangf",
+        "scopeName": "source.enlgf",
+        "path": "./syntaxes/enlang.tmLanguage.json"
+      },
+      {
+        "language": "enlangd",
+        "scopeName": "source.enlgd",
+        "path": "./syntaxes/enlang.tmLanguage.json"
+      },
+      {
+        "language": "enlgs",
+        "scopeName": "source.enlgs",
+        "path": "./syntaxes/enlang.tmLanguage.json"
+      },
+      {
+        "language": "enlangdb",
+        "scopeName": "source.enlgdb",
+        "path": "./syntaxes/enlang.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "enlang",
+        "path": "./snippets/enlang.code-snippets"
+      },
+      {
+        "language": "enlangf",
+        "path": "./snippets/enlang.code-snippets"
+      },
+      {
+        "language": "enlangd",
+        "path": "./snippets/enlang.code-snippets"
+      },
+      {
+        "language": "enlgs",
+        "path": "./snippets/enlang.code-snippets"
+      },
+      {
+        "language": "enlangdb",
+        "path": "./snippets/enlang.code-snippets"
+      }
+    ],
+    "commands": [
+      {
+        "command": "enlang.runFile",
+        "title": "EnLang: Run Current File",
+        "category": "EnLang"
+      },
+      {
+        "command": "enlang.buildFile",
+        "title": "EnLang: Build Current File",
+        "category": "EnLang"
+      },
+      {
+        "command": "enlang.checkFile",
+        "title": "EnLang: Check Syntax / Lint File",
+        "category": "EnLang"
+      },
+      {
+        "command": "enlang.startServer",
+        "title": "EnLang: Start Web Server",
+        "category": "EnLang"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "enlang.runFile",
+        "key": "ctrl+f5",
+        "mac": "cmd+f5",
+        "when": "editorTextFocus"
+      }
+    ]
+  }
+}
