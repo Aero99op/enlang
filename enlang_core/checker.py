@@ -12,6 +12,7 @@ Checks:
   5. Unsupported or ambiguous phrase warnings (e.g., 'is bigger than')
 """
 
+import sys
 import re
 import os
 
@@ -28,72 +29,72 @@ class Diagnostic:
             prefix += f" (Suggestion: {self.suggestion})"
         return prefix
 
-def check_syntax(code: str, file_path: str = "main.enlg") -> list:
-    diagnostics = []
-    lines = code.splitlines()
+def _check_line(idx: int, raw_line: str, line: str, diagnostics: list):
+    lstripped = raw_line.lstrip()
+    indent_len = len(raw_line) - len(lstripped)
 
-    in_match = False
-    in_interface = False
-    in_native_block = False
+    # Check 1: Indentation (Must be multiple of 4 spaces if indented)
+    if indent_len % 4 != 0:
+        diagnostics.append(Diagnostic(
+            idx,
+            f"Indentation is {indent_len} spaces. EnLang requires multiples of 4 spaces.",
+            level="WARNING",
+            suggestion=f"Adjust indentation to {(indent_len // 4 + 1) * 4} spaces"
+        ))
 
+    # Check 2: Unclosed string literal
+    double_quotes = line.count('"') - line.count('\\"')
+    single_quotes = line.count("'") - line.count("\\'")
+    if double_quotes % 2 != 0 or single_quotes % 2 != 0:
+        diagnostics.append(Diagnostic(
+            idx,
+            "Unclosed string literal detected.",
+            level="ERROR",
+            suggestion="Ensure string quotes are closed properly"
+        ))
+
+    # Check 3: Block header missing trailing colon
     block_headers = (
         r'^\s*(?:if|otherwise\s+if|elif|else|repeat|for|while|until|function|func|action|task|procedure|process|class|interface|match|switch|try|except|finally|style|on\s+screen|animate)\b'
     )
+    if re.search(block_headers, raw_line, re.IGNORECASE):
+        if not line.endswith(":") and not re.search(r'\b(?:then|do)\b', line, re.IGNORECASE):
+            diagnostics.append(Diagnostic(
+                idx,
+                "Block header missing trailing colon ':'.",
+                level="ERROR",
+                suggestion="Add a colon ':' at the end of the line"
+            ))
 
+    # Check 4: Unsupported English phrases
     invalid_phrases = [
         (r'\bis bigger than\b', "Use 'is greater than' instead of 'is bigger than'"),
         (r'\bis same as\b', "Use 'is equal to' instead of 'is same as'"),
         (r'\bassign\b.+\bto\b', "Use 'set <var> to <val>' or 'store <val> in <var>'"),
         (r'\bput\b.+\binside\b', "Use 'store <val> in <var>'"),
     ]
+    for pattern, sugg in invalid_phrases:
+        if re.search(pattern, line, re.IGNORECASE):
+            diagnostics.append(Diagnostic(
+                idx,
+                "Unsupported natural phrase detected in statement.",
+                level="ERROR",
+                suggestion=sugg
+            ))
+
+def check_syntax(code: str, file_path: str = "main.enlg") -> list:
+    diagnostics = []
+    lines = code.splitlines()
+
+    in_match = False
+    in_interface = False
 
     for idx, raw_line in enumerate(lines, start=1):
         line = raw_line.strip()
         if not line or line.startswith("#") or line.startswith("//"):
             continue
 
-        lstripped = raw_line.lstrip()
-        indent_len = len(raw_line) - len(lstripped)
-
-        # Check 1: Indentation (Must be multiple of 4 spaces if indented)
-        if indent_len % 4 != 0:
-            diagnostics.append(Diagnostic(
-                idx,
-                f"Indentation is {indent_len} spaces. EnLang requires multiples of 4 spaces.",
-                level="WARNING",
-                suggestion=f"Adjust indentation to {(indent_len // 4 + 1) * 4} spaces"
-            ))
-
-        # Check 2: Unclosed string literal
-        double_quotes = line.count('"') - line.count('\\"')
-        single_quotes = line.count("'") - line.count("\\'")
-        if double_quotes % 2 != 0 or single_quotes % 2 != 0:
-            diagnostics.append(Diagnostic(
-                idx,
-                "Unclosed string literal detected.",
-                level="ERROR",
-                suggestion="Ensure string quotes are closed properly"
-            ))
-
-        # Check 3: Block header missing trailing colon
-        if re.search(block_headers, raw_line, re.IGNORECASE):
-            if not line.endswith(":") and not re.search(r'\b(?:then|do)\b', line, re.IGNORECASE):
-                diagnostics.append(Diagnostic(
-                    idx,
-                    "Block header missing trailing colon ':'.",
-                    level="ERROR",
-                    suggestion="Add a colon ':' at the end of the line"
-                ))
-
-        # Check 4: Unsupported English phrases
-        for pattern, sugg in invalid_phrases:
-            if re.search(pattern, line, re.IGNORECASE):
-                diagnostics.append(Diagnostic(
-                    idx,
-                    f"Unsupported natural phrase detected in statement.",
-                    level="ERROR",
-                    suggestion=sugg
-                ))
+        _check_line(idx, raw_line, line, diagnostics)
 
         # Block tracking
         if re.match(r'^\s*(?:match|switch)\b', line, re.IGNORECASE):
@@ -109,7 +110,7 @@ def check_syntax(code: str, file_path: str = "main.enlg") -> list:
     if in_match:
         diagnostics.append(Diagnostic(
             len(lines),
-            "Unclosed 'match' block. Missing 'end match'.",
+            f"Unclosed 'match' block in {file_path}. Missing 'end match'.",
             level="ERROR",
             suggestion="Add 'end match' at the end of the match block"
         ))
@@ -117,7 +118,7 @@ def check_syntax(code: str, file_path: str = "main.enlg") -> list:
     if in_interface:
         diagnostics.append(Diagnostic(
             len(lines),
-            "Unclosed 'interface' block. Missing 'end interface'.",
+            f"Unclosed 'interface' block in {file_path}. Missing 'end interface'.",
             level="ERROR",
             suggestion="Add 'end interface' at the end of the interface block"
         ))
