@@ -2,7 +2,7 @@
 ### *Build Full-Stack Applications Using Natural English*
 
 [![Version](https://img.shields.io/badge/version-2.0.0--Enterprise-indigo.svg)](https://github.com/Aero99op/enlang)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Proprietary%20%2F%20Enterprise-blue.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-154%2F154%20PASS-success.svg)](tests/)
 
 Created and Authored by **Spandan Prayas Patra**.
@@ -20,29 +20,28 @@ Created and Authored by **Spandan Prayas Patra**.
 
 ---
 
-## 🚀 Installation Options
+## 🚀 Official Installation Methods
 
-### 1️⃣ Option 1: One-Click Windows GUI Installer (Executable)
-Download and double-click [`EnLangInstaller.exe`](https://raw.githubusercontent.com/Aero99op/enlang/main/EnLangInstaller.exe) to launch the GUI Setup Wizard. It installs EnLang and configures your system `PATH` automatically.
+EnLang is distributed as a compiled distribution engine. You can install EnLang globally on your system using either of the following official methods:
 
-### 2️⃣ Option 2: Direct CLI Installation via `pip` (One Command)
-Run this single command in your terminal/command prompt:
+### 1️⃣ Method 1: One-Click Windows GUI Installer (Recommended)
+Download and launch the official compiled setup wizard:
+👉 **[Download EnLangInstaller.exe](https://raw.githubusercontent.com/Aero99op/enlang/main/EnLangInstaller.exe)**
+
+*The GUI Installer automatically extracts the core runtime binaries to `%USERPROFILE%\.enlang\` and registers the system `PATH` environment variable.*
+
+### 2️⃣ Method 2: CLI Package Installation (`pip`)
+Install EnLang directly into your Python CLI environment using `pip`:
+
 ```bash
-pip install git+https://github.com/Aero99op/enlang.git
-```
-
-### 3️⃣ Option 3: Manual Git Clone & Setup
-```bash
-git clone https://github.com/Aero99op/enlang.git
-cd enlang
-python installer.py
+pip install enlang
 ```
 
 ---
 
-## 🛠️ Developer CLI Tooling
+## 🛠️ Global CLI Tooling
 
-Once installed, use the global `enlang` CLI commands anywhere on your system:
+Once installed via GUI or `pip`, open any command prompt or terminal and use:
 
 ```bash
 enlang run main.enlg          # Compiles and executes EnLang program
@@ -50,18 +49,15 @@ enlang check main.enlg        # Runs static analysis & syntax linter
 enlang debug main.enlg        # Launches step-by-step interactive debugger
 enlang build index.enlgf      # Transpiles source to native target file (.py, .html, .css, .js, .sql)
 enlang server --port 8000     # Launches zero-config EnLang HTTP web server
+epm init                      # Initializes a new EnLang project package
 ```
 
 ---
 
 ## 💡 Syntax Showcase
 
-### Backend Logic (`main.enlg`)
 ```enlang
 define text username as "Spandan"
-define list items as ["Compiler", "NLP Engine", "Web Host"]
-
-display "Welcome " plus username
 
 function numbers using n:
     if n is greater than 10 then:
@@ -74,13 +70,12 @@ start numbers from 1
 
 ---
 
-## 📚 Documentation & Book
+## 📚 Official Specification & Book
 The official specification book **"EnLang for Developers: Enterprise Specification Edition (v2.0)"** is available in this repository:
-- 📖 [ENLANG_FOR_DEVELOPERS_BOOK.md](ENLANG_FOR_DEVELOPERS_BOOK.md)
 - 📄 [ENLANG_FOR_DEVELOPERS_BOOK.pdf](ENLANG_FOR_DEVELOPERS_BOOK.pdf)
 
 ---
 
-## 📜 License
-Published under the Open EnLang Specification License / MIT.  
-Copyright © 2026 Spandan Prayas Patra. All rights reserved.
+## 📜 Distribution & Rights
+Copyright © 2026 Spandan Prayas Patra. All rights reserved.  
+Distributed via official GUI Standalone Binary & PyPI Package Manager (`pip`).
