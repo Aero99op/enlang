@@ -22,7 +22,7 @@ def main():
     # Command: run
     run_parser = subparsers.add_parser("run", help="Run an EnLang (.enlg / .enlgd / .enlgs / .enlgdb) script directly")
     run_parser.add_argument("filename", help="Path to EnLang file")
-    run_parser.add_argument("--show-python", action="store_true", help="Print transpiled Python code before running")
+    run_parser.add_argument("-p", "--p", "--port", type=int, dest="port", help="Specify custom port for web applications")
 
     # Command: build
     build_parser = subparsers.add_parser("build", help="Transpile EnLang script to a Python (.py) file")
@@ -57,7 +57,7 @@ def main():
         ext = os.path.splitext(args.filename)[1].lower()
         if ext in (".enlgf", ".enlgd", ".enlgs"):
             from enlang_core.cli import run_file
-            run_file(args.filename)
+            run_file(args.filename, custom_port=args.port)
             sys.exit(0)
 
         with open(args.filename, "r", encoding="utf-8") as f:

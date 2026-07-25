@@ -108,7 +108,7 @@ def find_free_port(start_port=8080):
                 return port
     return start_port
 
-def run_file(file_path: str):
+def run_file(file_path: str, custom_port: int = None):
     if not os.path.exists(file_path):
         print(f"Error: File '{file_path}' not found.")
         sys.exit(1)
@@ -125,7 +125,16 @@ def run_file(file_path: str):
                 build_file(item_path)
 
         html_file = os.path.splitext(os.path.basename(file_path))[0] + ".html"
-        port = find_free_port(8080)
+        
+        if custom_port is None:
+            for idx, arg in enumerate(sys.argv):
+                if arg in ("-p", "--p", "--port") and idx + 1 < len(sys.argv):
+                    try:
+                        custom_port = int(sys.argv[idx + 1])
+                    except ValueError:
+                        pass
+        
+        port = custom_port if custom_port else find_free_port(8080)
         print(f"\n[SUCCESS] Web application compiled successfully!")
         print(f"[INFO] Launching EnLang Dev Web Server on port {port}...")
         print(f"[LIVE URL] http://localhost:{port}/{html_file}\n")
