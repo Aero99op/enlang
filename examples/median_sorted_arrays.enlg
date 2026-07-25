@@ -1,0 +1,97 @@
+# median_sorted_arrays.enlg — Median of Two Sorted Arrays in O(log(min(m, n))) Time Complexity
+# Strictly adheres to EnLang natural grammar specification
+
+function find_median(A, B):
+    define number m as len(A)
+    define number n as len(B)
+
+    # Ensure A is the smaller array to guarantee O(log(min(m, n))) complexity
+    if m is greater than n then:
+        return find_median(B, A)
+
+    define number low as 0
+    define number high as m
+    define number total as m plus n
+    define number half as (total plus 1) // 2
+
+    define number inf as 1000000000
+
+    while low is less than or equal to high:
+        define number i as (low plus high) // 2
+        define number j as half minus i
+
+        define number Aleft as -inf
+        if i is greater than 0 then:
+            set Aleft to A[i minus 1]
+
+        define number Aright as inf
+        if i is less than m then:
+            set Aright to A[i]
+
+        define number Bleft as -inf
+        if j is greater than 0 then:
+            set Bleft to B[j minus 1]
+
+        define number Bright as inf
+        if j is less than n then:
+            set Bright to B[j]
+
+        # Check if correct partition is found
+        if Aleft is less than or equal to Bright and Bleft is less than or equal to Aright then:
+            # Odd total length -> median is max of left elements
+            if (total % 2) != 0 then:
+                if Aleft is greater than Bleft then:
+                    return Aleft
+                else:
+                    return Bleft
+            else:
+                # Even total length -> median is average of max left and min right
+                define number max_left as Aleft
+                if Bleft is greater than Aleft then:
+                    set max_left to Bleft
+
+                define number min_right as Aright
+                if Bright is less than Aright then:
+                    set min_right to Bright
+
+                define number result as (max_left plus min_right) / 2.0
+                return result
+
+        otherwise if Aleft is greater than Bright then:
+            set high to i minus 1
+        else:
+            set low to i plus 1
+
+    return 0.0
+
+# ── Test Case 1: Odd Total Length ([1, 3] and [2]) ─────────────────
+define list list1 as [1, 3]
+define list list2 as [2]
+define number ans1 as find_median(list1, list2)
+
+display "Test Case 1:"
+display "List A: " + list1
+display "List B: " + list2
+display "Median: " + ans1
+display ""
+
+# ── Test Case 2: Even Total Length ([1, 2] and [3, 4]) ───────────────
+define list list3 as [1, 2]
+define list list4 as [3, 4]
+define number ans2 as find_median(list3, list4)
+
+display "Test Case 2:"
+display "List A: " + list3
+display "List B: " + list4
+display "Median: " + ans2
+display ""
+
+# ── Test Case 3: Larger Disparate Arrays ([1, 5, 9] and [2, 4, 6, 8, 10]) ──
+define list list5 as [1, 5, 9]
+define list list6 as [2, 4, 6, 8, 10]
+define number ans3 as find_median(list5, list6)
+
+display "Test Case 3:"
+display "List A: " + list5
+display "List B: " + list6
+display "Median: " + ans3
