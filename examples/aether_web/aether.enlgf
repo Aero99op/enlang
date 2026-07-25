@@ -1,0 +1,59 @@
+# aether.enlgf — Aether Minimalist Experience EnLang Markup (.enlgf)
+
+page title "Aether — Minimalist Experience"
+
+include stylesheet "style.css"
+create script with src "script.js"
+
+create canvas named bg-canvas
+close canvas
+
+create nav with class "navbar":
+    create div with class "logo" with text "AETHER."
+    close div
+    create ul with class "nav-links":
+        create li:
+            create a with text "Features" with href "#features"
+        close li
+        create li:
+            create a with text "About" with href "#about"
+        close li
+        create li:
+            create a with class "btn-secondary" with text "Get Started" with href "#contact"
+        close li
+    close ul
+close nav
+
+create main with class "hero":
+    create div with class "hero-content":
+        create div with class "badge" with text "Next Gen Design ✨"
+        close div
+        create h1 with class "hero-title" with text "Simplicity is the ultimate sophistication."
+        create p with class "hero-subtitle" with text "Build stunning, blazing-fast web experiences with clean architecture and subtle interactive visual magic."
+        create div with class "hero-actions":
+            create a with class "btn-primary" with text "Explore Platform" with href "#explore"
+            create a with class "btn-outline" with text "Watch Demo" with href "#demo"
+        close div
+    close div
+close main
+
+create section with class "stats-section":
+    create div with class "stat-card":
+        html:
+        <h2 class="stat-number" data-target="99.9">0</h2>
+        end html
+        create p with text "Uptime Efficiency"
+    close div
+    create div with class "stat-card":
+        html:
+        <h2 class="stat-number" data-target="150">0</h2>
+        end html
+        create p with text "Global Edges"
+    close div
+    create div with class "stat-card":
+        html:
+        <h2 class="stat-number" data-target="10">0</h2>
+        end html
+        create p with text "Ms Response Time"
+    close div
+close section

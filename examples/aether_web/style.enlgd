@@ -1,0 +1,235 @@
+# style.enlgd — Aether Design System in EnLang Design (.enlgd)
+
+import font "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap"
+
+define theme with primary "#64ffda", background "#0b0c10", accent "#64ffda"
+
+css:
+:root {
+  --bg-color: #0b0c10;
+  --text-main: #f0f2f5;
+  --text-muted: #8a8f99;
+  --accent-color: #64ffda;
+  --accent-glow: rgba(100, 255, 218, 0.15);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  overflow-x: hidden;
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* --- Canvas Background --- */
+#bg-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* --- Navigation --- */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 8%;
+  background: rgba(11, 12, 16, 0.6);
+  backdrop-filter: blur(12px);
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+.logo span {
+  color: var(--accent-color);
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+  align-items: center;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: var(--text-main);
+}
+
+/* --- Buttons --- */
+.btn-primary, .btn-secondary, .btn-outline {
+  padding: 0.75rem 1.75rem;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-block;
+}
+
+.btn-primary {
+  background: var(--text-main);
+  color: var(--bg-color);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(255, 255, 255, 0.15);
+}
+
+.btn-secondary {
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main) !important;
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-color);
+  background: var(--accent-glow);
+}
+
+.btn-outline {
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.btn-outline:hover {
+  border-color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* --- Hero Section --- */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8%;
+  text-align: center;
+}
+
+.hero-content {
+  max-width: 800px;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  background: var(--accent-glow);
+  color: var(--accent-color);
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid rgba(100, 255, 218, 0.3);
+  margin-bottom: 1.5rem;
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 600;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  letter-spacing: -1px;
+}
+
+.hero-subtitle {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--text-muted);
+  margin-bottom: 2.5rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* --- Stats Section --- */
+.stats-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  padding: 4rem 8%;
+  max-width: 1100px;
+  margin: 0 auto 6rem auto;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.stat-card {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  margin-bottom: 0.25rem;
+}
+
+.stat-card p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* --- Keyframe Animations --- */
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Responsive Layout --- */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1.5rem 5%;
+  }
+  .nav-links {
+    display: none;
+  }
+  .hero-actions {
+    flex-direction: column;
+  }
+}
+end css
