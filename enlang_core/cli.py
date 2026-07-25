@@ -15,7 +15,7 @@ import sys
 import os
 import argparse
 
-VERSION = "2.0.0 — Enterprise Specification Edition"
+VERSION = "2.0.1 — Enterprise Specification Edition"
 
 def main():
     if len(sys.argv) < 2:
