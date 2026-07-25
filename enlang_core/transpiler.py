@@ -225,7 +225,7 @@ class EnLangTranspiler:
                         'list': '[]', 'array': '[]', 'dictionary': '{}', 'dict': '{}', 'map': '{}', 'set': 'set()'}
             return f"{var} = {defaults.get(dtype, 'None') if dtype else 'None'}"
 
-        # ── v2.0: Natural ML Dataset Loading & Classifier Training ─────────
+        # ── v2.0: Universal Natural ML Dataset & Classifier Engine ─────────
         m = re.match(r'^load\s+dataset\s+(.+?)\s+into\s+([a-zA-Z_]\w*)\s+and\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
         if m:
             path_expr, x_var, y_var = clean_expression(m.group(1)), m.group(2), m.group(3)
@@ -234,26 +234,21 @@ class EnLangTranspiler:
                 f"{x_var}, {y_var} = load_csv_dataset({path_expr})"
             )
 
-        m = re.match(r'^train\s+(?:text|spam|sentiment)?\s*classifier\s+using\s+(.+?)\s+and\s+(.+?)\s+with\s+(\d+)\s+(\d+)\s+split\s+and\s+store\s+in\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
+        m = re.match(r'^train\s+(.+?)\s+classifier\s+using\s+(.+?)\s+and\s+(.+?)\s+with\s+(\d+)\s+(\d+)\s+split\s+and\s+store\s+in\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
         if m:
-            x_expr, y_expr = clean_expression(m.group(1)), clean_expression(m.group(2))
-            t_train, t_test = int(m.group(3)), int(m.group(4))
-            model_var = m.group(5)
+            algo_type = m.group(1).strip()
+            x_expr, y_expr = clean_expression(m.group(2)), clean_expression(m.group(3))
+            t_train, t_test = int(m.group(4)), int(m.group(5))
+            model_var = m.group(6)
             return (
                 f"from enlang_core.nlp_engine import train_ml_classifier; "
-                f"{model_var} = train_ml_classifier({x_expr}, {y_expr}, {t_train}, {t_test})"
+                f"{model_var} = train_ml_classifier({x_expr}, {y_expr}, '{algo_type}', {t_train}, {t_test})"
             )
 
         m = re.match(r'^classify\s+(.+?)\s+using\s+([a-zA-Z_]\w*)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
         if m:
             text_expr, model_var, res_var = clean_expression(m.group(1)), m.group(2), m.group(3)
-            return (
-                f"_in_v = {model_var}.vectorizer.transform([{text_expr}]); "
-                f"_p = {model_var}.classifier.predict(_in_v)[0]; "
-                f"_pb = {model_var}.classifier.predict_proba(_in_v)[0]; "
-                f"_c = round(_pb[_p] * 100, 2); "
-                f"{res_var} = f'[SPAM DETECTED] (Confidence: {{_c}}%)' if _p == 1 else f'[NOT SPAM / HAM] (Confidence: {{_c}}%)'"
-            )
+            return f"{res_var} = {model_var}.predict_text({text_expr})"
 
         # ── v2.0: Pattern Matching (match / case / default / end match) ───
         m = re.match(r'^(?:match|switch)\s+(?:on\s+)?(.+?)\s*:?\s*$', line, re.IGNORECASE)
