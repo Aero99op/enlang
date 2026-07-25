@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "enlang"
+version = "2.0.0"
+description = "The Universal Natural English Programming Language Transpiler & Compiler Engine"
+authors = [
+    { name = "Spandan Prayas Patra", email = "spandan@enlang.org" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.scripts]
+enlang = "enlang_core.cli:main"
+epm = "enlang_core.epm:main"
