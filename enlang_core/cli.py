@@ -15,7 +15,7 @@ import sys
 import os
 import argparse
 
-VERSION = "2.0.4 — Enterprise Specification Edition"
+VERSION = "2.0.5 — Enterprise Specification Edition"
 
 def format_ascii_table(title: str, headers: list, rows: list) -> str:
     if not headers:
@@ -58,6 +58,11 @@ def main():
     if cmd in ("--version", "-v", "version"):
         print(f"EnLang Compiler Version {VERSION}")
         print("Author: Spandan Prayas Patra")
+        try:
+            from .version_manager import check_for_updates
+            check_for_updates()
+        except Exception:
+            pass
         sys.exit(0)
 
     if cmd in ("--help", "-h", "help"):
@@ -103,6 +108,35 @@ def main():
         except ImportError:
             from enlang_core.debugger import debug_file
         debug_file(file_path)
+
+    elif cmd == "update":
+        try:
+            from .version_manager import update_to_latest
+        except ImportError:
+            from enlang_core.version_manager import update_to_latest
+        update_to_latest()
+        sys.exit(0)
+
+    elif cmd in ("versions", "list-versions"):
+        try:
+            from .version_manager import list_versions
+        except ImportError:
+            from enlang_core.version_manager import list_versions
+        list_versions()
+        sys.exit(0)
+
+    elif cmd == "install":
+        if len(sys.argv) < 3:
+            print("Error: Please specify a version to install.")
+            print("Usage: enlang install <version> (e.g. enlang install 2.0.0)")
+            sys.exit(1)
+        ver = sys.argv[2]
+        try:
+            from .version_manager import install_specific_version
+        except ImportError:
+            from enlang_core.version_manager import install_specific_version
+        install_specific_version(ver)
+        sys.exit(0)
 
     elif cmd == "server":
         port = 8000

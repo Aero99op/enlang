@@ -41,10 +41,35 @@ def main():
     subparsers.add_parser("repl", help="Start interactive EnLang English REPL shell")
     subparsers.add_parser("shell", help="Start interactive EnLang English REPL shell")
 
+    # Command: update
+    subparsers.add_parser("update", help="Update EnLang to latest PyPI version")
+
+    # Command: versions
+    subparsers.add_parser("versions", help="List all published versions of EnLang on PyPI")
+
+    # Command: install
+    inst_parser = subparsers.add_parser("install", help="Install a specific version of EnLang (e.g. enlang install 2.0.0)")
+    inst_parser.add_argument("version_tag", help="Version to install e.g. 2.0.0")
+
     # Command: version
     subparsers.add_parser("version", help="Show EnLang version")
 
     args = parser.parse_args()
+
+    if args.command == "update":
+        from enlang_core.version_manager import update_to_latest
+        update_to_latest()
+        sys.exit(0)
+
+    elif args.command == "versions":
+        from enlang_core.version_manager import list_versions
+        list_versions()
+        sys.exit(0)
+
+    elif args.command == "install":
+        from enlang_core.version_manager import install_specific_version
+        install_specific_version(args.version_tag)
+        sys.exit(0)
 
     interpreter = EnLangInterpreter()
     transpiler = EnLangTranspiler()

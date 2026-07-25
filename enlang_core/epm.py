@@ -61,8 +61,33 @@ def main():
         pkg = sys.argv[2]
         add_package(pkg)
 
+    elif cmd == "update":
+        try:
+            from .version_manager import update_to_latest
+        except ImportError:
+            from enlang_core.version_manager import update_to_latest
+        update_to_latest()
+        sys.exit(0)
+
+    elif cmd in ("versions", "list-versions"):
+        try:
+            from .version_manager import list_versions
+        except ImportError:
+            from enlang_core.version_manager import list_versions
+        list_versions()
+        sys.exit(0)
+
     elif cmd == "install":
-        install_dependencies()
+        if len(sys.argv) >= 3 and (sys.argv[2].startswith("2.") or sys.argv[2].startswith("1.") or sys.argv[2].startswith("v")):
+            ver = sys.argv[2]
+            try:
+                from .version_manager import install_specific_version
+            except ImportError:
+                from enlang_core.version_manager import install_specific_version
+            install_specific_version(ver)
+            sys.exit(0)
+        else:
+            install_dependencies()
 
     else:
         print(f"Unknown EPM command: {cmd}")
