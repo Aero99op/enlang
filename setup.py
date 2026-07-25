@@ -7,7 +7,7 @@ setup(
     name="enlang",
     version="1.0.0.post1",
     author="Spandan Prayas Patra",
-    author_email="spandan@enlang.org",
+    author_email="spandanpatra1234@gmail.com",
     description="The Universal Natural English Programming Language Transpiler & Compiler Engine",
     long_description=long_description,
     long_description_content_type="text/markdown",

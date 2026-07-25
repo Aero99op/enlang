@@ -7,7 +7,7 @@ name = "enlang"
 version = "1.0.0.post1"
 description = "The Universal Natural English Programming Language Transpiler & Compiler Engine"
 authors = [
-    { name = "Spandan Prayas Patra", email = "spandan@enlang.org" }
+    { name = "Spandan Prayas Patra", email = "spandanpatra1234@gmail.com" }
 ]
 readme = "README.md"
 requires-python = ">=3.8"
