@@ -112,6 +112,32 @@ select all from users
 The official 612-page master textbook **"EnLang Programming Language: The Complete Enterprise Master Reference & Architecture Guide"** is included in the codebase:
 - 📄 **[enlangbookv2release.pdf](enlangbookv2release.pdf)** (612 Pages, 630 Detailed Chapters, Master Architecture Guide)
 
+### 🤖 Natural Machine Learning & AI Primitives (`app.enlg`)
+```enlang
+define dataset_path as "data/emails.csv"
+define emails as []
+define labels as []
+
+load dataset dataset_path into emails and labels
+train spam classifier using emails and labels with 80 20 split and store in spam_model
+
+display "Test Accuracy: " + spam_model.accuracy + "%"
+
+function classify_email using mail_text:
+    classify mail_text using spam_model and store in prediction
+    display prediction
+
+call classify_email using "CONGRATULATIONS! You won $1,000,000 lottery cash prize!"
+```
+
+---
+
+## 🛠️ VS Code Official Extension (`vscode-enlang`)
+Official syntax highlighting, colorization, snippets, and shortcuts extension is packaged in [`vscode-enlang/enlang-1.0.0.vsix`](file:///d:/enlangg/vscode-enlang/enlang-1.0.0.vsix).
+
+- Install via VS Code Command Palette: `Extensions: Install from VSIX...`
+- Includes one-click `Ctrl+F5` execution shortcut (`EnLang: Run Current File`).
+
 ---
 
 ## 📜 License & Rights

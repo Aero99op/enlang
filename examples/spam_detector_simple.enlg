@@ -1,4 +1,5 @@
 # Ultra-Simplified Spam Email Classifier in Pure EnLang (.enlg)
+# Adheres strictly to canonical EnLang grammar rules
 
 display "============================================================"
 display "       ENLANG NATURAL SPAM EMAIL CLASSIFIER        "
@@ -6,11 +7,11 @@ display "============================================================"
 display ""
 
 # 1. Load Dataset
-define dataset_path as "d:/enlangg/examples/spam email labeling/emails.csv"
+define text dataset_path as "d:/enlangg/examples/spam email labeling/emails.csv"
 display "[INFO] Loading dataset from: " + dataset_path
 
-define emails as []
-define labels as []
+define list emails as []
+define list labels as []
 load dataset dataset_path into emails and labels
 
 display "[INFO] Dataset loaded with " + len(emails) + " samples."
