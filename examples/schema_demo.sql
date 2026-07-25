@@ -6,10 +6,10 @@ CREATE TABLE IF NOT EXISTS reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, user_i
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
-INSERT INTO users (username, email, password_hash) VALUES ('spandan_admin', 'spandan@enlang.org', '$pbkdf2$hash_value_99');
-INSERT INTO products (title, price, stock, category) VALUES ('EnLang Master Course', 99.99, 100, 'Books');
-INSERT INTO orders (user_id, total_amount, status) VALUES (1, 99.99, 'Completed');
-INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES (1, 1, 1, 99.99);
-INSERT INTO reviews (user_id, product_id, rating, comment) VALUES (1, 1, 5, 'Top tier natural English programming system!');
+INSERT OR IGNORE INTO users (username, email, password_hash) VALUES ('spandan_admin', 'spandan@enlang.org', '$pbkdf2$hash_value_99');
+INSERT OR IGNORE INTO products (title, price, stock, category) VALUES ('EnLang Master Course', 99.99, 100, 'Books');
+INSERT OR IGNORE INTO orders (user_id, total_amount, status) VALUES (1, 99.99, 'Completed');
+INSERT OR IGNORE INTO order_items (order_id, product_id, quantity, unit_price) VALUES (1, 1, 1, 99.99);
+INSERT OR IGNORE INTO reviews (user_id, product_id, rating, comment) VALUES (1, 1, 5, 'Top tier natural English programming system!');
 SELECT * FROM users WHERE id = 1;
 SELECT * FROM products WHERE category = 'Books' ORDER BY price desc LIMIT 10;

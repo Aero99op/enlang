@@ -1086,7 +1086,7 @@ def translate_database_line(line: str, db_var: str = "db") -> str:
     m = re.match(r'^insert\s+into\s+([a-zA-Z_]\w*)\s+columns?\s+\((.+?)\)\s+values?\s+\((.+?)\)$', line, re.IGNORECASE)
     if m:
         tbl, cols, vals = m.group(1), m.group(2), m.group(3)
-        sql = f'INSERT INTO {tbl} ({cols}) VALUES ({vals});'
+        sql = f'INSERT OR IGNORE INTO {tbl} ({cols}) VALUES ({vals});'
         return f'print({repr(sql)})'
 
     # insert or replace into <table>

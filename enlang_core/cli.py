@@ -15,7 +15,38 @@ import sys
 import os
 import argparse
 
-VERSION = "2.0.3 — Enterprise Specification Edition"
+VERSION = "2.0.4 — Enterprise Specification Edition"
+
+def format_ascii_table(title: str, headers: list, rows: list) -> str:
+    if not headers:
+        return ""
+    str_rows = [[str(val) if val is not None else "NULL" for val in row] for row in rows]
+    col_widths = [len(str(h)) for h in headers]
+    for row in str_rows:
+        for idx, val in enumerate(row):
+            if idx < len(col_widths):
+                col_widths[idx] = max(col_widths[idx], len(val))
+
+    sep_line = "+" + "+".join("-" * (w + 2) for w in col_widths) + "+"
+    header_line = "| " + " | ".join(f"{str(h):<{col_widths[i]}}" for i, h in enumerate(headers)) + " |"
+
+    banner_width = max(len(sep_line), 60)
+    lines = []
+    lines.append("=" * banner_width)
+    lines.append(f" TABLE: {title.upper()} (Total Rows: {len(rows)})")
+    lines.append("=" * banner_width)
+    lines.append(sep_line)
+    lines.append(header_line)
+    lines.append(sep_line)
+    for row in str_rows:
+        r_line = "| " + " | ".join(f"{val:<{col_widths[i]}}" for i, val in enumerate(row)) + " |"
+        lines.append(r_line)
+    if not str_rows:
+        lines.append("| " + " ".join("EMPTY TABLE".center(w) for w in col_widths) + " |")
+        lines.append(sep_line)
+    else:
+        lines.append(sep_line)
+    return "\n".join(lines)
 
 def main():
     if len(sys.argv) < 2:
@@ -164,23 +195,16 @@ def run_file(file_path: str, custom_port: int = None):
 
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
         tables = [r[0] for r in cursor.fetchall() if not r[0].startswith("sqlite_")]
-        print(f"[SUCCESS] Database created & synced -> '{db_file}'")
-        print(f"[TABLES CREATED] {', '.join(tables)}\n")
+        print(f"[SUCCESS] Database synced -> '{db_file}'\n")
 
-        for stmt in sql_script.split(";"):
-            stmt_clean = stmt.strip()
-            if stmt_clean.upper().startswith("SELECT"):
-                try:
-                    cursor.execute(stmt_clean)
-                    rows = cursor.fetchall()
-                    cols = [desc[0] for desc in cursor.description] if cursor.description else []
-                    print(f"[QUERY] {stmt_clean};")
-                    print(f"  Columns: {cols}")
-                    for r in rows:
-                        print(f"  Row -> {r}")
-                    print()
-                except Exception:
-                    pass
+        # Display rich ASCII table for all database tables
+        for tbl in tables:
+            cursor.execute(f"SELECT * FROM {tbl};")
+            rows = cursor.fetchall()
+            cols = [desc[0] for desc in cursor.description] if cursor.description else []
+            print(format_ascii_table(tbl, cols, rows))
+            print()
+
         conn.close()
         return
 
