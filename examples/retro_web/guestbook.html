@@ -1,0 +1,68 @@
+<title>CYBER-RETRO v2.0 // Guestbook Terminal</title>
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+<header class="retro-header">
+<a class="brand-logo" href="index.html">SYS://CYBER_RETRO</a>
+<nav>
+<ul class="nav-links">
+<li>
+<a class="nav-link" href="index.html">01.HOME</a>
+</li>
+<li>
+<a class="nav-link" href="about.html">02.ABOUT</a>
+</li>
+<li>
+<a class="nav-link" href="gallery.html">03.GALLERY</a>
+</li>
+<li>
+<a class="nav-link active" href="guestbook.html">04.GUESTBOOK</a>
+</li>
+</ul>
+</nav>
+<div class="retro-controls">
+<button id=""btnToggleCrt"" class="btn-retro">[CRT: ON/OFF]</button>
+</div>
+</header>
+<main class="container">
+<div class="hero-grid">
+<div class="terminal-card">
+<div class="terminal-header">
+<span class="dot dot-red">
+</span>
+<span class="dot dot-yellow">
+</span>
+<span class="dot dot-green">
+</span>
+<span>  sign_guestbook.sh</span>
+</span>
+</div>
+<h1 class="hero-title">SIGN RETRO GUESTBOOK</h1>
+<p class="hero-subtitle">> Leave your signature in the encrypted LocalStorage log!</p>
+<form id=""guestbookForm"">
+<div class="form-group">
+<label class="form-label">HANDLE / USERNAME:</label>
+create input with type "text" with id "inputName" with class "form-input" with placeholder "e.g. CyberSamurai_99"
+</div>
+<div class="form-group">
+<label class="form-label">MESSAGE TRANSMISSION:</label>
+create textarea with id "inputMessage" with class "form-input" with placeholder "Enter your retro transmission here..."
+</div>
+create button with class "btn-retro" with type "submit" with text "TRANSMIT MESSAGE >"
+</form>
+</div>
+<div class="terminal-card">
+<div class="terminal-header">
+<span class="dot dot-green">
+</span>
+<span>  guestbook_entries.log</span>
+</span>
+</div>
+<h3 class="card-title">LIVE TRANSMISSION LOGS:</h3>
+<div id=""guestbookList"">
+</div>
+</div>
+</div>
+</main>
+<footer class="retro-footer">
+<p>SYSTEM STATUS: 100% OPERATIONAL // BUILT WITH ENLANG v2.0 // SPANDAN PRAYAS PATRA © 2026</p>
+</footer>

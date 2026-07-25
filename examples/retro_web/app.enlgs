@@ -1,0 +1,135 @@
+# app.enlgs — Client-Side Retro Interactivity in EnLang Script (.enlgs)
+
+js:
+console.log("CyberRetro Core v2.0 Client Engine Loaded");
+
+// --- Web Audio API Synth Beep Sound ---
+function playRetroBeep(freq = 440, type = 'square', duration = 0.08) {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.05, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+    } catch(e) { console.log('Audio disabled'); }
+}
+
+// --- Interactive Matrix Rain Stream ---
+function initMatrixRain(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.parentElement.clientWidth || 500;
+    canvas.height = 180;
+    
+    const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&*';
+    const fontSize = 14;
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops = Array(columns).fill(1);
+
+    function draw() {
+        ctx.fillStyle = 'rgba(9, 13, 22, 0.15)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#00ff9d';
+        ctx.font = fontSize + 'px "Share Tech Mono"';
+
+        for (let i = 0; i < drops.length; i++) {
+            const text = chars[Math.floor(Math.random() * chars.length)];
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                drops[i] = 0;
+            }
+            drops[i]++;
+        }
+    }
+    setInterval(draw, 45);
+}
+
+// --- Guestbook LocalStorage Helper ---
+function loadGuestbookEntries() {
+    const listEl = document.getElementById('guestbookList');
+    if (!listEl) return;
+    const defaultEntries = [
+        { name: "Neo_88", message: "Wake up, Samurai... EnLang sub-transpilation is legendary!", date: "2026-07-25 12:00" },
+        { name: "CyberGamer", message: "Retro CRT aesthetic is top tier juggad 🔥", date: "2026-07-25 11:30" }
+    ];
+    const stored = localStorage.getItem('retro_guestbook');
+    const entries = stored ? JSON.parse(stored) : defaultEntries;
+    
+    listEl.innerHTML = entries.map(e => `
+        <div class="entry-item">
+            <div class="entry-meta">
+                <span>&gt; ${e.name}</span>
+                <span>${e.date}</span>
+            </div>
+            <div class="entry-text">${e.message}</div>
+        </div>
+    `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Matrix Rain Initialization
+    initMatrixRain('matrixCanvas');
+
+    // 2. CRT Toggle Event Binding
+    const btnCrt = document.getElementById('btnToggleCrt');
+    if (btnCrt) {
+        btnCrt.addEventListener('click', () => {
+            document.body.classList.toggle('crt-overlay');
+            playRetroBeep(880, 'sine', 0.1);
+            console.log('CRT Overlay Toggled');
+        });
+    }
+
+    // 3. Synth Beep Button Event Binding
+    const btnBeep = document.getElementById('btnBeep');
+    if (btnBeep) {
+        btnBeep.addEventListener('click', () => {
+            playRetroBeep(600, 'square', 0.12);
+        });
+    }
+
+    // 4. Guestbook Form Submission
+    const guestbookForm = document.getElementById('guestbookForm');
+    if (guestbookForm) {
+        guestbookForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nameEl = document.getElementById('inputName');
+            const msgEl = document.getElementById('inputMessage');
+            if (!nameEl || !msgEl) return;
+
+            const name = nameEl.value.trim();
+            const message = msgEl.value.trim();
+
+            if (!name || !message) {
+                alert("ERR: Both name and message are required!");
+                return;
+            }
+
+            const newEntry = {
+                name: name,
+                message: message,
+                date: new Date().toISOString().slice(0, 10) + ' ' + new Date().toTimeString().slice(0, 5)
+            };
+
+            const entries = JSON.parse(localStorage.getItem('retro_guestbook') || '[]');
+            entries.unshift(newEntry);
+            localStorage.setItem('retro_guestbook', JSON.stringify(entries));
+            playRetroBeep(1200, 'square', 0.15);
+            msgEl.value = '';
+            loadGuestbookEntries();
+        });
+    }
+
+    // 5. Initial Guestbook Load
+    loadGuestbookEntries();
+});
+end js

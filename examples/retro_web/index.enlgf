@@ -1,0 +1,82 @@
+# index.enlgf — Home / Landing Page in EnLang Markup (.enlgf)
+
+page title "CYBER-RETRO v2.0 // Home Terminal"
+
+include stylesheet "style.css"
+create script with src "app.js"
+
+create header with class "retro-header":
+    create a with class "brand-logo" with text "SYS://CYBER_RETRO" with href "index.html"
+    create nav:
+        create ul with class "nav-links":
+            create li:
+                create a with class "nav-link active" with text "01.HOME" with href "index.html"
+            close li
+            create li:
+                create a with class "nav-link" with text "02.ABOUT" with href "about.html"
+            close li
+            create li:
+                create a with class "nav-link" with text "03.GALLERY" with href "gallery.html"
+            close li
+            create li:
+                create a with class "nav-link" with text "04.GUESTBOOK" with href "guestbook.html"
+            close li
+        close ul
+    close nav
+    create div with class "retro-controls":
+        create button with class "btn-retro" with id "btnToggleCrt" with text "[CRT: ON/OFF]"
+    close div
+close header
+
+create main with class "container":
+    create div with class "hero-grid":
+        create div with class "terminal-card":
+            create div with class "terminal-header":
+                create span with class "dot dot-red"
+                close span
+                create span with class "dot dot-yellow"
+                close span
+                create span with class "dot dot-green"
+                close span
+                create span with text "  terminal_v2.0.sh"
+                close span
+            close div
+            create h1 with class "hero-title" with text "MINIMALIST RETRO TERMINAL"
+            create p with class "hero-subtitle" with text "> Empowering natural English multi-target transpilation into HTML5, CSS3 & ES6+ JavaScript."
+            create canvas named matrixCanvas
+            close canvas
+            create div with class "retro-controls":
+                create a with class "btn-retro" with text "EXPLORE GALLERY >" with href "gallery.html"
+                create a with class "btn-retro" with text "SIGN GUESTBOOK >" with href "guestbook.html"
+            close div
+        close div
+        create div:
+            create image with src "assets/hero.png", alt "Retro Cyber Terminal Hero Art"
+        close div
+    close div
+
+    create div with class "cards-grid":
+        create div with class "feature-card":
+            create div with class "card-icon" with text "⚡"
+            close div
+            create h3 with class "card-title" with text ".ENLGF MARKUP"
+            create p with class "card-desc" with text "Semantic HTML5 structural transpilation from pure natural English statements."
+        close div
+        create div with class "feature-card":
+            create div with class "card-icon" with text "🎨"
+            close div
+            create h3 with class "card-title" with text ".ENLGD STYLING"
+            create p with class "card-desc" with text "CSS3 design system with neon CRT glows, scanlines, and responsive glassmorphism."
+        close div
+        create div with class "feature-card":
+            create div with class "card-icon" with text "💻"
+            close div
+            create h3 with class "card-title" with text ".ENLGS SCRIPTING"
+            create p with class "card-desc" with text "Client-side DOM interactivity, audio synthesis, and LocalStorage state machine."
+        close div
+    close div
+close main
+
+create footer with class "retro-footer":
+    create p with text "SYSTEM STATUS: 100% OPERATIONAL // BUILT WITH ENLANG v2.0 // SPANDAN PRAYAS PATRA © 2026"
+close footer
