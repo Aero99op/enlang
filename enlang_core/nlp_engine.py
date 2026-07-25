@@ -1,11 +1,12 @@
 """
 EnLang Natural Language Processing (NLP) Engine
 Provides Fuzzy Intent Matching, Entity Extraction, Token Normalization,
-and Native Sentiment / Keyword / Similarity primitives.
+Native Sentiment / Keyword / Similarity primitives, and ML Dataset Helpers.
 """
 
 import re
 import math
+import csv
 from typing import Tuple, Dict, Any, List, Optional
 
 # Positive & Negative Sentiment Lexicon for lightweight NLP analysis
@@ -95,3 +96,45 @@ def calculate_similarity(text1: str, text2: str) -> float:
     intersection = set1.intersection(set2)
     union = set1.union(set2)
     return round(len(intersection) / len(union), 2)
+
+def load_csv_dataset(file_path: str) -> Tuple[List[str], List[int]]:
+    """Loads text and binary target labels from a CSV dataset file."""
+    x_data, y_data = [], []
+    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+        reader = csv.reader(f)
+        next(reader, None)
+        for row in reader:
+            if len(row) >= 2:
+                x_data.append(row[0])
+                try:
+                    y_data.append(int(row[1]))
+                except ValueError:
+                    y_data.append(0)
+    return x_data, y_data
+
+def train_ml_classifier(x_data: List[str], y_data: List[int], train_pct: int = 80, test_pct: int = 20):
+    """Trains a TF-IDF + Multinomial Naive Bayes classifier model on dataset with split ratio."""
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.naive_bayes import MultinomialNB
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import accuracy_score
+
+    test_size = float(test_pct) / 100.0
+    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=test_size, random_state=42)
+
+    vec = TfidfVectorizer(stop_words='english', max_features=5000)
+    x_train_v = vec.fit_transform(x_train)
+    x_test_v = vec.transform(x_test)
+
+    clf = MultinomialNB()
+    clf.fit(x_train_v, y_train)
+
+    accuracy = round(accuracy_score(y_test, clf.predict(x_test_v)) * 100, 2)
+
+    class EnLangMLModel:
+        def __init__(self, classifier, vectorizer, accuracy):
+            self.classifier = classifier
+            self.vectorizer = vectorizer
+            self.accuracy = accuracy
+
+    return EnLangMLModel(clf, vec, accuracy)
