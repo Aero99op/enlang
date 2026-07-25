@@ -1,13 +1,12 @@
 """
 EnLang Natural Language Processing (NLP) Engine
 Provides Fuzzy Intent Matching, Entity Extraction, Token Normalization,
-Native Sentiment / Keyword / Similarity primitives, and General ML Dataset & Classifier Helpers.
+and Native Sentiment / Keyword / Similarity primitives.
 """
 
 import re
 import math
-import csv
-from typing import Tuple, Dict, Any, List, Optional, Union
+from typing import Tuple, Dict, Any, List, Optional
 
 # Positive & Negative Sentiment Lexicon for lightweight NLP analysis
 POSITIVE_WORDS = {'good', 'great', 'awesome', 'excellent', 'fantastic', 'superb', 'happy', 'love', 'wonderful', 'successful', 'best', 'smooth', 'easy'}
@@ -35,7 +34,7 @@ class NLPParser:
         """
         clean_text = self.normalize_sentence(text)
 
-        # Fuzzy Intent 1: Variable assignment
+        # Fuzzy Intent 1: Variable assignment (e.g. "assign 100 to score", "make score 100", "create variable score with value 100")
         m = re.match(r'^(?:assign|store|put|make|create\s+variable)\s+(.+?)\s+(?:to|in|as|with\s+value)\s+([a-zA-Z_]\w*)$', clean_text, re.IGNORECASE)
         if m:
             return {"intent": "ASSIGNMENT", "target": m.group(2), "value": m.group(1)}
@@ -44,12 +43,12 @@ class NLPParser:
         if m:
             return {"intent": "ASSIGNMENT", "target": m.group(1), "value": m.group(2)}
 
-        # Fuzzy Intent 2: Output
+        # Fuzzy Intent 2: Output (e.g. "please print out the total sum", "say Hello World", "log the result")
         m = re.match(r'^(?:print\s+out|output|say|log|display\s+message)\s+(.+)$', clean_text, re.IGNORECASE)
         if m:
             return {"intent": "OUTPUT", "value": m.group(1)}
 
-        # Fuzzy Intent 3: NLP Operations
+        # Fuzzy Intent 3: NLP Operations (e.g. "check sentiment of text into s", "find keywords in text into kw")
         m = re.match(r'^(?:analyze|check|find|get)\s+sentiment\s+(?:of|for)\s+(.+?)\s+(?:and\s+store\s+in|into|as)\s+([a-zA-Z_]\w*)$', clean_text, re.IGNORECASE)
         if m:
             return {"intent": "NLP_SENTIMENT", "target": m.group(2), "text": m.group(1)}
@@ -96,86 +95,3 @@ def calculate_similarity(text1: str, text2: str) -> float:
     intersection = set1.intersection(set2)
     union = set1.union(set2)
     return round(len(intersection) / len(union), 2)
-
-def load_csv_dataset(file_path: str, text_col: int = 0, label_col: int = 1) -> Tuple[List[str], List[Any]]:
-    """Universal CSV dataset loader for text features and target labels."""
-    x_data, y_data = [], []
-    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-        reader = csv.reader(f)
-        next(reader, None) # Skip header
-        for row in reader:
-            if len(row) > max(text_col, label_col):
-                x_val = row[text_col]
-                y_val = row[label_col].strip()
-                # Parse numeric or keep string label
-                if y_val.isdigit() or (y_val.startswith('-') and y_val[1:].isdigit()):
-                    y_parsed = int(y_val)
-                else:
-                    try:
-                        y_parsed = float(y_val)
-                    except ValueError:
-                        y_parsed = y_val
-                x_data.append(x_val)
-                y_data.append(y_parsed)
-    return x_data, y_data
-
-def train_ml_classifier(x_data: List[str], y_data: List[Any], model_type: str = "naive bayes", train_pct: int = 80, test_pct: int = 20):
-    """
-    Universal ML Classifier Trainer.
-    Supports Naive Bayes, Logistic Regression, Random Forest, Decision Tree, SVM with dynamic train-test split ratios.
-    """
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    from sklearn.model_selection import train_test_split
-    from sklearn.metrics import accuracy_score
-
-    test_size = float(test_pct) / 100.0 if test_pct > 0 else 0.20
-    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=test_size, random_state=42)
-
-    vec = TfidfVectorizer(stop_words='english', max_features=5000)
-    x_train_v = vec.fit_transform(x_train)
-    x_test_v = vec.transform(x_test)
-
-    m_lower = str(model_type).lower()
-    if 'logistic' in m_lower:
-        from sklearn.linear_model import LogisticRegression
-        clf = LogisticRegression(max_iter=1000)
-    elif 'random' in m_lower or 'forest' in m_lower:
-        from sklearn.ensemble import RandomForestClassifier
-        clf = RandomForestClassifier(n_estimators=100)
-    elif 'tree' in m_lower:
-        from sklearn.tree import DecisionTreeClassifier
-        clf = DecisionTreeClassifier()
-    elif 'svm' in m_lower or 'support vector' in m_lower:
-        from sklearn.svm import SVC
-        clf = SVC(probability=True)
-    else:
-        # Default: Multinomial Naive Bayes
-        from sklearn.naive_bayes import MultinomialNB
-        clf = MultinomialNB()
-
-    clf.fit(x_train_v, y_train)
-    accuracy = round(accuracy_score(y_test, clf.predict(x_test_v)) * 100, 2)
-
-    class EnLangMLModel:
-        def __init__(self, classifier, vectorizer, accuracy, model_name):
-            self.classifier = classifier
-            self.vectorizer = vectorizer
-            self.accuracy = accuracy
-            self.model_name = model_name
-
-        def predict_text(self, text: str) -> str:
-            in_v = self.vectorizer.transform([text])
-            pred = self.classifier.predict(in_v)[0]
-            if hasattr(self.classifier, "predict_proba"):
-                proba = self.classifier.predict_proba(in_v)[0]
-                conf = round(max(proba) * 100, 2)
-            else:
-                conf = 100.0
-            
-            if pred == 1 or str(pred).lower() in ("1", "spam", "true", "yes", "positive"):
-                return f"[SPAM DETECTED] (Confidence: {conf}%)"
-            elif pred == 0 or str(pred).lower() in ("0", "ham", "false", "no", "negative"):
-                return f"[NOT SPAM / HAM] (Confidence: {conf}%)"
-            return f"[PREDICTION: {pred}] (Confidence: {conf}%)"
-
-    return EnLangMLModel(clf, vec, accuracy, model_type)

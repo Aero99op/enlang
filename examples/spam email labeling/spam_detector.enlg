@@ -1,0 +1,112 @@
+# spam_detector.enlg — Spam Email Classifier Model in EnLang (.enlg)
+# Features 80/20 Train-Test Split, Naive Bayes / TF-IDF Vectorization, Accuracy Evaluation & Interactive Classifier
+
+import module csv
+import module random
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report
+
+display "============================================================"
+display " ENLANG SPAM EMAIL CLASSIFIER (80/20 TRAIN-TEST SPLIT) "
+display "============================================================"
+display ""
+
+# 1. Load Dataset emails.csv
+define  dataset_path as "d:/enlangg/examples/spam email labeling/emails.csv"
+display "[INFO] Loading dataset from: " + dataset_path
+
+define list emails as []
+define list labels as []
+
+with open(dataset_path, "r", encoding="utf-8", errors="ignore") as f:
+    define object reader as csv.reader(f)
+    # Skip header
+    next(reader)
+    for each row in reader:
+        if len(row) >= 2:
+            define text email_text as row[0]
+            define number label as int(row[1])
+            emails.append(email_text)
+            labels.append(label)
+
+define number total_samples as len(emails)
+display "[INFO] Dataset loaded successfully! Total samples: " + total_samples
+
+# 2. Perform 80/20 Train-Test Split
+display "[INFO] Splitting dataset into 80% Training set and 20% Testing set..."
+X_train, X_test, y_train, y_test = train_test_split(emails, labels, test_size=0.20, random_state=42)
+
+display "[INFO] Training samples: " + len(X_train) + " | Testing samples: " + len(X_test)
+
+# 3. Vectorize Text Data (TF-IDF Vectorizer)
+display "[INFO] Vectorizing email text features using TF-IDF..."
+define object vectorizer as TfidfVectorizer(stop_words="english", max_features=5000)
+X_train_vec = vectorizer.fit_transform(X_train)
+X_test_vec = vectorizer.transform(X_test)
+
+# 4. Train Multinomial Naive Bayes Classifier
+display "[INFO] Training Multinomial Naive Bayes Classifier model..."
+define object model as MultinomialNB()
+model.fit(X_train_vec, y_train)
+display "[SUCCESS] Model training complete!"
+display ""
+
+# 5. Evaluate Model Accuracy on 20% Test Set
+y_pred = model.predict(X_test_vec)
+define number acc as accuracy_score(y_test, y_pred) * 100
+round acc to 2 decimal places and store in acc_rounded
+
+display "============================================================"
+display " MODEL PERFORMANCE EVALUATION (20% TEST SET) "
+display "============================================================"
+display "Test Accuracy: " + acc_rounded + "%"
+display ""
+
+# 6. Function to Predict Email Label
+function classify_email using mail_content:
+    define list input_vec as vectorizer.transform([mail_content])
+    define number pred as model.predict(input_vec)[0]
+    define list proba as model.predict_proba(input_vec)[0]
+
+    if pred is equal to 1 then:
+        define number conf as proba[1] * 100
+        round conf to 2 decimal places and store in conf_round
+        display "[RESULT] 🚨 SPAM DETECTED! (Confidence: " + conf_round + "%)"
+    else:
+        define number conf as proba[0] * 100
+        round conf to 2 decimal places and store in conf_round
+        display "[RESULT] ✅ NOT SPAM (HAM) (Confidence: " + conf_round + "%)"
+
+# 7. Interactive Prediction Loop
+display "============================================================"
+display " INTERACTIVE EMAIL SPAM DETECTOR "
+display "============================================================"
+display "Enter any email text to test (or type 'exit' to quit):"
+display ""
+
+# Test with a sample spam email
+define text test_sample_1 as "Subject: CONGRATULATIONS! You won a $1,000,000 lottery cash prize! Click here immediately to claim your money!"
+display "Sample 1 Input: " + test_sample_1
+call classify_email with test_sample_1
+display ""
+
+# Test with a sample legitimate email
+define text test_sample_2 as "Subject: Project status update meeting scheduled for tomorrow at 10 AM in Conference Room B."
+display "Sample 2 Input: " + test_sample_2
+call classify_email with test_sample_2
+display ""
+
+display "[INFO] Starting interactive input mode..."
+while true:
+    ask "Enter email text: " and store in user_email
+    if user_email is equal to "exit" or user_email is equal to "quit" then:
+        display "Exiting Spam Detector. Goodbye!"
+        break
+
+    if len(user_email.strip()) is equal to 0 then:
+        continue
+
+    call classify_email with user_email
+    display ""
