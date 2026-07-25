@@ -17,7 +17,7 @@ import os
 import json
 import subprocess
 
-VERSION = "2.0.0 — EnLang Package Manager"
+VERSION = "1.0.0 — EnLang Package Manager"
 
 MANIFEST_FILE = "enlang.json"
 
