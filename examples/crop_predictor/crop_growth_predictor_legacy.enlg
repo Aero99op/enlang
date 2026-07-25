@@ -1,0 +1,81 @@
+# crop_growth_predictor_legacy.enlg
+# Smart AI Crop Recommendation Predictor in LEGACY EnLang Syntax
+# Uses native imports, define/set statements, explicit sklearn calls & natural function definitions
+
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report
+
+display "================================================================"
+display "   CROP GROWTH PREDICTOR (LEGACY ENLANG SYNTAX VERSION)        "
+display "================================================================"
+display ""
+
+# 1. Load Dataset
+define text csv_path as "d:/enlangg/examples/crop_predictor/crop_recommendation.csv"
+display "[INFO] Loading CSV dataset from: " + csv_path
+set df to pd.read_csv(csv_path)
+
+define number total_samples as len(df)
+display "[INFO] Total dataset rows loaded: " + total_samples
+
+# 2. Extract Features (X) & Target (y)
+display "[INFO] Extracting features (N, P, K, temp, hum, pH, rain) and target (crop)..."
+set X to df.drop(columns=["crop"]).values
+set y to df["crop"].values
+
+# 3. Train-Test Split (80/20)
+display "[INFO] Performing 80/20 Train-Test Split..."
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42, stratify=y)
+
+# 4. Feature Scaling
+display "[INFO] Scaling features using StandardScaler..."
+set scaler to StandardScaler()
+set X_train_scaled to scaler.fit_transform(X_train)
+set X_test_scaled to scaler.transform(X_test)
+
+# 5. Train Random Forest Model
+display "[INFO] Training Random Forest Classifier..."
+set rf_model to RandomForestClassifier(n_estimators=100, random_state=42)
+rf_model.fit(X_train_scaled, y_train)
+
+# 6. Evaluate Performance
+set y_pred to rf_model.predict(X_test_scaled)
+define number acc as round(accuracy_score(y_test, y_pred) * 100, 2)
+display "[SUCCESS] Random Forest Test Accuracy: " + acc + "%"
+display ""
+
+# 7. Function for Crop Prediction using EnLang 'using' syntax
+function classify_soil using n, p, k, temp, hum, ph, rain:
+    python:
+    sample = pd.DataFrame([{
+        'N': n, 'P': p, 'K': k,
+        'temperature': temp, 'humidity': hum,
+        'ph': ph, 'rainfall': rain
+    }]).values
+    sample_scaled = scaler.transform(sample)
+    pred_crop = rf_model.predict(sample_scaled)[0]
+    confidence = round(max(rf_model.predict_proba(sample_scaled)[0]) * 100, 1)
+    print(f"Inputs -> N:{n}, P:{p}, K:{k}, Temp:{temp}°C, Hum:{hum}%, pH:{ph}, Rain:{rain}mm")
+    print(f"Prediction -> RECOMMENDED CROP: [{pred_crop.upper()}] (Confidence: {confidence}%)\n")
+    end python
+
+# 8. Sample Calls using Legacy EnLang 'call ... using ...'
+display "================================================================"
+display "                SAMPLE PREDICTION DEMOS                        "
+display "================================================================"
+
+display "[SAMPLE 1] Rice Condition:"
+call classify_soil using 90, 45, 40, 24.5, 85.0, 6.5, 240.0
+
+display "[SAMPLE 2] Chickpea Condition:"
+call classify_soil using 30, 70, 80, 18.5, 17.0, 7.2, 75.0
+
+display "[SAMPLE 3] Cotton Condition:"
+call classify_soil using 120, 45, 20, 25.0, 80.0, 6.8, 90.0
+
+display "================================================================"
