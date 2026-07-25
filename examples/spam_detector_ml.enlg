@@ -1,0 +1,36 @@
+# spam_detector_ml.enlg — Spam Email Classifier using EnLang Simplified ML Syntax
+# Same model, same accuracy — but now in clean natural English!
+# EnLang ML Syntax: load → split → vectorize → train → evaluate → predict
+
+display "============================================================"
+display " ENLANG ML SPAM CLASSIFIER (Simplified Natural Syntax) "
+display "============================================================"
+display ""
+
+# 1. Load dataset with labels
+load dataset from "d:/enlangg/examples/spam email labeling/emails.csv" with text column text and label column spam
+
+# 2. Split 80% training, 20% testing
+split dataset into 80 percent training and 20 percent testing
+
+# 3. Vectorize text using TF-IDF (max 5000 features)
+vectorize text using tfidf with max features 5000
+
+# 4. Train Naive Bayes Classifier
+train naive_bayes classifier on training data
+
+# 5. Evaluate Model Accuracy
+evaluate classifier accuracy and store in acc
+
+display ""
+display "Final Test Accuracy: " + acc + "%"
+display ""
+
+# 6. Demo Predictions using simplified syntax
+display "============================================================"
+display " SAMPLE PREDICTIONS "
+display "============================================================"
+predict spam from "CONGRATULATIONS! You won a $1,000,000 lottery prize! Click here now!"
+predict spam from "Project meeting scheduled for tomorrow at 10 AM in Conference Room B."
+predict spam from "Get cheap Viagra and Cialis online! 75% off! Limited time offer!"
+predict spam from "Hi team, please review the attached report and send your feedback."

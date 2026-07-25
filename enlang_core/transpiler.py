@@ -14,6 +14,7 @@ ZERO hardcoded values. Pure 1:1 natural English → native target translation.
 
 import re
 import os
+from enlang_core.ml_engine import translate_ml_line, reset_context as _ml_reset_context
 from .grammar import (
     clean_expression, parse_args_list, _strip_trailing_colon,
     translate_html_line,
@@ -89,6 +90,7 @@ class EnLangTranspiler:
           .enlgdb → SQL
         """
         self.reset()
+        _ml_reset_context()  # Reset ML context for fresh transpile session
         ext = os.path.splitext(file_path)[1].lower() if file_path else ".enlg"
         if not ext:
             ext = ".enlg"
@@ -175,6 +177,11 @@ class EnLangTranspiler:
                 m_db = re.match(r'^connect\s+to\s+database\s+(.+)\s+as\s+([a-zA-Z_]\w*)$', lstripped, re.IGNORECASE)
                 if m_db:
                     self.last_db_var = m_db.group(2)
+                # ── ML Engine first-pass (ADDITIVE — runs before all other rules) ──
+                _ml_result = translate_ml_line(lstripped)
+                if _ml_result is not None:
+                    self.output_lines.append(f"{indent}{_ml_result}")
+                    continue
                 py_line = self._transpile_python_line(lstripped)
 
                 # match/case/default/end match MUST emit at zero indent
@@ -214,41 +221,15 @@ class EnLangTranspiler:
 
         # ── v2.0: Optional Typed Variable Declaration ─────────────────────
         # MUST come before raw Python passthrough (define/let/var interception)
-        m = re.match(r'^(?:define|let|var)\s+(?:(number|decimal|text|boolean|list|array|dictionary|dict|map|set)\s+)?([a-zA-Z_]\w*)(?:\s+(?:as|=|is|to)\s+(.+))?$', line, re.IGNORECASE)
+        m = re.match(r'^(?:define|let|var)\s+(number|decimal|text|boolean|list|array|dictionary|dict|map|set)\s+([a-zA-Z_]\w*)(?:\s+(?:as|=|is|to)\s+(.+))?$', line, re.IGNORECASE)
         if m:
-            dtype_raw, var, expr = m.group(1), m.group(2), m.group(3)
-            dtype = dtype_raw.lower() if dtype_raw else None
+            dtype, var, expr = m.group(1).lower(), m.group(2), m.group(3)
             if expr:
                 val = clean_expression(expr)
                 return f"{var} = {val}"
             defaults = {'number': '0', 'decimal': '0.0', 'text': '""', 'boolean': 'False',
                         'list': '[]', 'array': '[]', 'dictionary': '{}', 'dict': '{}', 'map': '{}', 'set': 'set()'}
-            return f"{var} = {defaults.get(dtype, 'None') if dtype else 'None'}"
-
-        # ── v2.0: Universal Natural ML Dataset & Classifier Engine ─────────
-        m = re.match(r'^load\s+dataset\s+(.+?)\s+into\s+([a-zA-Z_]\w*)\s+and\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
-        if m:
-            path_expr, x_var, y_var = clean_expression(m.group(1)), m.group(2), m.group(3)
-            return (
-                f"from enlang_core.nlp_engine import load_csv_dataset; "
-                f"{x_var}, {y_var} = load_csv_dataset({path_expr})"
-            )
-
-        m = re.match(r'^train\s+(.+?)\s+classifier\s+using\s+(.+?)\s+and\s+(.+?)\s+with\s+(\d+)\s+(\d+)\s+split\s+and\s+store\s+in\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
-        if m:
-            algo_type = m.group(1).strip()
-            x_expr, y_expr = clean_expression(m.group(2)), clean_expression(m.group(3))
-            t_train, t_test = int(m.group(4)), int(m.group(5))
-            model_var = m.group(6)
-            return (
-                f"from enlang_core.nlp_engine import train_ml_classifier; "
-                f"{model_var} = train_ml_classifier({x_expr}, {y_expr}, '{algo_type}', {t_train}, {t_test})"
-            )
-
-        m = re.match(r'^classify\s+(.+?)\s+using\s+([a-zA-Z_]\w*)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
-        if m:
-            text_expr, model_var, res_var = clean_expression(m.group(1)), m.group(2), m.group(3)
-            return f"{res_var} = {model_var}.predict_text({text_expr})"
+            return f"{var} = {defaults.get(dtype, 'None')}"
 
         # ── v2.0: Pattern Matching (match / case / default / end match) ───
         m = re.match(r'^(?:match|switch)\s+(?:on\s+)?(.+?)\s*:?\s*$', line, re.IGNORECASE)
