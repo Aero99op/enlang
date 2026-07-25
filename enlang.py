@@ -29,6 +29,14 @@ def main():
     build_parser.add_argument("filename", help="Path to EnLang file")
     build_parser.add_argument("-o", "--output", help="Output .py file path")
 
+    # Command: check
+    check_parser = subparsers.add_parser("check", help="Perform static analysis and linting on EnLang source file")
+    check_parser.add_argument("filename", help="Path to EnLang file")
+
+    # Command: debug
+    debug_parser = subparsers.add_parser("debug", help="Launch interactive step-by-step debugger")
+    debug_parser.add_argument("filename", help="Path to EnLang file")
+
     # Command: repl / shell
     subparsers.add_parser("repl", help="Start interactive EnLang English REPL shell")
     subparsers.add_parser("shell", help="Start interactive EnLang English REPL shell")
@@ -77,6 +85,16 @@ def main():
             f.write(py_code)
 
         print(f"Successfully compiled '{args.filename}' -> '{out_path}'")
+
+    elif args.command == "check":
+        from enlang_core.checker import check_file
+        ok = check_file(args.filename)
+        sys.exit(0 if ok else 1)
+
+    elif args.command == "debug":
+        from enlang_core.debugger import debug_file
+        debug_file(args.filename)
+        sys.exit(0)
 
     elif args.command in ["repl", "shell"]:
         start_repl(interpreter)

@@ -1,0 +1,5 @@
+# Bad Syntax Test File
+
+set msg to "unclosed string
+if age is bigger than 18
+    display "Adult"

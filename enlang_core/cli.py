@@ -49,6 +49,30 @@ def main():
         file_path = sys.argv[2]
         build_file(file_path)
 
+    elif cmd in ("check", "lint"):
+        if len(sys.argv) < 3:
+            print("Error: Please specify a file to check.")
+            print("Usage: enlang check <filename.enlg>")
+            sys.exit(1)
+        file_path = sys.argv[2]
+        try:
+            from .checker import check_file
+        except ImportError:
+            from enlang_core.checker import check_file
+        check_file(file_path)
+
+    elif cmd in ("debug", "dbg"):
+        if len(sys.argv) < 3:
+            print("Error: Please specify a file to debug.")
+            print("Usage: enlang debug <filename.enlg>")
+            sys.exit(1)
+        file_path = sys.argv[2]
+        try:
+            from .debugger import debug_file
+        except ImportError:
+            from enlang_core.debugger import debug_file
+        debug_file(file_path)
+
     elif cmd == "server":
         port = 8000
         if "--port" in sys.argv:
@@ -139,12 +163,16 @@ USAGE:
 COMMANDS:
   run <file>          Compiles & executes an EnLang file (.enlg, .enlgf, .enlgd, .enlgs, .enlgdb)
   build <file>        Transpiles EnLang source file into native target code file (.py, .html, .css, .js, .sql)
+  check <file>        Performs static analysis and linting without execution
+  debug <file>        Launches interactive step-by-step debugger with live variable inspection
   server [--port N]   Launches EnLang HTTP Web Server on specified port (default: 8000)
   version             Displays installed compiler version & author info
   help                Shows this usage manual
 
 EXAMPLES:
   enlang run app.enlg
+  enlang check app.enlg
+  enlang debug app.enlg
   enlang build index.enlgf
   enlang server --port 8080
 """)
