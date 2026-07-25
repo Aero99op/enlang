@@ -20,14 +20,36 @@ Created and Authored by **Spandan Prayas Patra**.
 
 ---
 
-## 🚀 Quick Start & Installation
+## 🚀 Installation Options
 
-### Option 1: One-Click Windows GUI Installer
-Download and run [`EnLangInstaller.exe`](EnLangInstaller.exe) to set up EnLang globally and automatically configure your system `PATH`.
+### 1️⃣ Option 1: One-Click Windows GUI Installer (Executable)
+Download and double-click [`EnLangInstaller.exe`](https://raw.githubusercontent.com/Aero99op/enlang/main/EnLangInstaller.exe) to launch the GUI Setup Wizard. It installs EnLang and configures your system `PATH` automatically.
 
-### Option 2: CLI Package (`pip`)
+### 2️⃣ Option 2: Direct CLI Installation via `pip` (One Command)
+Run this single command in your terminal/command prompt:
 ```bash
-pip install .
+pip install git+https://github.com/Aero99op/enlang.git
+```
+
+### 3️⃣ Option 3: Manual Git Clone & Setup
+```bash
+git clone https://github.com/Aero99op/enlang.git
+cd enlang
+python installer.py
+```
+
+---
+
+## 🛠️ Developer CLI Tooling
+
+Once installed, use the global `enlang` CLI commands anywhere on your system:
+
+```bash
+enlang run main.enlg          # Compiles and executes EnLang program
+enlang check main.enlg        # Runs static analysis & syntax linter
+enlang debug main.enlg        # Launches step-by-step interactive debugger
+enlang build index.enlgf      # Transpiles source to native target file (.py, .html, .css, .js, .sql)
+enlang server --port 8000     # Launches zero-config EnLang HTTP web server
 ```
 
 ---
@@ -41,35 +63,13 @@ define list items as ["Compiler", "NLP Engine", "Web Host"]
 
 display "Welcome " plus username
 
-match username:
-    case "Spandan":
-        display "Access Level: Lead Architect"
-    default:
-        display "Access Level: Guest"
-end match
+function numbers using n:
+    if n is greater than 10 then:
+        return
+    display n
+    call numbers with (n plus 1)
 
-try:
-    set score to @python(100 * 2)
-    display "Score: " plus str(score)
-except:
-    display "Error occurred"
-```
-
-### Frontend Markup (`index.enlgf`)
-```enlangf
-page title "Lumina Workspace"
-
-create header with class "top-bar":
-    create nav with class "navbar":
-        create h1 with text "Lumina"
-        create a with href "#dashboard" with text "Dashboard"
-    close nav
-close header
-
-create main with class "container":
-    create hero with title "Welcome Developer", subtitle "Powered by EnLang Universal Core"
-    create card named infoCard with title "Edge Node", description "Zero latency transpilation"
-close main
+start numbers from 1
 ```
 
 ---
