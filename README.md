@@ -70,9 +70,9 @@ start numbers from 1
 
 ---
 
-## 📚 Official Specification & Book
-The official specification book **"EnLang for Developers: Enterprise Specification Edition (v2.0)"** is available in this repository:
-- 📄 [ENLANG_FOR_DEVELOPERS_BOOK.pdf](ENLANG_FOR_DEVELOPERS_BOOK.pdf)
+## 📚 Official Master Textbook & Specification
+The official 590-page master reference textbook **"EnLang Programming Language: The Complete Enterprise Master Reference & Architecture Guide (v2.0.0)"** is available in this repository:
+- 📄 **[enlangbookv2release.pdf](enlangbookv2release.pdf)** (590 Pages, 10 Volumes, 50 Detailed Specs, 1,000 Solved Problems)
 
 ---
 
