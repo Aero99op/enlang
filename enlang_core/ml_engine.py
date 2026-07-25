@@ -831,5 +831,405 @@ def translate_ml_line(line: str) -> str | None:
             f"plt.title('Correlation Heatmap'); plt.tight_layout(); plt.show()"
         )
 
+    # ── 19. DATA WRANGLING ────────────────────────────────────────────────────
+
+    # group df by column and compute mean / sum / count / max / min
+    m = re.match(r'^group\s+([a-zA-Z_]\w*)\s+by\s+([a-zA-Z_]\w*)\s+and\s+compute\s+(mean|sum|count|max|min|median|std)\s*$', s, re.IGNORECASE)
+    if m:
+        var, col, agg = m.group(1), m.group(2), m.group(3).lower()
+        return f"print({var}.groupby('{col}').{agg}(numeric_only=True).round(3).to_string())"
+
+    # group df by column and compute mean of col2 and store in result
+    m = re.match(r'^group\s+([a-zA-Z_]\w*)\s+by\s+([a-zA-Z_]\w*)\s+and\s+compute\s+(mean|sum|count|max|min|median|std)\s+of\s+([a-zA-Z_]\w*)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        var, grp, agg, col2, out = m.group(1), m.group(2), m.group(3).lower(), m.group(4), m.group(5)
+        return f"{out} = {var}.groupby('{grp}')['{col2}'].{agg}().reset_index()"
+
+    # filter df where column > value and store in result
+    m = re.match(r'^filter\s+([a-zA-Z_]\w*)\s+where\s+([a-zA-Z_]\w*)\s+(>|<|>=|<=|==|!=|equals?|greater\s+than|less\s+than)\s+(.+?)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        var, col, op_raw, val, out = m.group(1), m.group(2), m.group(3), m.group(4).strip(), m.group(5)
+        op_map = {"equals": "==", "equal": "==", "greater than": ">", "less than": "<"}
+        op = op_map.get(op_raw.lower(), op_raw)
+        return f"{out} = {var}[{var}['{col}'] {op} {val}].reset_index(drop=True)"
+
+    # sort df by column ascending/descending and store in result
+    m = re.match(r'^sort\s+([a-zA-Z_]\w*)\s+by\s+([a-zA-Z_]\w*)\s+(ascending|descending)(?:\s+and\s+store\s+in\s+([a-zA-Z_]\w*))?\s*$', s, re.IGNORECASE)
+    if m:
+        var, col, order, out = m.group(1), m.group(2), m.group(3).lower(), m.group(4) or m.group(1)
+        asc = "True" if order == "ascending" else "False"
+        return f"{out} = {var}.sort_values(by='{col}', ascending={asc}).reset_index(drop=True)"
+
+    # merge df1 with df2 on column and store in result
+    m = re.match(r'^merge\s+([a-zA-Z_]\w*)\s+with\s+([a-zA-Z_]\w*)\s+on\s+([a-zA-Z_]\w*)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        v1, v2, col, out = m.group(1), m.group(2), m.group(3), m.group(4)
+        return f"{out} = {v1}.merge({v2}, on='{col}', how='inner')"
+
+    # pivot df on column rows and column values
+    m = re.match(r'^pivot\s+([a-zA-Z_]\w*)\s+on\s+([a-zA-Z_]\w*)\s+rows\s+([a-zA-Z_]\w*)\s+values\s+([a-zA-Z_]\w*)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        var, idx, cols, vals, out = m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)
+        return f"{out} = {var}.pivot_table(index='{idx}', columns='{cols}', values='{vals}', aggfunc='mean')"
+
+    # add column result = col1 + col2
+    m = re.match(r'^add\s+column\s+([a-zA-Z_]\w*)\s+as\s+(.+)\s+to\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        new_col, expr, var = m.group(1), m.group(2), m.group(3)
+        return f"{var}['{new_col}'] = {expr}"
+
+    # select columns col1, col2, col3 from df and store in result
+    m = re.match(r'^select\s+columns?\s+(.+?)\s+from\s+([a-zA-Z_]\w*)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        cols_raw, var, out = m.group(1), m.group(2), m.group(3)
+        cols = [c.strip() for c in cols_raw.split(',')]
+        return f"{out} = {var}[{cols}]"
+
+    # ── 20. STATISTICAL TESTS ─────────────────────────────────────────────────
+
+    # run t-test between column A and column B and store p value in p
+    m = re.match(r'^run\s+t.test\s+between\s+(?:column\s+)?([a-zA-Z_]\w*)\s+and\s+(?:column\s+)?([a-zA-Z_]\w*)(?:\s+and\s+store\s+p\s*[-\s]?value\s+in\s+([a-zA-Z_]\w*))?\s*$', s, re.IGNORECASE)
+    if m:
+        c1, c2, pvar = m.group(1), m.group(2), m.group(3) or "_p_val"
+        v = _ctx.dataset_var
+        return (
+            f"from scipy import stats; "
+            f"_t, {pvar} = stats.ttest_ind({v}['{c1}'].dropna(), {v}['{c2}'].dropna()); "
+            f"_sig = 'SIGNIFICANT' if {pvar} < 0.05 else 'NOT SIGNIFICANT'; "
+            f"print(f'[ENLANG STATS] T-Test | t={{_t:.4f}} | p-value={{{pvar}:.6f}} | {{_sig}}')"
+        )
+
+    # run chi-square test on column A and column B
+    m = re.match(r'^run\s+chi.square\s+test\s+on\s+(?:column\s+)?([a-zA-Z_]\w*)\s+and\s+(?:column\s+)?([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        c1, c2 = m.group(1), m.group(2)
+        v = _ctx.dataset_var
+        return (
+            f"from scipy import stats; import pandas as pd; "
+            f"_ct = pd.crosstab({v}['{c1}'], {v}['{c2}']); "
+            f"_chi2, _p, _dof, _exp = stats.chi2_contingency(_ct); "
+            f"_sig = 'SIGNIFICANT' if _p < 0.05 else 'NOT SIGNIFICANT'; "
+            f"print(f'[ENLANG STATS] Chi-Square | chi2={{_chi2:.4f}} | p={{_p:.6f}} | dof={{_dof}} | {{_sig}}')"
+        )
+
+    # run anova on column A grouped by column B
+    m = re.match(r'^run\s+anova\s+on\s+(?:column\s+)?([a-zA-Z_]\w*)\s+grouped\s+by\s+(?:column\s+)?([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        val_col, grp_col = m.group(1), m.group(2)
+        v = _ctx.dataset_var
+        return (
+            f"from scipy import stats; "
+            f"_groups = [{v}[{v}['{grp_col}']==g]['{val_col}'].dropna().values for g in {v}['{grp_col}'].unique()]; "
+            f"_f, _p = stats.f_oneway(*_groups); "
+            f"_sig = 'SIGNIFICANT' if _p < 0.05 else 'NOT SIGNIFICANT'; "
+            f"print(f'[ENLANG STATS] ANOVA | F={{_f:.4f}} | p={{_p:.6f}} | {{_sig}}')"
+        )
+
+    # compute pearson correlation between column A and column B
+    m = re.match(r'^compute\s+(?:pearson\s+)?correlation\s+between\s+(?:column\s+)?([a-zA-Z_]\w*)\s+and\s+(?:column\s+)?([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        c1, c2 = m.group(1), m.group(2)
+        v = _ctx.dataset_var
+        return (
+            f"from scipy import stats; "
+            f"_corr, _p = stats.pearsonr({v}['{c1}'].dropna(), {v}['{c2}'].dropna()); "
+            f"print(f'[ENLANG STATS] Pearson Correlation | r={{_corr:.4f}} | p={{_p:.6f}}')"
+        )
+
+    # compute spearman correlation between column A and column B
+    m = re.match(r'^compute\s+spearman\s+correlation\s+between\s+(?:column\s+)?([a-zA-Z_]\w*)\s+and\s+(?:column\s+)?([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        c1, c2 = m.group(1), m.group(2)
+        v = _ctx.dataset_var
+        return (
+            f"from scipy import stats; "
+            f"_corr, _p = stats.spearmanr({v}['{c1}'].dropna(), {v}['{c2}'].dropna()); "
+            f"print(f'[ENLANG STATS] Spearman Correlation | rho={{_corr:.4f}} | p={{_p:.6f}}')"
+        )
+
+    # show outliers in column A using iqr
+    m = re.match(r'^show\s+outliers\s+in\s+(?:column\s+)?([a-zA-Z_]\w*)(?:\s+using\s+(iqr|zscore|z.score))?\s*$', s, re.IGNORECASE)
+    if m:
+        col, method = m.group(1), (m.group(2) or "iqr").lower().replace('-', '')
+        v = _ctx.dataset_var
+        if method == "iqr":
+            return (
+                f"_q1 = {v}['{col}'].quantile(0.25); _q3 = {v}['{col}'].quantile(0.75); "
+                f"_iqr = _q3 - _q1; "
+                f"_out = {v}[({v}['{col}'] < _q1 - 1.5*_iqr) | ({v}['{col}'] > _q3 + 1.5*_iqr)]; "
+                f"print(f'[ENLANG STATS] Outliers in {col} (IQR): {{len(_out)}} rows'); print(_out['{col}'].values)"
+            )
+        else:
+            return (
+                f"import numpy as np; "
+                f"_z = np.abs(({v}['{col}'] - {v}['{col}'].mean()) / {v}['{col}'].std()); "
+                f"_out = {v}[_z > 3]; "
+                f"print(f'[ENLANG STATS] Outliers in {col} (Z-Score): {{len(_out)}} rows')"
+            )
+
+    # ── 21. FEATURE SELECTION ─────────────────────────────────────────────────
+
+    # select top N features using chi2 and store in selected_X
+    m = re.match(r'^select\s+top\s+(\d+)\s+features?\s+using\s+(chi2|mutual\s*info|f.classif|rfe)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        k, method_raw, out = m.group(1), m.group(2).lower().replace(' ', ''), m.group(3)
+        method_map = {
+            "chi2":         ("chi2", "SelectKBest(chi2, k={k})"),
+            "mutualinfo":   ("mutual_info_classif", "SelectKBest(mutual_info_classif, k={k})"),
+            "fclassif":     ("f_classif", "SelectKBest(f_classif, k={k})"),
+            "rfe":          None,
+        }
+        if method_raw in ("chi2", "mutualinfo", "fclassif"):
+            scorer, selector_tmpl = method_map[method_raw]
+            selector = selector_tmpl.format(k=k)
+            return (
+                f"from sklearn.feature_selection import SelectKBest, {scorer}; "
+                f"_sel = {selector}; "
+                f"{_ctx.X_train} = _sel.fit_transform({_ctx.X_train}, {_ctx.y_train}); "
+                f"{_ctx.X_test} = _sel.transform({_ctx.X_test}); "
+                f"{out}_train = {_ctx.X_train}; {out}_test = {_ctx.X_test}; "
+                f"print(f'[ENLANG ML] Feature Selection: {k} features selected using {method_raw}')"
+            )
+
+    # ── 22. HYPERPARAMETER TUNING ──────────────────────────────────────────────
+
+    # tune random_forest classifier with grid search and store best in result
+    m = re.match(r'^tune\s+([a-zA-Z_]+(?:\s+[a-zA-Z_]+)?)\s+(?:classifier|regressor?)\s+with\s+(?:grid\s+search|gridsearch)\s*$', s, re.IGNORECASE)
+    if m:
+        algo = _resolve_algo(m.group(1))
+        mv = _ctx.model_registry.get(algo, _ctx.model_var)
+        return (
+            f"from sklearn.model_selection import GridSearchCV; "
+            f"_param_grid = {{'C': [0.1, 1, 10]}} if hasattr({mv}, 'C') else {{'n_estimators': [50, 100, 200], 'max_depth': [5, 10, None]}}; "
+            f"_gs = GridSearchCV({mv}, _param_grid, cv=5, scoring='accuracy', n_jobs=-1); "
+            f"_gs.fit({_ctx.X_train}, {_ctx.y_train}); "
+            f"print(f'[ENLANG ML] Grid Search Best Params: {{_gs.best_params_}}'); "
+            f"print(f'[ENLANG ML] Grid Search Best CV Score: {{round(_gs.best_score_*100, 2)}}%')"
+        )
+
+    # tune random_forest classifier with random search and N iterations
+    m = re.match(r'^tune\s+([a-zA-Z_]+(?:\s+[a-zA-Z_]+)?)\s+(?:classifier|regressor?)\s+with\s+(?:random\s+search|randomsearch)(?:\s+and\s+(\d+)\s+iterations?)?\s*$', s, re.IGNORECASE)
+    if m:
+        algo = _resolve_algo(m.group(1))
+        n_iter = m.group(2) or "20"
+        mv = _ctx.model_registry.get(algo, _ctx.model_var)
+        return (
+            f"from sklearn.model_selection import RandomizedSearchCV; import numpy as np; "
+            f"_param_dist = {{'n_estimators': [50,100,150,200], 'max_depth': [3,5,10,None], 'min_samples_split': [2,5,10]}}; "
+            f"_rs = RandomizedSearchCV({mv}, _param_dist, n_iter={n_iter}, cv=5, scoring='accuracy', n_jobs=-1, random_state=42); "
+            f"_rs.fit({_ctx.X_train}, {_ctx.y_train}); "
+            f"print(f'[ENLANG ML] Random Search Best Params: {{_rs.best_params_}}'); "
+            f"print(f'[ENLANG ML] Random Search Best CV Score: {{round(_rs.best_score_*100, 2)}}%')"
+        )
+
+    # ── 23. TIME SERIES ───────────────────────────────────────────────────────
+
+    # compute rolling mean of column with window N and store in result
+    m = re.match(r'^compute\s+rolling\s+(mean|sum|std|max|min)\s+of\s+(?:column\s+)?([a-zA-Z_]\w*)\s+with\s+window\s+(\d+)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        agg, col, win, out = m.group(1).lower(), m.group(2), m.group(3), m.group(4)
+        v = _ctx.dataset_var
+        return f"{out} = {v}['{col}'].rolling(window={win}).{agg}()"
+
+    # lag column by N periods and store in result
+    m = re.match(r'^lag\s+(?:column\s+)?([a-zA-Z_]\w*)\s+by\s+(\d+)\s+periods?\s+and\s+store\s+in\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        col, n, out = m.group(1), m.group(2), m.group(3)
+        v = _ctx.dataset_var
+        return f"{out} = {v}['{col}'].shift({n})"
+
+    # compute time series trend of column
+    m = re.match(r'^compute\s+(?:time\s+series\s+)?trend\s+of\s+(?:column\s+)?([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        col = m.group(1)
+        v = _ctx.dataset_var
+        return (
+            f"import numpy as np; "
+            f"_x = np.arange(len({v})); "
+            f"_coef = np.polyfit(_x, {v}['{col}'].fillna(method='ffill'), 1); "
+            f"print(f'[ENLANG TS] Trend in {col}: slope={{_coef[0]:.4f}} (positive=upward, negative=downward)')"
+        )
+
+    # ── 24. IMBALANCED DATA ───────────────────────────────────────────────────
+
+    # balance classes using smote
+    m = re.match(r'^balance\s+classes?\s+using\s+smote\s*$', s, re.IGNORECASE)
+    if m:
+        Xt, yt = _ctx.X_train, _ctx.y_train
+        Xt_expr = f"({Xt}.toarray() if hasattr({Xt}, 'toarray') else {Xt})"
+        return (
+            f"from imblearn.over_sampling import SMOTE; "
+            f"_sm = SMOTE(random_state=42); "
+            f"{Xt}, {yt} = _sm.fit_resample({Xt_expr}, {yt}); "
+            f"import collections; print(f'[ENLANG ML] SMOTE applied | Class distribution: {{dict(collections.Counter({yt}))}}')"
+        )
+
+    # oversample minority class using random oversampling
+    m = re.match(r'^oversample\s+(?:minority\s+class\s+)?using\s+(?:random\s+oversampling|ros)\s*$', s, re.IGNORECASE)
+    if m:
+        Xt, yt = _ctx.X_train, _ctx.y_train
+        Xt_expr = f"({Xt}.toarray() if hasattr({Xt}, 'toarray') else {Xt})"
+        return (
+            f"from imblearn.over_sampling import RandomOverSampler; "
+            f"_ros = RandomOverSampler(random_state=42); "
+            f"{Xt}, {yt} = _ros.fit_resample({Xt_expr}, {yt}); "
+            f"import collections; print(f'[ENLANG ML] RandomOverSampler applied | Class dist: {{dict(collections.Counter({yt}))}}')"
+        )
+
+    # undersample majority class
+    m = re.match(r'^undersample\s+(?:majority\s+class\s+)?using\s+(?:random\s+undersampling|rus)\s*$', s, re.IGNORECASE)
+    if m:
+        Xt, yt = _ctx.X_train, _ctx.y_train
+        Xt_expr = f"({Xt}.toarray() if hasattr({Xt}, 'toarray') else {Xt})"
+        return (
+            f"from imblearn.under_sampling import RandomUnderSampler; "
+            f"_rus = RandomUnderSampler(random_state=42); "
+            f"{Xt}, {yt} = _rus.fit_resample({Xt_expr}, {yt}); "
+            f"import collections; print(f'[ENLANG ML] RandomUnderSampler applied | Class dist: {{dict(collections.Counter({yt}))}}')"
+        )
+
+    # ── 25. ANOMALY DETECTION ──────────────────────────────────────────────────
+
+    # detect anomalies using isolation forest and store in result
+    m = re.match(r'^detect\s+anomalies?\s+using\s+(?:isolation\s+forest|isolationforest)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        out = m.group(1)
+        Xv = _ctx.X_var
+        return (
+            f"from sklearn.ensemble import IsolationForest; "
+            f"_ifor = IsolationForest(contamination=0.05, random_state=42); "
+            f"{out} = _ifor.fit_predict({Xv}); "
+            f"import collections; print(f'[ENLANG ML] Isolation Forest | Anomalies: {{list({out}).count(-1)}} | Normal: {{list({out}).count(1)}}')"
+        )
+
+    # detect anomalies using local outlier factor
+    m = re.match(r'^detect\s+anomalies?\s+using\s+(?:local\s+outlier\s+factor|lof)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        out = m.group(1)
+        Xv = _ctx.X_var
+        return (
+            f"from sklearn.neighbors import LocalOutlierFactor; "
+            f"_lof = LocalOutlierFactor(n_neighbors=20); "
+            f"{out} = _lof.fit_predict({Xv}); "
+            f"import collections; print(f'[ENLANG ML] LOF | Anomalies: {{list({out}).count(-1)}} | Normal: {{list({out}).count(1)}}')"
+        )
+
+    # ── 26. NLP EXTRAS ────────────────────────────────────────────────────────
+
+    # analyze sentiment of column text and store in result
+    m = re.match(r'^analyze\s+sentiment\s+of\s+(?:column\s+)?([a-zA-Z_]\w*)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        col, out = m.group(1), m.group(2)
+        v = _ctx.dataset_var
+        return (
+            f"from textblob import TextBlob; "
+            f"{out} = {v}['{col}'].fillna('').apply(lambda t: TextBlob(str(t)).sentiment.polarity); "
+            f"print(f'[ENLANG NLP] Sentiment | Mean: {{round({out}.mean(), 3)}} | Positive: {{({out}>0).sum()}} | Negative: {{({out}<0).sum()}} | Neutral: {{({out}==0).sum()}}')"
+        )
+
+    # show word frequency of column text top N words
+    m = re.match(r'^show\s+word\s+frequency\s+of\s+(?:column\s+)?([a-zA-Z_]\w*)(?:\s+top\s+(\d+))?\s*$', s, re.IGNORECASE)
+    if m:
+        col, top_n = m.group(1), int(m.group(2) or 20)
+        v = _ctx.dataset_var
+        return (
+            f"from collections import Counter; import re as _re; "
+            f"_all_words = ' '.join({v}['{col}'].fillna('').str.lower()).split(); "
+            f"_wf = Counter(_all_words).most_common({top_n}); "
+            f"print(f'\\n=== Top {top_n} Words in {col} ==='); "
+            f"[print(f'  {{w:<25}} {{c}}') for w, c in _wf]"
+        )
+
+    # compute tfidf similarity between "text1" and "text2"
+    m = re.match(r'^compute\s+similarity\s+between\s+["\'](.+?)["\']\s+and\s+["\'](.+?)["\']\s+and\s+store\s+in\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        t1, t2, out = m.group(1), m.group(2), m.group(3)
+        return (
+            f"from sklearn.feature_extraction.text import TfidfVectorizer; "
+            f"from sklearn.metrics.pairwise import cosine_similarity; "
+            f"_sim_vec = TfidfVectorizer().fit_transform(['{t1}', '{t2}']); "
+            f"{out} = round(float(cosine_similarity(_sim_vec[0], _sim_vec[1])[0][0]) * 100, 2); "
+            f"print(f'[ENLANG NLP] Cosine Similarity: {{{out}}}%')"
+        )
+
+    # ── 27. PIPELINE ──────────────────────────────────────────────────────────
+
+    # create pipeline with tfidf and naive_bayes
+    m = re.match(r'^create\s+pipeline\s+with\s+tfidf\s+and\s+([a-zA-Z_]+(?:\s+[a-zA-Z_]+)?)\s*$', s, re.IGNORECASE)
+    if m:
+        algo = _resolve_algo(m.group(1))
+        if algo in _CLASSIFIERS:
+            mod, cls, init = _CLASSIFIERS[algo]
+            return (
+                f"from sklearn.pipeline import Pipeline; "
+                f"from sklearn.feature_extraction.text import TfidfVectorizer; "
+                f"from {mod} import {cls}; "
+                f"{_ctx.pipeline_var} = Pipeline([('tfidf', TfidfVectorizer(stop_words='english', max_features=10000)), ('{algo}', {init})])"
+            )
+
+    # train pipeline on training data
+    m = re.match(r'^train\s+pipeline\s+on\s+training\s+data\s*$', s, re.IGNORECASE)
+    if m:
+        return (
+            f"{_ctx.pipeline_var}.fit({_ctx.X_train}, {_ctx.y_train}); "
+            f"print('[ENLANG ML] Pipeline trained!')"
+        )
+
+    # evaluate pipeline accuracy and store in result
+    m = re.match(r'^evaluate\s+pipeline\s+accuracy\s+and\s+store\s+in\s+([a-zA-Z_]\w*)\s*$', s, re.IGNORECASE)
+    if m:
+        out = m.group(1)
+        return (
+            f"from sklearn.metrics import accuracy_score; "
+            f"_pipe_pred = {_ctx.pipeline_var}.predict({_ctx.X_test}); "
+            f"{out} = round(accuracy_score({_ctx.y_test}, _pipe_pred) * 100, 2); "
+            f"print(f'[ENLANG ML] Pipeline Accuracy: {{{out}}}%')"
+        )
+
+    # ── 28. EDA / DATA PROFILING ──────────────────────────────────────────────
+
+    # generate eda report
+    m = re.match(r'^generate\s+(?:eda\s+)?(?:report|profile)\s*$', s, re.IGNORECASE)
+    if m:
+        v = _ctx.dataset_var
+        return (
+            f"import pandas as pd; import numpy as np; "
+            f"print('\\n' + '='*70); print('  FULL DATASET PROFILE'); print('='*70); "
+            f"print(f'Shape: {{{v}.shape}}'); "
+            f"print(f'\\nDtypes:\\n{{{v}.dtypes.to_string()}}'); "
+            f"print(f'\\nMissing Values:\\n{{{v}.isnull().sum().to_string()}}'); "
+            f"print(f'\\nDuplicate Rows: {{{v}.duplicated().sum()}}'); "
+            f"print(f'\\nNumeric Statistics:\\n{{{v}.describe().round(3).to_string()}}'); "
+            f"print('='*70)"
+        )
+
+    # compute mutual information between features and label
+    m = re.match(r'^compute\s+mutual\s+information\s+between\s+features?\s+and\s+(?:label|target)\s*$', s, re.IGNORECASE)
+    if m:
+        return (
+            f"from sklearn.feature_selection import mutual_info_classif; import numpy as np; "
+            f"_Xt = ({_ctx.X_train}.toarray() if hasattr({_ctx.X_train}, 'toarray') else {_ctx.X_train}); "
+            f"_mi = mutual_info_classif(_Xt, {_ctx.y_train}, random_state=42); "
+            f"print(f'[ENLANG ML] Mutual Info | Mean: {{_mi.mean():.4f}} | Max: {{_mi.max():.4f}} | Features > 0: {{(_mi>0).sum()}}')"
+        )
+
+    # ── 29. REGRESSION EXTRA METRICS ──────────────────────────────────────────
+
+    # evaluate regression model metrics
+    m = re.match(r'^evaluate\s+regression\s+(?:metrics?|model)\s*$', s, re.IGNORECASE)
+    if m:
+        mv = _ctx.model_var
+        Xt_expr = f"({_ctx.X_test}.toarray() if hasattr({_ctx.X_test}, 'toarray') else {_ctx.X_test})"
+        return (
+            f"from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score; import math; "
+            f"_yp = {mv}.predict({Xt_expr}); "
+            f"_rmse = round(math.sqrt(mean_squared_error({_ctx.y_test}, _yp)), 4); "
+            f"_mae  = round(mean_absolute_error({_ctx.y_test}, _yp), 4); "
+            f"_r2   = round(r2_score({_ctx.y_test}, _yp), 4); "
+            f"_n = len({_ctx.y_test}); _k = {Xt_expr}.shape[1] if hasattr({Xt_expr}, 'shape') else 1; "
+            f"_adj_r2 = round(1 - (1-_r2)*(_n-1)/(_n-_k-1), 4); "
+            f"print(f'[ENLANG ML] RMSE: {{_rmse}} | MAE: {{_mae}} | R2: {{_r2}} | Adjusted R2: {{_adj_r2}}')"
+        )
+
     # ── Not an ML line ────────────────────────────────────────────────────────
     return None
