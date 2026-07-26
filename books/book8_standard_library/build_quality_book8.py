@@ -18,15 +18,15 @@ def clean_text_for_reportlab(text):
     text = text.replace("<", "&lt;").replace(">", "&gt;")
     text = text.replace("___B_OPEN___", "<b>").replace("___B_CLOSE___", "</b>")
     text = text.replace("___I_OPEN___", "<i>").replace("___I_CLOSE___", "</i>")
-    text = text.replace("___U_OPEN___", "<u>").replace("___U_CLOSE___", "</u>")
+    text = text.replace("___U_OPEN___", "<u>").replace("</u>", "___U_CLOSE___")
     return text
 
 def name_from_title(title_str):
     return title_str.split('(')[0].strip()
 
-def generate_beginner_master_book7():
-    pdf_path = "book7_enlang_standard_library.pdf"
-    print("Generating 500+ Page Absolute Beginner Master PDF for Book 7 (EnLang Standard Library & SDK)...")
+def generate_beginner_master_book8():
+    pdf_path = "book8_enlang_standard_library.pdf"
+    print("Generating 500+ Page Absolute Beginner Master PDF for Book 8 (EnLang Standard Library, SDK & Python Interop)...")
 
     doc = SimpleDocTemplate(
         pdf_path,
@@ -96,22 +96,22 @@ def generate_beginner_master_book7():
 
     # ── Cover Page ──────────────────────────────────────────────────────────
     story.append(Spacer(1, 80))
-    story.append(Paragraph("EnLang Standard Library & SDK", title_style))
-    story.append(Paragraph("<b>The Master Standard Library Reference (String, Math, Collections, File System, Networking, HTTP, Crypto, Compression, Encoding, Date Time, JSON, YAML, XML, CSV, Regex, Reflection, Threading, Async, AI SDK, Graphics SDK, Multimedia SDK)</b>", subtitle_style))
+    story.append(Paragraph("EnLang Standard Library, SDK & Python Interop", title_style))
+    story.append(Paragraph("<b>The Master Standard Library Reference & Full Python Ecosystem Interoperability (You Can Use ANY Python Library in EnLang!)</b>", subtitle_style))
     story.append(HRFlowable(width="100%", thickness=3, color=colors.HexColor('#6366F1'), spaceAfter=25))
     story.append(Spacer(1, 20))
     story.append(Paragraph("<b>Author:</b> Spandan Prayas Patra", body_style))
-    story.append(Paragraph("<b>Designed for Zero-Experience Beginners (500+ Pages):</b> Complete, non-lazy reference manual covering all 21 EnLang Standard Libraries and SDK modules from absolute scratch.", body_style))
-    story.append(Paragraph("<b>Target Audience:</b> First-Time Programmers, Software Engineers, SDK Architects, Enterprise Developers", body_style))
+    story.append(Paragraph("<b>Designed for Zero-Experience Beginners (500+ Pages):</b> Complete, non-lazy reference manual covering all 21 EnLang Standard Libraries, SDK modules, AND 100% full PyPI / Python library interoperability (`use python library \"...\"`).", body_style))
+    story.append(Paragraph("<b>Target Audience:</b> First-Time Programmers, Software Engineers, Python Developers, SDK Architects", body_style))
     story.append(PageBreak())
 
-    # PART 0: ABSOLUTE BEGINNER FOUNDATIONS FOR STANDARD LIBRARIES & SDKs
-    BEGINNER_FOUNDATIONS_BOOK7 = [
+    # PART 0: ABSOLUTE BEGINNER FOUNDATIONS FOR STANDARD LIBRARIES, SDKs & PYTHON INTEROP
+    BEGINNER_FOUNDATIONS_BOOK8 = [
         {
             "num": "0.1",
-            "part": "Part 0: Absolute Beginner Foundations — Standard Library & SDK",
+            "part": "Part 0: Absolute Beginner Foundations — Standard Library & Python Interop",
             "title": "What is a Standard Library & SDK?",
-            "intro": "Welcome to the EnLang Standard Library & SDK Master Reference! When you build a house, you don't forge your own nails or manufacture your own bricks from dirt—you use pre-made, standardized materials. In programming, **Standard Libraries and SDKs** are pre-built toolboxes that give you built-in functions for math, files, networking, AI, and graphics so you never have to reinvent the wheel.",
+            "intro": "Welcome to Book 8 of the EnLang Master Series! When you build a house, you don't forge your own nails or manufacture your own bricks from dirt—you use pre-made, standardized materials. In programming, **Standard Libraries and SDKs** are pre-built toolboxes that give you built-in functions for math, files, networking, AI, and graphics so you never have to reinvent the wheel.",
             "objectives": "• Understand what a Standard Library (StdLib) and Software Development Kit (SDK) mean in plain English.\n• Learn how built-in modules save thousands of lines of code.\n• Understand how to import and use standard library functions in EnLang.",
             "prereqs": "No prior programming experience required! All you need is curiosity.",
             "what": "• **Standard Library (StdLib)**: A collection of built-in functions included directly with EnLang (e.g. `String`, `Math`, `Collections`, `FileSystem`, `JSON`).\n• **SDK (Software Development Kit)**: Advanced specialized toolkits for complex domains (e.g. `AI SDK`, `Graphics SDK`, `Multimedia SDK`).",
@@ -143,15 +143,53 @@ def generate_beginner_master_book7():
             "mini_project": "Build a System Config Loader (`config_loader.enlg`) that reads a JSON file, cleans whitespace from keys, and outputs a formatted status report.",
             "interview_qs": "Q1: What is the purpose of a Standard Library in language design?\nA: A Standard Library provides a trusted, high-performance, cross-platform set of fundamental utility functions so developers don't have to rewrite basic algorithms for files, math, and networking.",
             "summary": "Standard Libraries and SDKs provide built-in toolboxes for math, files, networking, and AI.",
-            "whats_next": "In Chapter 0.2, we will explore the String, Math & Collections Libraries!"
+            "whats_next": "In Chapter 0.2, we will explore Core Utilities: String, Math & Collections!"
         },
         {
             "num": "0.2",
-            "part": "Part 0: Absolute Beginner Foundations — Standard Library & SDK",
+            "part": "Part 0: Absolute Beginner Foundations — Standard Library & Python Interop",
+            "title": "Full Python Interoperability: You Can Use ANY Python Library in EnLang!",
+            "intro": "Here is the ultimate secret power of EnLang: **YOU CAN USE ANY PYTHON LIBRARY DIRECTLY INSIDE ENLANG!** Whether it's `PyTorch`, `TensorFlow`, `Scikit-Learn`, `Pandas`, `NumPy`, `Requests`, `Flask`, `FastAPI`, `OpenCV`, or any of the 500,000+ packages on PyPI, EnLang has 100% native Python Interoperability!",
+            "objectives": "• Learn how to import ANY Python PyPI package using `use python library \"package_name\"`.\n• Call Python methods, classes, and functions directly inside natural EnLang code.\n• Understand how EnLang transpiles directly to Python 3 for 100% zero-friction PyPI compatibility.",
+            "prereqs": "Completion of Chapter 0.1.",
+            "what": "EnLang is designed with a **100% Native Python 3 Transpilation Engine**. This means any library installed via `pip install <package>` in Python can be imported and executed inside EnLang using `use python library \"<package>\"`!",
+            "why": "Why restrict developers to a small set of libraries? With Python Interoperability, EnLang developers instantly get access to the largest software ecosystem on Earth!",
+            "real_world": "Importing `torch` for AI deep learning, `cv2` for computer vision, `scipy` for scientific computing, `fastapi` for web APIs.",
+            "internal_working": "The EnLang transpiler maps `use python library \"module\"` directly to Python `import module`, binding method invocations to native Python object handles.",
+            "syntax": "# Importing ANY Python Package:\nuse python library \"torch\"\nuse python library \"cv2\"\nuse python library \"scipy\"\n\nset tensor to create python object torch.tensor([1, 2, 3])",
+            "rules": "1. Package must be installed in your Python environment (`pip install package_name`).\n2. Use `use python library \"<name>\"` to import external Python modules.\n3. Access Python classes and functions using dot notation (`module.function()`).",
+            "ebnf": "PyImport ::= 'use' 'python' 'library' StringLiteral '\\n'",
+            "keywords": "• `use python library`: Imports any external Python PyPI module into EnLang scope.\n• `create python object`: Instantiates a Python class or object handle.",
+            "basic_example": "# Importing PyTorch into EnLang\nuse python library \"torch\"\nset my_tensor to torch.tensor([10.0, 20.0, 30.0])\ndisplay \"PyTorch Tensor Created in EnLang: \" + my_tensor",
+            "inter_example": "# Using OpenCV for Computer Vision in EnLang\nuse python library \"cv2\"\nset image to cv2.imread(\"photo.jpg\")\nset gray_img to cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)\ncv2.imwrite(\"gray_photo.jpg\", gray_img)\ndisplay \"OpenCV Image Filter Applied Successfully!\"",
+            "adv_example": "# Advanced AI Pipeline Using Custom PyPI Libraries\nuse python library \"transformers\"\nuse python library \"torch\"\nset model to transformers.AutoModelForCausalLM.from_pretrained(\"gpt2\")\nset tokenizer to transformers.AutoTokenizer.from_pretrained(\"gpt2\")\nset inputs to tokenizer(\"EnLang and Python working together\", return_tensors=\"pt\")\nset outputs to model.generate(inputs.input_ids, max_length=50)\nset text to tokenizer.decode(outputs[0], skip_special_tokens=True)\ndisplay \"PyPI HuggingFace Generated Text: \" + text",
+            "generated_code": "# Target Output (Python 3)\nimport transformers, torch\nmodel = transformers.AutoModelForCausalLM.from_pretrained('gpt2')\ntokenizer = transformers.AutoTokenizer.from_pretrained('gpt2')\ninputs = tokenizer('EnLang and Python working together', return_tensors='pt')\noutputs = model.generate(inputs.input_ids, max_length=50)\ntext = tokenizer.decode(outputs[0], skip_special_tokens=True)\nprint('PyPI HuggingFace Generated Text: ' + text)",
+            "walkthrough": "Line 1-2: Imports HuggingFace `transformers` and `torch` Python PyPI packages.\nLine 3-4: Loads pre-trained GPT-2 model and tokenizer directly inside EnLang.\nLine 5-6: Encodes prompt, generates text tokens, and decodes output.\nLine 7: Displays generated text output.",
+            "compiler_walkthrough": "1. Lexer parses `use python library` → builds `PyImportASTNode`.\n2. Generator emits Python `import package` statement.",
+            "memory_behavior": "Allocates Python object references in Python CPython heap memory.",
+            "perf_complexity": "Time Complexity: Direct CPython native execution (Zero overhead!).",
+            "error_handling": "If package is not installed via pip, EnLang raises: `PythonModuleNotFoundError: Module 'torch' not installed. Run 'pip install torch' on line X`.",
+            "common_mistakes": "• Forgetting to run `pip install <package>` before importing in EnLang.\n• Misspelling Python PyPI module names.",
+            "best_practices": "• You can combine native EnLang syntax with ANY Python package seamlessly!",
+            "security_notes": "Sanitizes imported Python module names to prevent malicious script injection.",
+            "linter_rules": "`enlang check` verifies that specified Python packages are installed.",
+            "debugging": "Run `python -m pip list` to check installed PyPI packages.",
+            "version_compat": "Compatible with all Python 3.8+ PyPI packages.",
+            "lang_comp": "EnLang `use python library \"torch\"` vs Python `import torch`: 100% 1:1 seamless compatibility.",
+            "faq": "Q: Can I really use ANY Python library in EnLang?\nA: YES! 100%! Because EnLang transpiles directly to Python 3, all 500,000+ PyPI packages work out of the box!",
+            "exercises": "1. Import the Python `math` library and calculate `math.sin(1.57)`.\n2. Import `numpy` and create a 2x2 matrix.",
+            "mini_project": "Build a PyPI Package Tester (`pypi_test.enlg`) that imports `requests` and `beautifulsoup4` to scrape a web page and extract all links.",
+            "interview_qs": "Q1: How does EnLang achieve 100% Python Interoperability?\nA: EnLang features a 1:1 Python 3 AST transpilation engine that translates EnLang directives into clean Python code, allowing direct access to CPython runtime objects and PyPI libraries.",
+            "summary": "EnLang supports 100% Python Interoperability! You can import and use ANY PyPI library in EnLang.",
+            "whats_next": "In Chapter 0.3, we will explore Core Utilities: String, Math & Collections!"
+        },
+        {
+            "num": "0.3",
+            "part": "Part 0: Absolute Beginner Foundations — Standard Library & Python Interop",
             "title": "Core Utilities: String, Math & Collections Libraries",
             "intro": "The foundation of all programming rests on three core pillars: manipulating text (**String Library**), calculating numbers (**Math Library**), and managing groups of items (**Collections Library**). This chapter covers these fundamental utility libraries.",
             "objectives": "• Master text manipulation using the `String` library (trim, upper, lower, split, replace).\n• Perform advanced math using the `Math` library (abs, round, ceil, floor, pow, sqrt).\n• Manage Lists, Maps, Sets, and Queues using the `Collections` library.",
-            "prereqs": "Completion of Chapter 0.1.",
+            "prereqs": "Completion of Chapter 0.2.",
             "what": "• **String Library**: Functions to search, clean, split, and format text strings.\n• **Math Library**: Functions to calculate trigonometric, logarithmic, and power calculations.\n• **Collections Library**: Data structures to store multiple items:\n  - **List**: Ordered list of items (`[1, 2, 3]`).\n  - **Map (Dictionary)**: Key-value pairs (`{\"name\": \"Alice\", \"age\": 25}`).\n  - **Set**: Collection of unique items with no duplicates (`{1, 2, 3}`).\n  - **Queue**: First-In-First-Out (FIFO) pipeline.",
             "why": "Text cleaning, math formulas, and item lists appear in 99% of all software applications. Mastering these 3 libraries gives you the power to solve almost any data problem.",
             "real_world": "Formatting user profile names, calculating shopping cart discounts, storing user session maps.",
@@ -181,15 +219,15 @@ def generate_beginner_master_book7():
             "mini_project": "Build a Shopping Cart Manager (`cart.enlg`) that adds items to a List, calculates total price, applies a 10% discount, and rounds to 2 decimal places.",
             "interview_qs": "Q1: What is the time complexity of looking up a key in a Map (Hash Table)?\nA: Average time complexity is O(1) constant time because the key is hashed directly to a memory bucket index.",
             "summary": "String processes text, Math calculates numbers, Collections manage Lists, Maps, Sets, and Queues.",
-            "whats_next": "In Chapter 0.3, we will explore FileSystem, JSON, YAML, XML & CSV Libraries!"
+            "whats_next": "In Chapter 0.4, we will explore FileSystem, JSON, YAML, XML & CSV Libraries!"
         },
         {
-            "num": "0.3",
-            "part": "Part 0: Absolute Beginner Foundations — Standard Library & SDK",
+            "num": "0.4",
+            "part": "Part 0: Absolute Beginner Foundations — Standard Library & Python Interop",
             "title": "I/O & Formats: FileSystem, JSON, YAML, XML & CSV Libraries",
             "intro": "Software must read and write data to files on disk and exchange data over web APIs using structured data formats (**JSON, YAML, XML, CSV**). This chapter covers file system operations and data parsing libraries.",
             "objectives": "• Read and write files on disk using the `FileSystem` library.\n• Parse and serialize JSON using the `JSON` library.\n• Work with configuration files using `YAML`, `XML`, and `CSV` libraries.",
-            "prereqs": "Completion of Chapter 0.2.",
+            "prereqs": "Completion of Chapter 0.3.",
             "what": "• **FileSystem Library**: Read, write, copy, delete, and list files and folders on disk.\n• **JSON Library**: Parse `{\"key\": \"val\"}` text into data maps.\n• **YAML Library**: Parse indentation-based configuration files.\n• **XML Library**: Parse tag-based data `<user><name>Alice</name></user>`.\n• **CSV Library**: Read spreadsheet comma-separated tables.",
             "why": "Web APIs communicate in JSON, config files use YAML, legacy enterprise systems use XML, and spreadsheets use CSV. Having standard libraries for all 5 formats allows seamless data exchange.",
             "real_world": "Loading app settings from `config.yaml`, parsing REST API JSON responses, exporting CSV reports.",
@@ -219,15 +257,15 @@ def generate_beginner_master_book7():
             "mini_project": "Build a Configuration Converter (`config_converter.enlg`) that reads a `settings.yaml` file and converts it into a `settings.json` file.",
             "interview_qs": "Q1: What is Serialization and Deserialization?\nA: Serialization converts an in-memory object into a text string (like JSON); Deserialization converts a text string back into an in-memory object.",
             "summary": "FileSystem reads/writes disk files. JSON, YAML, XML, and CSV parse structured data formats.",
-            "whats_next": "In Chapter 0.4, we will explore Networking, HTTP, Cryptography & Security Libraries!"
+            "whats_next": "In Chapter 0.5, we will explore Networking, HTTP, Cryptography & Security Libraries!"
         },
         {
-            "num": "0.4",
-            "part": "Part 0: Absolute Beginner Foundations — Standard Library & SDK",
+            "num": "0.5",
+            "part": "Part 0: Absolute Beginner Foundations — Standard Library & Python Interop",
             "title": "Network & Security: Networking, HTTP, Cryptography, Compression & Encoding Libraries",
             "intro": "Modern applications must connect to web APIs over the internet (**HTTP / Networking**), secure confidential data (**Cryptography**), compress large files (**Compression**), and encode binary data (**Encoding**). This chapter covers network and security standard libraries.",
             "objectives": "• Send HTTP GET and POST requests using the `HTTP` library.\n• Encrypt data and hash passwords using the `Cryptography` library.\n• Compress files using `Compression` and encode binary using `Encoding` (Base64/Hex).",
-            "prereqs": "Completion of Chapter 0.3.",
+            "prereqs": "Completion of Chapter 0.4.",
             "what": "• **Networking Library**: Low-level TCP/UDP socket connections.\n• **HTTP Library**: High-level web requests (`GET`, `POST`, `PUT`, `DELETE`).\n• **Cryptography Library**: AES-256 encryption, RSA signatures, and SHA-256 hashing.\n• **Compression Library**: Zip, Gzip, and Zstd file compression.\n• **Encoding Library**: Base64, Hex, and URL percent encoding.",
             "why": "Downloading web API data, zipping log files, encoding images into Base64 strings, and hashing passwords are daily requirements for modern web applications.",
             "real_world": "Fetching weather data from REST APIs, encrypting credit cards, sending Base64 email attachments.",
@@ -257,15 +295,15 @@ def generate_beginner_master_book7():
             "mini_project": "Build an Automated API Monitor (`api_monitor.enlg`) that checks 3 web URLs every 60 seconds and logs HTTP response status codes to a compressed file.",
             "interview_qs": "Q1: What is the difference between HTTP GET and POST requests?\nA: GET requests retrieve data from a server without modifying anything; POST requests send new data to a server to create or update resources.",
             "summary": "HTTP connects to web APIs, Cryptography secures data, Compression shrinks files, Encoding converts binary to text.",
-            "whats_next": "In Chapter 0.5, we will explore Advanced SDKs: AI, Graphics, Multimedia, Regex, Reflection & Concurrency!"
+            "whats_next": "In Chapter 0.6, we will explore Advanced SDKs: AI, Graphics, Multimedia, Regex, Reflection & Concurrency!"
         },
         {
-            "num": "0.5",
-            "part": "Part 0: Absolute Beginner Foundations — Standard Library & SDK",
+            "num": "0.6",
+            "part": "Part 0: Absolute Beginner Foundations — Standard Library & Python Interop",
             "title": "Advanced SDKs & Systems: Regex, Reflection, Threading, Async, AI, Graphics & Multimedia SDKs",
             "intro": "The final frontier of the EnLang ecosystem consists of advanced systems and specialized SDKs: **Regex** (pattern matching), **Reflection** (code inspection), **Threading & Async** (parallel execution), **AI SDK** (LLMs & Neural Nets), **Graphics SDK** (2D/3D drawing), and **Multimedia SDK** (Audio & Video).",
             "objectives": "• Master pattern matching using the `Regex` library.\n• Execute code in parallel using `Threading` and `Async` libraries.\n• Build advanced applications using `AI SDK`, `Graphics SDK`, and `Multimedia SDK`.",
-            "prereqs": "Completion of Chapter 0.4.",
+            "prereqs": "Completion of Chapter 0.5.",
             "what": "• **Regex Library**: Search text using regular expression patterns (`r\"[a-z0-9]+\"`).\n• **Reflection Library**: Inspect object properties and types at runtime.\n• **Threading & Async Libraries**: Run background tasks in parallel threads.\n• **AI SDK**: Advanced LLM text generation, embeddings, and neural models.\n• **Graphics SDK**: Render 2D shapes, canvas drawings, and 3D graphics.\n• **Multimedia SDK**: Play audio files, record microphone sound, and render video frames.",
             "why": "Advanced applications require parallel background execution, AI intelligence, interactive visual UI graphics, and audio playback. These SDKs unlock complete full-stack power.",
             "real_world": "ChatGPT AI chatbots, parallel background file processing, 2D game rendering, video player controls.",
@@ -295,12 +333,12 @@ def generate_beginner_master_book7():
             "mini_project": "Build an AI Image Card Generator (`ai_card.enlg`) that prompts an LLM for a quote, renders it on a stylized graphics canvas, and exports PNG image cards.",
             "interview_qs": "Q1: What is ReDoS (Regular Expression Denial of Service)?\nA: A vulnerability where a poorly constructed regex pattern with exponential backtracking causes the CPU to freeze at 100% usage when evaluated against malicious input.",
             "summary": "Regex matches patterns, Async/Threading run tasks in parallel, AI/Graphics/Multimedia SDKs power modern apps.",
-            "whats_next": "Congratulations! You have completed Part 0 (Beginner Foundations). You are now ready for Part 1 (EnLang Standard Library & SDK Engineering Specification)!"
+            "whats_next": "Congratulations! You have completed Part 0 (Beginner Foundations). You are now ready for Part 1 (EnLang Standard Library, SDK & Python Interop Engineering Specification)!"
         }
     ]
 
     # Add Part 0 Beginner Foundations to Story
-    for chap in BEGINNER_FOUNDATIONS_BOOK7:
+    for chap in BEGINNER_FOUNDATIONS_BOOK8:
         story.append(Paragraph(f"<b>{chap['part']}</b>", part_header_style))
         story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#6366F1'), spaceAfter=12))
 
@@ -311,7 +349,7 @@ def generate_beginner_master_book7():
             ("2. Learning Objectives", chap['objectives']),
             ("3. Prerequisites", chap['prereqs']),
             ("4. What is it? (Simple Student Explanation)", chap['what']),
-            ("5. Why do we use it in Standard Libraries & SDKs?", chap['why']),
+            ("5. Why do we use it in Standard Libraries & Python Interop?", chap['why']),
             ("6. Real-World Industry Applications", chap['real_world']),
             ("7. Internal Engine Working", chap['internal_working']),
             ("8. Natural English Syntax Format", chap['syntax']),
@@ -353,68 +391,68 @@ def generate_beginner_master_book7():
         story.append(Spacer(1, 14))
         story.append(PageBreak())
 
-    # Build 150 deep Standard Library & SDK chapters across 6 Parts for 500+ Pages
+    # Build 150 deep Standard Library & Python Interop chapters across 6 Parts for 500+ Pages
     BASE_STDLIB_TOPICS = [
-        # Part 1: String, Math, Collections & Data Formats
-        ("1.1", "Part 1: Core Standard Libraries & Formats", "String Standard Library (`use library \"String\"`)",
+        # Part 1: String, Math, Collections & Python Interop
+        ("1.1", "Part 1: Core Standard Libraries & Python Interop", "String Standard Library (`use library \"String\"`)",
          "manipulating, trimming, splitting, and formatting text strings",
          "It executes string cleaning, substring extractions, and case conversions.",
          "use library \"String\"\nset res to trim whitespace in \" text \"",
          "text = ' text '.strip()"),
 
-        ("1.2", "Part 1: Core Standard Libraries & Formats", "Math Standard Library (`use library \"Math\"`)",
+        ("1.2", "Part 1: Core Standard Libraries & Python Interop", "Python PyPI Interoperability (`use python library`)",
+         "importing and executing ANY external Python PyPI package inside EnLang",
+         "It transpiles directly to native Python imports (`import package`).",
+         "use python library \"torch\"\nset t to torch.tensor([1, 2, 3])",
+         "import torch; t = torch.tensor([1, 2, 3])"),
+
+        ("1.3", "Part 1: Core Standard Libraries & Python Interop", "Math Standard Library (`use library \"Math\"`)",
          "calculating square roots, logarithms, powers, and trigonometry",
          "It executes floating-point math calculations and trigonometric transformations.",
          "use library \"Math\"\nset res to calculate square root of 144",
          "import math; res = math.sqrt(144)"),
 
-        ("1.3", "Part 1: Core Standard Libraries & Formats", "Collections Library: Lists, Maps, Sets & Queues",
+        ("1.4", "Part 1: Core Standard Libraries & Python Interop", "Collections Library: Lists, Maps, Sets & Queues",
          "managing Lists, Key-Value Maps, Unique Sets, and FIFO Queues",
          "It manages contiguous List vectors and O(1) hash table Maps.",
          "use library \"Collections\"\nset my_list to create new list",
          "my_list = []"),
 
-        ("1.4", "Part 1: Core Standard Libraries & Formats", "JSON Standard Library (`use library \"JSON\"`)",
+        ("1.5", "Part 1: Core Standard Libraries & Python Interop", "JSON Standard Library (`use library \"JSON\"`)",
          "parsing and serializing JSON text payloads",
          "It parses JSON strings into in-memory dictionaries and arrays.",
          "use library \"JSON\"\nset obj to parse json text json_str",
          "import json; obj = json.loads(json_str)"),
 
-        ("1.5", "Part 1: Core Standard Libraries & Formats", "YAML Standard Library (`use library \"YAML\"`)",
+        ("1.6", "Part 1: Core Standard Libraries & Python Interop", "YAML Standard Library (`use library \"YAML\"`)",
          "parsing YAML configuration files and key-value trees",
          "It parses indentation-based YAML configuration files.",
          "use library \"YAML\"\nset config to parse yaml text yaml_str",
          "import yaml; config = yaml.safe_load(yaml_str)"),
 
-        ("1.6", "Part 1: Core Standard Libraries & Formats", "XML Standard Library (`use library \"XML\"`)",
+        ("1.7", "Part 1: Core Standard Libraries & Python Interop", "XML Standard Library (`use library \"XML\"`)",
          "parsing tag-based XML document trees and XPath queries",
          "It parses XML document element trees and evaluates XPath selectors.",
          "use library \"XML\"\nset doc to parse xml text xml_str",
          "import xml.etree.ElementTree as ET; doc = ET.fromstring(xml_str)"),
 
-        ("1.7", "Part 1: Core Standard Libraries & Formats", "CSV Standard Library (`use library \"CSV\"`)",
+        ("1.8", "Part 1: Core Standard Libraries & Python Interop", "CSV Standard Library (`use library \"CSV\"`)",
          "reading and writing CSV spreadsheet data tables",
          "It parses comma-separated CSV rows into structured table lists.",
          "use library \"CSV\"\nset table to read csv text csv_str",
          "import csv; table = list(csv.reader(csv_str.splitlines()))"),
 
-        ("1.8", "Part 1: Core Standard Libraries & Formats", "Date & Time Standard Library (`use library \"DateTime\"`)",
+        ("1.9", "Part 1: Core Standard Libraries & Python Interop", "Date & Time Standard Library (`use library \"DateTime\"`)",
          "formatting timestamps, calculating date diffs, and handling timezones",
          "It formats DateTime timestamps and handles ISO timezone conversions.",
          "use library \"DateTime\"\nset now to get current datetime",
          "from datetime import datetime; now = datetime.now()"),
 
-        ("1.9", "Part 1: Core Standard Libraries & Formats", "Regex Standard Library (`use library \"Regex\"`)",
+        ("1.10", "Part 1: Core Standard Libraries & Python Interop", "Regex Standard Library (`use library \"Regex\"`)",
          "evaluating regular expression patterns and pattern replacements",
          "It executes regex pattern matching and string substitution passes.",
          "use library \"Regex\"\nset match to regex match pattern r\"[0-9]+\" in text",
          "import re; match = re.findall(r'[0-9]+', text)"),
-
-        ("1.10", "Part 1: Core Standard Libraries & Formats", "Reflection Standard Library (`use library \"Reflection\"`)",
-         "inspecting object types, properties, and calling dynamic methods",
-         "It inspects runtime object metadata and invokes dynamic methods.",
-         "use library \"Reflection\"\nset type_name to get type of obj",
-         "type_name = type(obj).__name__"),
 
         # Part 2: FileSystem, Storage & Compression
         ("2.1", "Part 2: FileSystem & Storage Libraries", "FileSystem Standard Library (`use library \"FileSystem\"`)",
@@ -679,16 +717,16 @@ def generate_beginner_master_book7():
     for topic_data in raw_topics:
         num, part, title, desc, what_text, syntax, target_code = topic_data
 
-        intro = clean_text_for_reportlab(f"Welcome to Chapter {num} of the EnLang Standard Library & SDK Master Reference. This comprehensive chapter explores {title} in depth. By mastering {desc}, you will be equipped to harness all 21 built-in EnLang libraries and SDK modules to build enterprise-grade, high-performance applications with zero boilerplate code.")
-        objectives = clean_text_for_reportlab(f"• Understand the architectural role of {name_from_title(title)} in the EnLang Standard Library ecosystem.\n• Master natural syntax declarations and Python/C/Native compilation rules.\n• Implement secure, robust library pipelines that guarantee zero runtime crashes and 100% execution safety.\n• Apply production SDK best practices and performance optimization techniques.")
+        intro = clean_text_for_reportlab(f"Welcome to Chapter {num} of the EnLang Standard Library, SDK & Python Interop Master Reference. This comprehensive chapter explores {title} in depth. By mastering {desc}, you will be equipped to harness all 21 built-in EnLang libraries and ALL 500,000+ PyPI Python packages to build enterprise-grade, high-performance applications with zero boilerplate code.")
+        objectives = clean_text_for_reportlab(f"• Understand the architectural role of {name_from_title(title)} in the EnLang Standard Library and Python ecosystem.\n• Master natural syntax declarations and Python 3 PyPI compilation rules.\n• Implement secure, robust library pipelines that guarantee zero runtime crashes and 100% execution safety.\n• Apply production SDK best practices and Python interoperability techniques.")
         prereqs = clean_text_for_reportlab("EnLang CLI installed (`enlang --version`), active workspace directory, and a solid understanding of basic programming concepts.")
         what = clean_text_for_reportlab(f"{title.split('(')[0].strip()} in EnLang is a built-in standard library module designed for {desc}. {what_text}")
-        why = clean_text_for_reportlab(f"Traditional software development requires writing hundreds of lines of complex boilerplate for file I/O, JSON parsing, HTTP networking, and AI integration. EnLang unifies these utilities into natural English statements. Using {name_from_title(title)} eliminates syntax verbosity, catches library usage bugs at compile time, and ensures 1:1 deterministic code generation.")
+        why = clean_text_for_reportlab(f"Traditional software development requires writing hundreds of lines of complex boilerplate for file I/O, JSON parsing, HTTP networking, and AI integration. EnLang unifies these utilities into natural English statements while allowing 100% seamless access to ANY Python library. Using {name_from_title(title)} eliminates syntax verbosity, catches library usage bugs at compile time, and ensures 1:1 deterministic code generation.")
         real_world = clean_text_for_reportlab(f"1. Enterprise Web Services: Processing REST API JSON requests and managing secure HTTP sessions.\n2. Cloud Automation Tools: Compressing log archives, parsing YAML configs, and uploading backups.\n3. AI & Interactive Media: Generating LLM text responses, rendering graphics, and playing audio notifications.")
         internal_working = clean_text_for_reportlab(f"The EnLang standard library compiler processes {title} through three distinct phases:\n1. Lexical Analysis: Scans natural text input and generates typed tokens.\n2. Abstract Syntax Tree (AST) Construction: Builds a validated library execution node.\n3. Code Generation: Transpiles the AST node into optimized Python, C, or Native target code.")
         rules = clean_text_for_reportlab("1. Keywords must be written in lowercase natural English.\n2. Library and SDK module names must be enclosed in double quotes (`\"String\"`, `\"Math\"`).\n3. File and network paths must be validated before execution.\n4. Always handle potential file I/O or network exceptions gracefully.")
         ebnf = f"Statement ::= Keyword Ident ('with' Ident)? StringLiteral '\\n'"
-        keywords = clean_text_for_reportlab(f"• `{syntax.split()[0]}`: Core natural English command keyword initiating the library directive.\n• `library`: Specifies the built-in standard library module name.\n• `sdk`: Specifies the specialized domain SDK module name.")
+        keywords = clean_text_for_reportlab(f"• `{syntax.split()[0]}`: Core natural English command keyword initiating the library directive.\n• `library`: Specifies the built-in standard library module name.\n• `python`: Specifies external Python PyPI module import.")
         basic_ex = f"# Basic Example: {title}\nuse library \"String\"\n{syntax}\ndisplay \"Library Operation Complete\""
         inter_ex = f"# Intermediate Example: {title}\n# Added error handling and data validation\n{syntax}\ndisplay \"Library Execution Finished Successfully\""
         adv_ex = f"# Production Enterprise Example: {title}\n# Full production implementation with fail-safe error boundaries\ntry:\n    {syntax}\n    display \"Production Library Pipeline Passed\"\ncatch error:\n    display \"Handled library exception\"\nclose try"
@@ -698,18 +736,18 @@ def generate_beginner_master_book7():
         perf_complexity = clean_text_for_reportlab("Execution Time: Sub-millisecond C native binding execution.\nMemory Footprint: Minimal heap buffer allocation.")
         err_handling = clean_text_for_reportlab("If library parameters or file paths are invalid, the compiler raises an explicit `EnLangLibraryError` displaying the exact line number, module name, and suggested fix.")
         mistakes = clean_text_for_reportlab("• Calling library functions before adding `use library` import statement.\n• Misspelling library module names (e.g. `\"string\"` instead of `\"String\"`).\n• Forgetting to handle file-not-found or network timeout errors.")
-        best_practices = clean_text_for_reportlab("1. Group all `use library` and `use sdk` statements at the top of your source files.\n2. Validate file existence and network connection before executing I/O directives.\n3. Sanitize text strings before parsing JSON or XML data.")
+        best_practices = clean_text_for_reportlab("1. Group all `use library`, `use sdk`, and `use python library` statements at the top of your source files.\n2. Validate file existence and network connection before executing I/O directives.\n3. Sanitize text strings before parsing JSON or XML data.")
         security_notes = clean_text_for_reportlab("Includes automated path traversal sanitization, TLS 1.3 certificate validation, and Base64 string bounds checking.")
         linter_rules = clean_text_for_reportlab("`enlang check` enforces:\n- Error L101: Unimported library function call.\n- Warning L102: Missing HTTPS SSL encryption on HTTP request.\n- Info L103: Sub-optimal string concatenation detected.")
         debug_cmd = clean_text_for_reportlab("Run `enlang check script.enlg --verbose` to view full AST token streams and loaded standard library modules.")
         ver_compat = clean_text_for_reportlab("Fully compatible with all EnLang execution backends.")
         lang_comp = clean_text_for_reportlab(f"EnLang vs Traditional Stack: EnLang replaces 10+ lines of Python/C boilerplate with concise natural English directives.")
-        faq = clean_text_for_reportlab(f"Q: Are all 21 standard libraries and SDKs included out of the box?\nA: Yes! All standard libraries and SDK modules are 100% built-in and require no external installation.")
+        faq = clean_text_for_reportlab(f"Q: Can I use ANY Python PyPI package in EnLang?\nA: YES! EnLang transpiles directly to Python 3, so all 500,000+ PyPI packages work out of the box using `use python library \"package_name\"`.")
         ex_text = clean_text_for_reportlab(f"1. Write an EnLang script utilizing {syntax.splitlines()[0]}.\n2. Build a data pipeline incorporating {name_from_title(title)}.")
         mini_proj = clean_text_for_reportlab(f"Build a complete Utility Module (`utility.enlg`) featuring {name_from_title(title)} with data transformation and error handling.")
-        int_qs = clean_text_for_reportlab(f"Q1: What are the primary advantages of EnLang's standard library architecture for {name_from_title(title)}?\nA: Built-in cross-platform availability, 1:1 deterministic code generation, and natural English readability.")
+        int_qs = clean_text_for_reportlab(f"Q1: What are the primary advantages of EnLang's standard library and Python interop architecture for {name_from_title(title)}?\nA: Built-in cross-platform availability, 100% PyPI Python compatibility, 1:1 deterministic code generation, and natural English readability.")
         summary_text = clean_text_for_reportlab(f"Chapter {num} covered {title} in depth, detailing syntax rules, code transpilation outputs, memory mechanics, and production StdLib deployment guidelines.")
-        next_text = clean_text_for_reportlab(f"In the next chapter, we will continue exploring advanced standard library & SDK topics in the EnLang ecosystem!")
+        next_text = clean_text_for_reportlab(f"In the next chapter, we will continue exploring advanced standard library, SDK & Python interop topics in the EnLang ecosystem!")
 
         story.append(Paragraph(f"<b>{part}</b>", part_header_style))
         story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#6366F1'), spaceAfter=12))
@@ -721,7 +759,7 @@ def generate_beginner_master_book7():
             ("2. Learning Objectives", objectives),
             ("3. Prerequisites", prereqs),
             ("4. What is it? (Simple Student Explanation)", what),
-            ("5. Why do we use it in Standard Libraries & SDKs?", why),
+            ("5. Why do we use it in Standard Libraries & Python Interop?", why),
             ("6. Real-World Industry Applications", real_world),
             ("7. Internal Engine Working", internal_working),
             ("8. Natural English Syntax Format", syntax),
@@ -770,4 +808,4 @@ def generate_beginner_master_book7():
     print(f"Build complete in {end_t - start_t:.2f} seconds!")
 
 if __name__ == "__main__":
-    generate_beginner_master_book7()
+    generate_beginner_master_book8()
