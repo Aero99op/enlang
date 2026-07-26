@@ -1,0 +1,116 @@
+# crop_growth_predictor_v2.enlg
+# Smart Crop Growth & Recommendation AI
+# Written using EnLang ML Engine v2 — Mixed Natural A+B+C Grammar
+# ─────────────────────────────────────────────────────────────────
+
+display "================================================================"
+display "   SMART FARMING — AI CROP GROWTH & RECOMMENDATION (v2)        "
+display "   EnLang ML Engine v2 — Natural English AI/ML Code            "
+display "================================================================"
+display ""
+
+# ── STEP 1: Load dataset & get full EDA profile ─────────────────────────────
+
+read "d:/enlangg/examples/crop_predictor/crop_recommendation.csv" as df
+
+display "[STEP 1] Dataset loaded. Running EDA Profile..."
+profile df
+display ""
+
+display "[STEP 2] Crop Distribution:"
+show distribution of crop in df
+display ""
+
+# ── STEP 2: Statistical test — does rainfall differ by crop? ────────────────
+
+display "[STEP 3] ANOVA Test — Rainfall vs Crop:"
+run anova on rainfall grouped by crop in df
+display ""
+
+# ── STEP 3: Separate features and target, then split ────────────────────────
+
+display "[STEP 4] Extracting features & target, then splitting 80/20..."
+separate df into features X and target y with target crop
+split X and y into 80 percent train and 20 percent test with seed 42 stratified
+display ""
+
+# ── STEP 4: Normalize features ──────────────────────────────────────────────
+
+display "[STEP 5] Normalizing features using Standard Scaler..."
+normalize X_train and X_test using standard scaler as scaler
+display ""
+
+# ── STEP 5: Create & train multiple classifiers ─────────────────────────────
+
+display "[STEP 6] Creating and training classifiers..."
+create random forest classifier as rf with 100 trees
+create gradient boosting classifier as gb with 150 trees
+create knn classifier as knn with 5 neighbors
+create neural network classifier as nn with layers 128 64
+
+train rf on train data
+train gb on train data
+train knn on train data
+train nn on train data
+display ""
+
+# ── STEP 6: Compare all models ──────────────────────────────────────────────
+
+display "[STEP 7] Model Comparison:"
+compare rf and gb and knn and nn on test data
+display ""
+
+# ── STEP 7: Feature importance from Random Forest ───────────────────────────
+
+display "[STEP 8] Key Soil & Climate Factors (Random Forest Importance):"
+show feature importance of rf top 7
+display ""
+
+# ── STEP 8: Detailed report for best model ──────────────────────────────────
+
+display "[STEP 9] Detailed Classification Report (Random Forest):"
+show report for rf
+
+# ── STEP 9: Cross-validate the best model ──────────────────────────────────
+
+display "[STEP 10] Cross-Validation (5-fold):"
+cross validate rf on X and y with 5 folds and store in cv_scores
+display ""
+
+# ── STEP 10: Combine into Ensemble ─────────────────────────────────────────
+
+display "[STEP 11] Creating Soft Voting Ensemble (RF + GB + KNN)..."
+combine rf and gb and knn using soft voting as crop_ensemble
+display ""
+
+# ── STEP 11: Live Recommendation via Python block ──────────────────────────
+
+display "================================================================"
+display "          LIVE FARMER SOIL INPUT CROP RECOMMENDER              "
+display "================================================================"
+display ""
+
+python:
+def recommend(n, p, k, temp, hum, ph, rain, label="Sample"):
+    import pandas as pd
+    row = pd.DataFrame([{'N': n, 'P': p, 'K': k,
+                         'temperature': temp, 'humidity': hum,
+                         'ph': ph, 'rainfall': rain}])
+    scaled = scaler.transform(row.values)
+    crop = rf.predict(scaled)[0]
+    conf = round(max(rf.predict_proba(scaled)[0]) * 100, 1)
+    print(f"[{label}] N:{n} P:{p} K:{k} T:{temp}°C H:{hum}% pH:{ph} Rain:{rain}mm")
+    print(f"  → RECOMMENDED CROP: [{crop.upper()}]  (Confidence: {conf}%)")
+    print("-" * 65)
+
+recommend(90,  45, 40, 24.5, 85.0, 6.5, 240.0, "Heavy Rainfall Soil")
+recommend(30,  70, 80, 18.5, 17.0, 7.2,  75.0, "Dry Climate High-K Soil")
+recommend(120, 45, 20, 25.0, 80.0, 6.8,  90.0, "High Nitrogen Warm Soil")
+recommend(105, 80, 50, 27.0, 80.0, 6.0, 110.0, "Tropical Fruit Conditions")
+recommend(70,  30, 25, 22.0, 65.0, 6.5,  80.0, "Balanced Temperate Soil")
+end python
+
+display ""
+display "================================================================"
+display "                ANALYSIS COMPLETE                              "
+display "================================================================"
