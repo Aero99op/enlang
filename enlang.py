@@ -10,6 +10,13 @@ import os
 import argparse
 from enlang_core import EnLangInterpreter, EnLangTranspiler, __version__
 
+# Fix Windows cp1252 terminal encoding — allow full Unicode output
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
+
 SUPPORTED_EXTENSIONS = ['.enlg', '.enlgf', '.enlgd', '.enlgs', '.enlgdb', '.enl']
 
 def main():

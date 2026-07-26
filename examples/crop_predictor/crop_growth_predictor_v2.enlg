@@ -100,7 +100,7 @@ def recommend(n, p, k, temp, hum, ph, rain, label="Sample"):
     crop = rf.predict(scaled)[0]
     conf = round(max(rf.predict_proba(scaled)[0]) * 100, 1)
     print(f"[{label}] N:{n} P:{p} K:{k} T:{temp}°C H:{hum}% pH:{ph} Rain:{rain}mm")
-    print(f"  → RECOMMENDED CROP: [{crop.upper()}]  (Confidence: {conf}%)")
+    print(f"  >> RECOMMENDED CROP: [{crop.upper()}]  (Confidence: {conf}%)")
     print("-" * 65)
 
 recommend(90,  45, 40, 24.5, 85.0, 6.5, 240.0, "Heavy Rainfall Soil")
