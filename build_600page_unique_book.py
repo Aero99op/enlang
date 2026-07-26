@@ -15,13 +15,14 @@ from reportlab.platypus import (
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
 
-# Import all 6 volume modules
+# Import all 7 volume modules
 import book_volume_1
 import book_volume_2
 import book_volume_3
 import book_volume_4
 import book_volume_5
 import book_volume_6
+import book_volume_7
 
 W, H = letter
 
@@ -120,7 +121,7 @@ def get_master_backmatter():
     return B
 
 def build_complete_600page_book():
-    print("[INFO] Assembling 600-Page Master Book (Volumes 1 to 6 + Master Front/Back matter)...")
+    print("[INFO] Assembling Master Book (Volumes 1 to 7 + Master Front/Back matter)...")
     front = get_master_frontmatter()
     v1 = book_volume_1.get_volume_1_elements()
     v2 = book_volume_2.get_volume_2_elements()
@@ -128,9 +129,10 @@ def build_complete_600page_book():
     v4 = book_volume_4.get_volume_4_elements()
     v5 = book_volume_5.get_volume_5_elements()
     v6 = book_volume_6.get_volume_6_elements()
+    v7 = book_volume_7.get_volume_7_flowables()
     back = get_master_backmatter()
 
-    all_elements = front + v1 + v2 + v3 + v4 + v5 + v6 + back
+    all_elements = front + v1 + v2 + v3 + v4 + v5 + v6 + v7 + back
     print(f"[INFO] Total combined unique flowable elements: {len(all_elements)}")
     return all_elements
 
