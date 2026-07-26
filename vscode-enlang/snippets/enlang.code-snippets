@@ -74,5 +74,23 @@
       "select all from ${1:users}"
     ],
     "description": "Define EnLang Database Table & Query (.enlgdb)"
+  },
+  "ML Pipeline v2": {
+    "prefix": "ml",
+    "body": [
+      "read \"${1:dataset.csv}\" as df",
+      "separate df into features X and target y with target ${2:label_col}",
+      "split X and y into 80 percent train and 20 percent test with seed 42 stratified",
+      "normalize X_train and X_test using standard scaler as scaler",
+      "",
+      "create ${3|random forest,gradient boosting,knn,neural network|} classifier as model with ${4:100} trees",
+      "train model on train data",
+      "",
+      "predict using model on test data and store in predictions",
+      "calculate accuracy for predictions against y_test and store in acc",
+      "show report for predictions against y_test"
+    ],
+    "description": "Create Complete EnLang ML Pipeline v2 Natural English Code"
   }
 }
+
