@@ -318,9 +318,9 @@ def generate_beginner_master_book4():
             ("9. Syntax Rules & Constraints", chap['rules']),
             ("10. Formal Grammar Specification (EBNF)", chap['ebnf']),
             ("11. Keyword Detailed Explanation", chap['keywords']),
-            ("12. Basic Code Example (.enlgai)", chap['basic_example']),
-            ("13. Intermediate Code Example (.enlgai)", chap['inter_example']),
-            ("14. Advanced Production Code Example (.enlgai)", chap['adv_example']),
+            ("12. Basic Code Example (.enlg)", chap['basic_example']),
+            ("13. Intermediate Code Example (.enlg)", chap['inter_example']),
+            ("14. Advanced Production Code Example (.enlg)", chap['adv_example']),
             ("15. Generated Target Output (PyTorch/Scikit-Learn/Python)", chap['generated_code']),
             ("16. Step-by-Step Line-by-Line Walkthrough", chap['walkthrough']),
             ("17. Transpiler Compiler Walkthrough", chap['compiler_walkthrough']),
@@ -630,12 +630,12 @@ def generate_beginner_master_book4():
         best_practices = clean_text_for_reportlab("1. Always split datasets 80/20 into train and test sets.\n2. Scale numerical features to 0-1 range before training neural networks.\n3. Monitor production models for data distribution drift.")
         security_notes = clean_text_for_reportlab("Includes automated adversarial attack defenses, prompt injection sanitization, and model weight checksum verification.")
         linter_rules = clean_text_for_reportlab("`enlang check` enforces:\n- Error A101: Missing train/test dataset split.\n- Warning A102: Unscaled feature column detected.\n- Info A103: Sub-optimal learning rate schedule.")
-        debug_cmd = clean_text_for_reportlab("Run `enlang check ai_script.enlgai --verbose` to view full AST token streams and transpiled PyTorch code.")
+        debug_cmd = clean_text_for_reportlab("Run `enlang check ai_script.enlg --verbose` to view full AST token streams and transpiled PyTorch code.")
         ver_compat = clean_text_for_reportlab("Fully compatible with EnLGAI PyTorch and TensorFlow execution backends.")
         lang_comp = clean_text_for_reportlab(f"EnLang vs Traditional Stack: EnLang replaces 30+ lines of PyTorch boilerplate with concise natural English directives.")
         faq = clean_text_for_reportlab(f"Q: Can I run EnLGAI models on NVIDIA GPUs?\nA: Yes! EnLGAI automatically detects CUDA GPU hardware and accelerates tensor computations.")
         ex_text = clean_text_for_reportlab(f"1. Write an EnLang AI script utilizing {syntax.splitlines()[0]}.\n2. Build a neural network incorporating {name_from_title(title)}.")
-        mini_proj = clean_text_for_reportlab(f"Build a complete AI Vision Module (`vision.enlgai`) featuring {name_from_title(title)} with image preprocessing and classification evaluation.")
+        mini_proj = clean_text_for_reportlab(f"Build a complete AI Vision Module (`vision.enlg`) featuring {name_from_title(title)} with image preprocessing and classification evaluation.")
         int_qs = clean_text_for_reportlab(f"Q1: What are the primary advantages of EnLang's AI transpilation model for {name_from_title(title)}?\nA: Automatic tensor shape checking, 1:1 deterministic PyTorch code generation, and natural English readability.")
         summary_text = clean_text_for_reportlab(f"Chapter {num} covered {title} in depth, detailing syntax rules, PyTorch transpilation outputs, GPU memory mechanics, and production MLOps deployment guidelines.")
         next_text = clean_text_for_reportlab(f"In the next chapter, we will continue exploring advanced AI & Machine Learning engineering topics in the EnLang ecosystem!")
@@ -657,9 +657,9 @@ def generate_beginner_master_book4():
             ("9. Syntax Rules & Constraints", rules),
             ("10. Formal Grammar Specification (EBNF)", ebnf),
             ("11. Keyword Detailed Explanation", keywords),
-            ("12. Basic Code Example (.enlgai)", basic_ex),
-            ("13. Intermediate Code Example (.enlgai)", inter_ex),
-            ("14. Advanced Production Code Example (.enlgai)", adv_ex),
+            ("12. Basic Code Example (.enlg)", basic_ex),
+            ("13. Intermediate Code Example (.enlg)", inter_ex),
+            ("14. Advanced Production Code Example (.enlg)", adv_ex),
             ("15. Generated Target Output (PyTorch/Scikit-Learn/Python)", target_code),
             ("16. Step-by-Step Line-by-Line Walkthrough", walkthrough),
             ("17. Transpiler Compiler Walkthrough", comp_walkthrough),

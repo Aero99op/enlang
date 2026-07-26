@@ -135,7 +135,7 @@ def generate_beginner_master_book5():
             "best_practices": "• Store secret API keys in environment variables (`get env \"API_KEY\"`).\n• Always use HTTPS/TLS for encrypted data transfer.",
             "security_notes": "EnLGSec enforces ethical safety boundaries preventing unauthorized network attacks.",
             "linter_rules": "`enlang check` flags hardcoded secret keys and passwords.",
-            "debugging": "Run `enlang check sec_script.enlgsec --verbose` to inspect network packet logs.",
+            "debugging": "Run `enlang check sec_script.enlg --verbose` to inspect network packet logs.",
             "version_compat": "Supported across all EnLGSec releases.",
             "lang_comp": "EnLang `scan target \"127.0.0.1\"` vs Python socket code: Simple 1-line syntax.",
             "faq": "Q: What is a Firewall?\nA: A digital security barrier that monitors and filters incoming and outgoing network traffic based on security rules.",
@@ -318,9 +318,9 @@ def generate_beginner_master_book5():
             ("9. Syntax Rules & Constraints", chap['rules']),
             ("10. Formal Grammar Specification (EBNF)", chap['ebnf']),
             ("11. Keyword Detailed Explanation", chap['keywords']),
-            ("12. Basic Code Example (.enlgsec)", chap['basic_example']),
-            ("13. Intermediate Code Example (.enlgsec)", chap['inter_example']),
-            ("14. Advanced Production Code Example (.enlgsec)", chap['adv_example']),
+            ("12. Basic Code Example (.enlg)", chap['basic_example']),
+            ("13. Intermediate Code Example (.enlg)", chap['inter_example']),
+            ("14. Advanced Production Code Example (.enlg)", chap['adv_example']),
             ("15. Generated Target Output (Python/Boto3/Wrangler)", chap['generated_code']),
             ("16. Step-by-Step Line-by-Line Walkthrough", chap['walkthrough']),
             ("17. Transpiler Compiler Walkthrough", chap['compiler_walkthrough']),
@@ -640,12 +640,12 @@ def generate_beginner_master_book5():
         best_practices = clean_text_for_reportlab("1. Always enforce HTTPS encryption and HSTS headers.\n2. Rotate secret API keys regularly using cloud KMS key vaults.\n3. Implement Zero-Trust identity verification on all network endpoints.")
         security_notes = clean_text_for_reportlab("Includes automated secret key leakage prevention, OWASP Top 10 defense validation, and encrypted payload verification.")
         linter_rules = clean_text_for_reportlab("`enlang check` enforces:\n- Error S101: Hardcoded secret key detected.\n- Warning S102: Missing HTTPS SSL encryption.\n- Info S103: Container image size exceeds optimal threshold.")
-        debug_cmd = clean_text_for_reportlab("Run `enlang check sec_script.enlgsec --verbose` to view full AST token streams and transpiled security logs.")
+        debug_cmd = clean_text_for_reportlab("Run `enlang check sec_script.enlg --verbose` to view full AST token streams and transpiled security logs.")
         ver_compat = clean_text_for_reportlab("Fully compatible with EnLGSec and EnLGCloud execution backends.")
         lang_comp = clean_text_for_reportlab(f"EnLang vs Traditional Stack: EnLang replaces 20+ lines of complex Python/Boto3/Docker boilerplate with concise natural English directives.")
         faq = clean_text_for_reportlab(f"Q: Can I deploy EnLang security tools to AWS or Cloudflare?\nA: Yes! EnLang transpiles directly to AWS Boto3 and Cloudflare Wrangler scripts.")
         ex_text = clean_text_for_reportlab(f"1. Write an EnLang security script utilizing {syntax.splitlines()[0]}.\n2. Build a cloud deployment script incorporating {name_from_title(title)}.")
-        mini_proj = clean_text_for_reportlab(f"Build a complete Security Audit Module (`audit.enlgsec`) featuring {name_from_title(title)} with automated vulnerability checks and remediation.")
+        mini_proj = clean_text_for_reportlab(f"Build a complete Security Audit Module (`audit.enlg`) featuring {name_from_title(title)} with automated vulnerability checks and remediation.")
         int_qs = clean_text_for_reportlab(f"Q1: What are the primary advantages of EnLang's security transpilation model for {name_from_title(title)}?\nA: Automated secret key detection, 1:1 deterministic code generation, and natural English readability.")
         summary_text = clean_text_for_reportlab(f"Chapter {num} covered {title} in depth, detailing syntax rules, code transpilation outputs, network mechanics, and production DevSecOps guidelines.")
         next_text = clean_text_for_reportlab(f"In the next chapter, we will continue exploring advanced cybersecurity & cloud topics in the EnLang ecosystem!")
@@ -667,9 +667,9 @@ def generate_beginner_master_book5():
             ("9. Syntax Rules & Constraints", rules),
             ("10. Formal Grammar Specification (EBNF)", ebnf),
             ("11. Keyword Detailed Explanation", keywords),
-            ("12. Basic Code Example (.enlgsec)", basic_ex),
-            ("13. Intermediate Code Example (.enlgsec)", inter_ex),
-            ("14. Advanced Production Code Example (.enlgsec)", adv_ex),
+            ("12. Basic Code Example (.enlg)", basic_ex),
+            ("13. Intermediate Code Example (.enlg)", inter_ex),
+            ("14. Advanced Production Code Example (.enlg)", adv_ex),
             ("15. Generated Target Output (Python/Boto3/Wrangler)", target_code),
             ("16. Step-by-Step Line-by-Line Walkthrough", walkthrough),
             ("17. Transpiler Compiler Walkthrough", comp_walkthrough),

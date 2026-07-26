@@ -318,9 +318,9 @@ def generate_beginner_master_book6():
             ("9. Syntax Rules & Constraints", chap['rules']),
             ("10. Formal Grammar Specification (EBNF)", chap['ebnf']),
             ("11. Keyword Detailed Explanation", chap['keywords']),
-            ("12. Basic Code Example (.enlgdata)", chap['basic_example']),
-            ("13. Intermediate Code Example (.enlgdata)", chap['inter_example']),
-            ("14. Advanced Production Code Example (.enlgdata)", chap['adv_example']),
+            ("12. Basic Code Example (.enlg)", chap['basic_example']),
+            ("13. Intermediate Code Example (.enlg)", chap['inter_example']),
+            ("14. Advanced Production Code Example (.enlg)", chap['adv_example']),
             ("15. Generated Target Output (Python/Pandas/Seaborn)", chap['generated_code']),
             ("16. Step-by-Step Line-by-Line Walkthrough", chap['walkthrough']),
             ("17. Transpiler Compiler Walkthrough", chap['compiler_walkthrough']),
@@ -762,12 +762,12 @@ def generate_beginner_master_book6():
         best_practices = clean_text_for_reportlab("1. Always inspect summary statistics (`display summary statistics`) before building complex models.\n2. Use Bar Charts for categories, Line Charts for time trends, and Scatter Plots for correlations.\n3. Verify statistical significance (p-value < 0.05) before making business claims.")
         security_notes = clean_text_for_reportlab("Includes automated PII data anonymization, SVG script sanitization, and schema validation.")
         linter_rules = clean_text_for_reportlab("`enlang check` enforces:\n- Error D101: Un-cleaned missing values detected.\n- Warning D102: Missing chart title or axis labels.\n- Info D103: Sub-optimal data type detected.")
-        debug_cmd = clean_text_for_reportlab("Run `enlang check data_script.enlgdata --verbose` to view full AST token streams and transpiled Pandas logs.")
+        debug_cmd = clean_text_for_reportlab("Run `enlang check data_script.enlg --verbose` to view full AST token streams and transpiled Pandas logs.")
         ver_compat = clean_text_for_reportlab("Fully compatible with EnLGData Pandas and PySpark execution backends.")
         lang_comp = clean_text_for_reportlab(f"EnLang vs Traditional Stack: EnLang replaces 15+ lines of complex Pandas/Matplotlib code with concise natural English directives.")
         faq = clean_text_for_reportlab(f"Q: Can I run EnLGData on multi-gigabyte Big Data files?\nA: Yes! EnLGData transpiles seamlessly to PySpark for distributed execution across Spark clusters.")
         ex_text = clean_text_for_reportlab(f"1. Write an EnLang data script utilizing {syntax.splitlines()[0]}.\n2. Build a data visualization pipeline incorporating {name_from_title(title)}.")
-        mini_proj = clean_text_for_reportlab(f"Build a complete Analytics Module (`analytics.enlgdata`) featuring {name_from_title(title)} with data cleaning, grouping, and chart generation.")
+        mini_proj = clean_text_for_reportlab(f"Build a complete Analytics Module (`analytics.enlg`) featuring {name_from_title(title)} with data cleaning, grouping, and chart generation.")
         int_qs = clean_text_for_reportlab(f"Q1: What are the primary advantages of EnLang's data transpilation model for {name_from_title(title)}?\nA: Automated missing data detection, 1:1 deterministic Pandas code generation, and natural English readability.")
         summary_text = clean_text_for_reportlab(f"Chapter {num} covered {title} in depth, detailing syntax rules, code transpilation outputs, memory mechanics, and production Data Engineering guidelines.")
         next_text = clean_text_for_reportlab(f"In the next chapter, we will continue exploring advanced data science & analytics topics in the EnLang ecosystem!")
@@ -789,9 +789,9 @@ def generate_beginner_master_book6():
             ("9. Syntax Rules & Constraints", rules),
             ("10. Formal Grammar Specification (EBNF)", ebnf),
             ("11. Keyword Detailed Explanation", keywords),
-            ("12. Basic Code Example (.enlgdata)", basic_ex),
-            ("13. Intermediate Code Example (.enlgdata)", inter_ex),
-            ("14. Advanced Production Code Example (.enlgdata)", adv_ex),
+            ("12. Basic Code Example (.enlg)", basic_ex),
+            ("13. Intermediate Code Example (.enlg)", inter_ex),
+            ("14. Advanced Production Code Example (.enlg)", adv_ex),
             ("15. Generated Target Output (Python/Pandas/Seaborn)", target_code),
             ("16. Step-by-Step Line-by-Line Walkthrough", walkthrough),
             ("17. Transpiler Compiler Walkthrough", comp_walkthrough),

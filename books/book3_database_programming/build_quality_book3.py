@@ -318,9 +318,9 @@ def generate_beginner_master_book3():
             ("9. Syntax Rules & Constraints", chap['rules']),
             ("10. Formal Grammar Specification (EBNF)", chap['ebnf']),
             ("11. Keyword Detailed Explanation", chap['keywords']),
-            ("12. Basic Code Example (.enlgdb)", chap['basic_example']),
-            ("13. Intermediate Code Example (.enlgdb)", chap['inter_example']),
-            ("14. Advanced Production Code Example (.enlgdb)", chap['adv_example']),
+            ("12. Basic Code Example (.enlg)", chap['basic_example']),
+            ("13. Intermediate Code Example (.enlg)", chap['inter_example']),
+            ("14. Advanced Production Code Example (.enlg)", chap['adv_example']),
             ("15. Generated Target Output (SQL/Python/C)", chap['generated_code']),
             ("16. Step-by-Step Line-by-Line Walkthrough", chap['walkthrough']),
             ("17. Transpiler Compiler Walkthrough", chap['compiler_walkthrough']),
@@ -553,12 +553,12 @@ def generate_beginner_master_book3():
         best_practices = clean_text_for_reportlab("1. Always index foreign keys and frequent search columns.\n2. Use transactions for multi-query atomic updates.\n3. Never concatenate raw user input strings directly into SQL queries.")
         security_notes = clean_text_for_reportlab("Includes automated SQL injection parameterization, encrypted connection credentials, and WAL log crash recovery protections.")
         linter_rules = clean_text_for_reportlab("`enlang check` enforces:\n- Error D101: Missing `WHERE` clause in `DELETE` query.\n- Warning D102: Unindexed foreign key column detected.\n- Info D103: Redundant table join detected.")
-        debug_cmd = clean_text_for_reportlab("Run `enlang check db_script.enlgdb --verbose` to view full AST token streams and transpiled SQL queries.")
+        debug_cmd = clean_text_for_reportlab("Run `enlang check db_script.enlg --verbose` to view full AST token streams and transpiled SQL queries.")
         ver_compat = clean_text_for_reportlab("Fully compatible with EnLang v1.0, v1.5, and v2.0+ database specifications.")
         lang_comp = clean_text_for_reportlab(f"EnLang vs Raw SQL: EnLang eliminates manual connection boilerplate and parameter binding code.")
         faq = clean_text_for_reportlab(f"Q: Can I connect EnLang to PostgreSQL or MySQL?\nA: Yes! Change connection string to `connect to database \"postgresql://user:pass@host/db\" as db`.")
         ex_text = clean_text_for_reportlab(f"1. Write an EnLang database script utilizing {syntax.splitlines()[0]}.\n2. Build a table schema incorporating {name_from_title(title)}.")
-        mini_proj = clean_text_for_reportlab(f"Build a complete Database Management Module (`store.enlgdb`) featuring {name_from_title(title)} with transaction error boundaries.")
+        mini_proj = clean_text_for_reportlab(f"Build a complete Database Management Module (`store.enlg`) featuring {name_from_title(title)} with transaction error boundaries.")
         int_qs = clean_text_for_reportlab(f"Q1: What are the primary advantages of EnLang's database transpilation model for {name_from_title(title)}?\nA: Automatic SQL injection parameterization, deterministic 1:1 query generation, and natural English readability.")
         summary_text = clean_text_for_reportlab(f"Chapter {num} covered {title} in depth, detailing syntax rules, SQL transpilation outputs, B-Tree performance, and production deployment guidelines.")
         next_text = clean_text_for_reportlab(f"In the next chapter, we will continue exploring advanced database engineering topics in the EnLang ecosystem!")
@@ -580,9 +580,9 @@ def generate_beginner_master_book3():
             ("9. Syntax Rules & Constraints", rules),
             ("10. Formal Grammar Specification (EBNF)", ebnf),
             ("11. Keyword Detailed Explanation", keywords),
-            ("12. Basic Code Example (.enlgdb)", basic_ex),
-            ("13. Intermediate Code Example (.enlgdb)", inter_ex),
-            ("14. Advanced Production Code Example (.enlgdb)", adv_ex),
+            ("12. Basic Code Example (.enlg)", basic_ex),
+            ("13. Intermediate Code Example (.enlg)", inter_ex),
+            ("14. Advanced Production Code Example (.enlg)", adv_ex),
             ("15. Generated Target Output (SQL/Python/C)", target_code),
             ("16. Step-by-Step Line-by-Line Walkthrough", walkthrough),
             ("17. Transpiler Compiler Walkthrough", comp_walkthrough),
