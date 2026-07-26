@@ -201,8 +201,11 @@ def get_volume_7_flowables():
         "Model Persistence: Save & Load Statements",
         "Frontend Syntax (.enlgf): HTML Component Markup",
         "Design Syntax (.enlgd): CSS Design Tokens",
-        "Script Syntax (.enlgs): Automation & Event Handlers",
         "Database Syntax (.enlgdb): SQL Table & Queries",
+        "Database Safety (.enlgdb): Accidental Bulk Mutation Protection",
+        "Database Engine (.enlgdb): Multi-Engine Transpilation Targets",
+        "Database Integration (.enlgdb): Zero-ORM Native Variable Binding",
+        "Database Reliability (.enlgdb): Transaction Rollback & Static Linting",
         "Complete Syntax Reference & ISO Alignment"
     ]
 
