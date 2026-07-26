@@ -1131,13 +1131,39 @@ def translate_database_line(line: str, db_var: str = "db") -> str:
         sql = f'UPDATE {tbl} SET {sets} WHERE {cond};'
         return f'print({repr(sql)})'
 
-    # delete from <table> [where <cond>]
-    m = re.match(r'^delete\s+from\s+([a-zA-Z_]\w*)(?:\s+where\s+(.+))?$', line, re.IGNORECASE)
+    # update <table> set <col>=<val> (blocked without where clause)
+    m = re.match(r'^update\s+([a-zA-Z_]\w*)\s+set\s+(.+)$', line, re.IGNORECASE)
     if m:
         tbl = m.group(1)
-        where = f' WHERE {m.group(2)}' if m.group(2) else ''
-        sql = f'DELETE FROM {tbl}{where};'
+        raise SyntaxError(
+            f"[ENLANG DB SAFETY ERROR] Accidental bulk update blocked on table '{tbl}'! "
+            f"Updating without a 'where' clause alters every row in the table. "
+            f"Add a 'where' condition or append 'confirm bulk' if intended."
+        )
+
+    # delete all rows from <table> confirm bulk
+    m = re.match(r'^delete\s+all\s+(?:rows?\s+)?from\s+([a-zA-Z_]\w*)\s+confirm\s+bulk$', line, re.IGNORECASE)
+    if m:
+        tbl = m.group(1)
+        sql = f'DELETE FROM {tbl};'
         return f'print({repr(sql)})'
+
+    # delete [row|rows] from <table> where <cond>
+    m = re.match(r'^delete\s+(?:rows?\s+)?from\s+([a-zA-Z_]\w*)\s+where\s+(.+)$', line, re.IGNORECASE)
+    if m:
+        tbl, cond = m.group(1), m.group(2)
+        sql = f'DELETE FROM {tbl} WHERE {cond};'
+        return f'print({repr(sql)})'
+
+    # delete from <table> (blocked without where clause)
+    m = re.match(r'^delete\s+(?:rows?\s+)?from\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
+    if m:
+        tbl = m.group(1)
+        raise SyntaxError(
+            f"[ENLANG DB SAFETY ERROR] Accidental bulk delete blocked on table '{tbl}'! "
+            f"Deleting without a 'where' clause wipes the entire table. "
+            f"Example: 'delete row from {tbl} where id is 42' or 'delete all rows from {tbl} confirm bulk'."
+        )
 
     # create index <name> on <table> (<col>) [unique]
     m = re.match(r'^create\s+(unique\s+)?index\s+([a-zA-Z_]\w*)\s+on\s+([a-zA-Z_]\w*)\s+\((.+?)\)$', line, re.IGNORECASE)
