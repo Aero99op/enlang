@@ -1,328 +1,295 @@
 # EnLang Native Style Schema (.enlgd)
-# Bulletproof Glassmorphism & Responsive Cyber Dark Styling System
+# Pure Natural EnLang Design Language Declarations
 
-define theme with primary "#6366f1", background "#090d16", accent "#10b981"
+var primary_color = "#6366f1"
+var dark_bg = "#090d16"
+var nav_bg = "#0f172a"
+var glass_bg = "rgba(17, 24, 39, 0.85)"
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
+# Global Reset & Base Styles
+in *
+  space outside: 0
+  space inside: 0
+  box-sizing: border-box
+  font family: 'Outfit', 'Inter', system-ui, sans-serif
+close
 
-body {
-  background-color: #090d16;
-  color: #f3f4f6;
-  min-height: 100vh;
-  overflow-x: hidden;
-  background-image: radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 45%), radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.15) 0%, transparent 45%);
-}
+in body
+  background-color: #090d16
+  text color: #f3f4f6
+  min-height: 100vh
+  overflow-x: hidden
+  background-image: radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 45%), radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.15) 0%, transparent 45%)
+close
 
 # Sticky Glassmorphism Navigation Bar
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 3rem;
-  background: rgba(9, 13, 22, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  width: 100%;
-}
+in navbar
+  display: flex
+  direction: row
+  justify: space-between
+  align: center
+  space inside: 1rem 2.5rem
+  background: #0f172a
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1)
+  position: sticky
+  top: 0
+  z-index: 100
+  width: 100%
+close
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #818cf8, #38bdf8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+in logo
+  display: flex
+  align: center
+  space: 0.75rem
+  font size: 1.4rem
+  font weight: 800
+  text color: #818cf8
+close
 
-.logo-badge {
-  background: linear-gradient(135deg, #6366f1, #06b6d4);
-  color: #ffffff;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.7rem;
-  border-radius: 9999px;
-  font-weight: 700;
-  -webkit-text-fill-color: initial;
-  display: inline-block;
-}
+in logo-badge
+  background: #6366f1
+  text color: #ffffff
+  font size: 0.75rem
+  space inside: 0.2rem 0.6rem
+  rounded: 9999px
+  font weight: 700
+  display: inline-block
+close
 
-.user-widget {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  margin-left: auto;
-}
+in user-widget
+  display: flex
+  direction: row
+  align: center
+  space: 1rem
+  margin-left: auto
+close
 
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 12px #10b981;
-  display: inline-block;
-}
+in status-dot
+  width: 10px
+  height: 10px
+  rounded: 50%
+  background: #10b981
+  shadow: 0 0 10px #10b981
+  display: inline-block
+close
 
-# Main Layout Container
-.container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 3rem 2rem;
-  width: 100%;
-}
+# Main Container Layout
+in container
+  max-width: 1280px
+  space outside: 0 auto
+  space inside: 2.5rem 2rem
+  width: 100%
+close
 
 # Glassmorphism Cards
-.glass-card {
-  background: rgba(17, 24, 39, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-}
+in glass-card
+  background: rgba(17, 24, 39, 0.85)
+  blur: blur(16px)
+  web blur: blur(16px)
+  border: 1px solid rgba(255, 255, 255, 0.08)
+  rounded: 16px
+  shadow: 0 20px 40px rgba(0, 0, 0, 0.4)
+  transition: transform 0.3s ease, border-color 0.3s ease
+close
 
-.glass-card:hover {
-  border-color: rgba(99, 102, 241, 0.4);
-  transform: translateY(-3px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-}
+in glass-card:hover
+  border-color: rgba(99, 102, 241, 0.4)
+  transform: translateY(-3px)
+close
 
-# Hero Banner Component
-.hero-banner {
-  text-align: center;
-  margin-bottom: 3rem;
-  padding: 3.5rem 2rem;
-  background: radial-gradient(ellipse at top, rgba(99, 102, 241, 0.15), rgba(17, 24, 39, 0.75) 80%);
-  border: 1px solid rgba(99, 102, 241, 0.25);
-  border-radius: 20px;
-}
+# Hero Banner
+in hero-banner
+  text-align: center
+  margin-bottom: 3rem
+  space inside: 3rem 2rem
+  background: rgba(17, 24, 39, 0.85)
+  border: 1px solid rgba(99, 102, 241, 0.3)
+  rounded: 20px
+close
 
-.hero-title {
-  font-size: 3.25rem;
-  font-weight: 900;
-  line-height: 1.15;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: -1px;
-}
+in hero-title
+  font size: 3rem
+  font weight: 900
+  text color: #ffffff
+  margin-bottom: 1rem
+close
 
-.hero-desc {
-  font-size: 1.15rem;
-  color: #94a3b8;
-  max-width: 720px;
-  margin: 0 auto 2rem;
-  line-height: 1.6;
-}
+in hero-desc
+  font size: 1.1rem
+  text color: #94a3b8
+  max-width: 720px
+  space outside: 0 auto 2rem
+  line-height: 1.6
+close
 
-# Grid Systems
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-  width: 100%;
-}
+# Grid Layout Systems
+in stats-grid
+  display: grid
+  columns: repeat(4, 1fr)
+  space: 1.5rem
+  margin-bottom: 3rem
+  width: 100%
+close
 
-.stat-card {
-  padding: 1.75rem;
-  border-left: 4px solid #6366f1;
-}
+in stat-card
+  space inside: 1.75rem
+  border-left: 4px solid #6366f1
+close
 
-.stat-lbl {
-  font-size: 0.85rem;
-  color: #9ca3af;
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
+in stat-lbl
+  font size: 0.85rem
+  text color: #9ca3af
+  text-transform: uppercase
+  font weight: 700
+close
 
-.stat-val {
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: #ffffff;
-  margin-top: 0.5rem;
-  line-height: 1;
-}
+in stat-val
+  font size: 2.5rem
+  font weight: 900
+  text color: #ffffff
+  margin-top: 0.5rem
+close
 
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-  margin-bottom: 3rem;
-  width: 100%;
-}
+in features-grid
+  display: grid
+  columns: repeat(2, 1fr)
+  space: 2rem
+  margin-bottom: 3rem
+  width: 100%
+close
 
-.feature-card {
-  padding: 2.25rem;
-}
+in feature-card
+  space inside: 2rem
+close
 
-.feature-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  display: inline-block;
-  padding: 0.75rem;
-  background: rgba(99, 102, 241, 0.15);
-  border-radius: 14px;
-}
+in feature-icon
+  font size: 2.5rem
+  margin-bottom: 1rem
+  display: inline-block
+  space inside: 0.75rem
+  background: rgba(99, 102, 241, 0.15)
+  rounded: 14px
+close
 
-# Buttons & Forms
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.6rem;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  border: none;
-  outline: none;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
+# Button System
+in btn
+  display: inline-flex
+  align: center
+  justify: center
+  space: 0.5rem
+  space inside: 0.75rem 1.6rem
+  rounded: 10px
+  font weight: 700
+  font size: 0.95rem
+  cursor: pointer
+  border: none
+  outline: none
+  transition: all 0.2s ease
+close
 
-.btn-primary {
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
-  color: #ffffff;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
-}
+in btn-primary
+  background: #6366f1
+  text color: #ffffff
+  shadow: 0 4px 15px rgba(99, 102, 241, 0.35)
+close
 
-.btn-primary:hover {
-  background: linear-gradient(135deg, #4f46e5, #4338ca);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
-}
+in btn-primary:hover
+  background: #4f46e5
+  transform: translateY(-2px)
+close
 
-.btn-danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
+in btn-danger
+  background: rgba(239, 68, 68, 0.2)
+  text color: #f87171
+  border: 1px solid rgba(239, 68, 68, 0.4)
+close
 
-.btn-danger:hover {
-  background: rgba(239, 68, 68, 0.3);
-  color: #ffffff;
-}
+# Forms & Inputs
+in form-group
+  margin-bottom: 1.25rem
+  text-align: left
+close
 
-.form-group {
-  margin-bottom: 1.25rem;
-  text-align: left;
-}
+in form-label
+  display: block
+  font size: 0.85rem
+  font weight: 700
+  text color: #9ca3af
+  margin-bottom: 0.5rem
+  text-transform: uppercase
+close
 
-.form-label {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #9ca3af;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+in form-input
+  width: 100%
+  space inside: 0.85rem 1.2rem
+  background: rgba(15, 23, 42, 0.8)
+  border: 1px solid rgba(255, 255, 255, 0.15)
+  rounded: 10px
+  text color: #ffffff
+  font size: 1rem
+  outline: none
+close
 
-.form-input {
-  width: 100%;
-  padding: 0.85rem 1.2rem;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
+# Modals & Toast Notifications
+in modal-overlay
+  position: fixed
+  inset: 0
+  background: rgba(0, 0, 0, 0.85)
+  blur: blur(12px)
+  display: flex
+  align: center
+  justify: center
+  z-index: 1000
+close
 
-.form-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-}
+in modal-content
+  width: 100%
+  max-width: 440px
+  space inside: 2.5rem
+  text-align: center
+  border: 1px solid rgba(99, 102, 241, 0.3)
+  background: #0f172a
+  rounded: 16px
+close
 
-# Modal & Notifications
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1.5rem;
-}
+in toast
+  position: fixed
+  bottom: 2rem
+  right: 2rem
+  space inside: 1rem 1.5rem
+  rounded: 10px
+  background: #1e293b
+  text color: #ffffff
+  border-left: 4px solid #10b981
+  z-index: 2000
+  transform: translateY(100px)
+  opacity: 0
+  transition: all 0.3s ease
+close
 
-.modal-content {
-  width: 100%;
-  max-width: 440px;
-  padding: 2.5rem;
-  text-align: center;
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  position: relative;
-  overflow: hidden;
-}
+in toast.show
+  transform: translateY(0)
+  opacity: 1
+close
 
-.modal-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #6366f1, #06b6d4, #10b981);
-}
+# Responsive EnLang Media Queries
+on screen smaller than 1024px
+  in stats-grid
+    columns: repeat(2, 1fr)
+  close
+  in features-grid
+    columns: 1fr
+  close
+close
 
-.toast {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  padding: 1rem 1.5rem;
-  border-radius: 10px;
-  background: #1e293b;
-  color: #ffffff;
-  border-left: 4px solid #10b981;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  z-index: 2000;
-  transform: translateY(100px);
-  opacity: 0;
-  transition: all 0.3s ease;
-}
-
-.toast.show {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-# Responsive Breakpoints
-@media (max-width: 1024px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .navbar {
-    padding: 1rem 1.5rem;
-  }
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  .hero-title {
-    font-size: 2.25rem;
-  }
-}
+on screen smaller than 640px
+  in navbar
+    space inside: 1rem 1.5rem
+  close
+  in stats-grid
+    columns: 1fr
+  close
+  in hero-title
+    font size: 2.25rem
+  close
+close

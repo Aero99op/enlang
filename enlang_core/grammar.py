@@ -186,10 +186,13 @@ def parse_args_list(args_str: str) -> str:
 
 
 def _strip_quotes(s: str) -> str:
-    """Strips surrounding quotes cleanly."""
+    """Strips surrounding outer quotes cleanly only if whole string is quoted."""
     if s is None:
         return ''
-    return s.strip().strip("'\"").strip()
+    s = s.strip()
+    if (s.startswith('"') and s.endswith('"')) or (s.startswith("'") and s.endswith("'")):
+        return s[1:-1].strip()
+    return s
 
 
 def _strip_trailing_colon(s: str) -> str:
@@ -472,39 +475,22 @@ def translate_design_line(line: str) -> str:
     if line.startswith('# ') or line.startswith('note:') or line.startswith('comment:'):
         return f"# {line}"
 
-    # ── Raw CSS Passthrough Detection ─────────────────────────────────────────
-    # Bulletproof CSS passthrough: recognizes standard CSS syntax, element selectors, class/ID selectors, media queries
-    _is_raw_css = (
-        line.endswith('{') or line.endswith(';') or line == '}' or line == '};' or
-        line.startswith('.') or line.startswith('#') or line.startswith('@') or
-        line.startswith(':') or line.startswith('*') or line.startswith('>') or
-        line.startswith('+') or line.startswith('~') or line.startswith('[') or
-        re.match(r'^(?:body|html|div|span|p|a|h1|h2|h3|h4|h5|h6|button|input|label|form|nav|header|footer|section|article|main|aside|table|tr|td|th|pre|code|ul|ol|li|img|svg|iframe|video|audio|fieldset|details|summary)\b', line, re.IGNORECASE) or
-        ':hover' in line or ':focus' in line or ':active' in line or
-        ':visited' in line or ':checked' in line or ':disabled' in line or
-        ':enabled' in line or ':placeholder' in line or ':first-child' in line or
-        ':last-child' in line or ':nth-child' in line or ':not(' in line or
-        '::before' in line or '::after' in line or '::placeholder' in line or
-        '::selection' in line or '/*' in line or '*/' in line or
-        (':' in line and not line.lower().startswith('define ') and not line.lower().startswith('style ')) or
-        (line.endswith('}') and '{' in line)  # single-line rule
+    # ── Raw CSS Passthrough Detection (Comments, Raw Passthrough) ─────────────
+    if line.startswith('# ') or line.startswith('note:') or line.startswith('comment:'):
+        return f"# {line}"
+
+    # ── 1. Variable & Token Declarations ──────────────────────────────────────
+    # Supports: create variable x as y, set variable x as y, var x = y, token x = y, color x = y, theme color x = y
+    m = re.match(
+        r'^(?:create\s+variable|set\s+variable|define\s+variable|var|variable|token|color|theme\s+color|define\s+token)\s+([a-zA-Z_][a-zA-Z0-9_\-]*)\s*(?:as|=|:|\s)\s*(.+)$',
+        line, re.IGNORECASE
     )
-    if _is_raw_css:
-        return f'print({repr(line)})'
-
-    # ── style <Selector>: → CSS selector block open ───────────────────────────
-    m = re.match(r'^style\s+(.+?)\s*:$', line, re.IGNORECASE)
     if m:
-        raw_sel = m.group(1).strip()
-        css_sel = CSS_SELECTOR_MAP.get(raw_sel.lower(), raw_sel)
-        return f'print({repr(css_sel + " {")})'
+        var_name = m.group(1).replace('_', '-')
+        var_val = _strip_quotes(m.group(2).strip())
+        return f'print(":root {{ --{var_name}: {var_val}; }}")'
 
-    # ── close block: end style / end block ───────────────────────────────────
-    m = re.match(r'^(?:end\s+style|end\s+block|\})$', line, re.IGNORECASE)
-    if m:
-        return 'print("}")'
-
-    # ── define theme with primary <p>, background <bg> [, accent <a>] ───────
+    # ── 2. Theme Token Generator: define theme with primary <p>, background <bg>, accent <a> ──
     m = re.match(r'^define\s+theme\s+with\s+primary\s+(.+?),\s+background\s+(.+?)(?:,\s+accent\s+(.+))?$', line, re.IGNORECASE)
     if m:
         p = _strip_quotes(m.group(1))
@@ -513,101 +499,84 @@ def translate_design_line(line: str) -> str:
         css_rule = f":root {{ --primary: {p}; --background: {bg}; --accent: {acc}; }}"
         return f'print({repr(css_rule)})'
 
-    # ── define variable <name> as <value> ────────────────────────────────────
-    m = re.match(r'^define\s+(?:variable|var|css-var|custom-property)\s+([a-zA-Z_][a-zA-Z0-9_\-]*)\s+(?:as|=)\s+(.+)$', line, re.IGNORECASE)
+    # ── 3. Selector Block Declarations ───────────────────────────────────────
+    # Supports: in navbar, in style navbar, in .navbar, in style .navbar, style navbar, style .navbar, in body, in style body, in #header
+    # Brackets { } are OPTIONAL, colons : are OPTIONAL, dots . are OPTIONAL!
+    m = re.match(r'^(?:in\s+style|in|style)\s+([a-zA-Z0-9_\-\#\.\:\|\>\+\s\*]+?)\s*:?\s*\{?$', line, re.IGNORECASE)
     if m:
-        name, val = m.group(1), _strip_quotes(m.group(2))
-        return f'print({repr("  --" + name + ": " + val + ";")})'
+        raw_sel = m.group(1).strip()
+        # Map word equivalents or check if leading dot/hash is missing
+        lower_sel = raw_sel.lower()
+        HTML_ELEMENTS = {
+            'body', 'html', 'div', 'span', 'p', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'button', 'input', 'label', 'form', 'nav', 'header', 'footer', 'section',
+            'article', 'main', 'aside', 'table', 'tr', 'td', 'th', 'pre', 'code',
+            'ul', 'ol', 'li', 'img', 'svg', 'iframe', 'video', 'audio', 'fieldset', '*'
+        }
+        if raw_sel.startswith('.') or raw_sel.startswith('#') or raw_sel.startswith(':') or raw_sel.startswith('@') or lower_sel in HTML_ELEMENTS or lower_sel.split(':')[0] in HTML_ELEMENTS:
+            final_sel = raw_sel
+        else:
+            final_sel = '.' + raw_sel
+        
+        return f'print({repr(final_sel + " {")})'
 
-    # ── import font <url> ─────────────────────────────────────────────────────
-    m = re.match(r'^import\s+font\s+(.+)$', line, re.IGNORECASE)
-    if m:
-        url = _strip_quotes(m.group(1))
-        return f'print("@import url(\\"{url}\\");")'
+    # ── 4. End Block ─────────────────────────────────────────────────────────
+    if re.match(r'^(?:end\s+style|end\s+block|close\s+style|close\s+block|end|close|\});?\s*$', line, re.IGNORECASE):
+        return 'print("}")'
 
-    # ── import <url> ──────────────────────────────────────────────────────────
-    m = re.match(r'^import\s+(.+)$', line, re.IGNORECASE)
-    if m:
-        url = _strip_quotes(m.group(1))
-        return f'print("@import url(\\"{url}\\");")'
-
-    # ── apply font <name> to <selector> ──────────────────────────────────────
-    m = re.match(r'^apply\s+font\s+(.+?)\s+to\s+(.+)$', line, re.IGNORECASE)
-    if m:
-        font = _strip_quotes(m.group(1))
-        sel = m.group(2).strip()
-        return f'print("{sel} {{ font-family: \\"{font}\\", sans-serif; }}")'
-
-    # ── media query: on screen smaller than <size>: ───────────────────────────
-    m = re.match(r'^on\s+screen\s+(?:smaller|less)\s+than\s+(.+)\s*:$', line, re.IGNORECASE)
+    # ── 5. Media Queries & Responsive Directives ─────────────────────────────
+    # Supports: on screen smaller than 1024px:, on screen larger than 768px:
+    m = re.match(r'^on\s+screen\s+(?:smaller|less)\s+than\s+(.+)\s*:?\s*\{?$', line, re.IGNORECASE)
     if m:
         size = _strip_quotes(m.group(1))
         return f'print("@media (max-width: {size}) {{")'
 
-    # ── media query: on screen larger than <size>: ────────────────────────────
-    m = re.match(r'^on\s+screen\s+(?:larger|bigger|greater|more)\s+than\s+(.+)\s*:$', line, re.IGNORECASE)
+    m = re.match(r'^on\s+screen\s+(?:larger|bigger|greater|more)\s+than\s+(.+)\s*:?\s*\{?$', line, re.IGNORECASE)
     if m:
         size = _strip_quotes(m.group(1))
         return f'print("@media (min-width: {size}) {{")'
 
-    # ── media query: on screen between <s1> and <s2>: ────────────────────────
-    m = re.match(r'^on\s+screen\s+between\s+(.+?)\s+and\s+(.+)\s*:$', line, re.IGNORECASE)
-    if m:
-        s1 = _strip_quotes(m.group(1))
-        s2 = _strip_quotes(m.group(2))
-        return f'print("@media (min-width: {s1}) and (max-width: {s2}) {{")'
+    # ── 6. Property & Value Translation (Natural Property Word Equivalents) ────
+    # Handles: set <prop> to <val>, <prop>: <val>, <prop> = <val>
+    PROPERTY_WORD_MAP = {
+        'background color': 'background-color',
+        'bg color': 'background-color',
+        'bg-color': 'background-color',
+        'bg': 'background',
+        'text color': 'color',
+        'font color': 'color',
+        'font family': 'font-family',
+        'font size': 'font-size',
+        'font weight': 'font-weight',
+        'border radius': 'border-radius',
+        'rounded': 'border-radius',
+        'box shadow': 'box-shadow',
+        'shadow': 'box-shadow',
+        'space inside': 'padding',
+        'space outside': 'margin',
+        'space': 'gap',
+        'direction': 'flex-direction',
+        'flex direction': 'flex-direction',
+        'align': 'align-items',
+        'align items': 'align-items',
+        'justify': 'justify-content',
+        'justify content': 'justify-content',
+        'grid columns': 'grid-template-columns',
+        'columns': 'grid-template-columns',
+        'glass blur': 'backdrop-filter',
+        'blur': 'backdrop-filter',
+        'web blur': '-webkit-backdrop-filter',
+    }
 
-    # ── on print: / on dark mode: / on reduced motion: ───────────────────────
-    m = re.match(r'^on\s+(print|dark\s*mode|reduced\s*motion|high\s*contrast)\s*:$', line, re.IGNORECASE)
+    # Match set <prop> to <val> or <prop> : <val> or <prop> = <val>
+    m = re.match(r'^(?:set\s+)?([a-zA-Z_][a-zA-Z0-9_\-\s]*?)\s*(?::|=|\s+to\s+)\s*(.+)$', line, re.IGNORECASE)
     if m:
-        media_type = m.group(1).strip().lower()
-        media_map = {
-            'print': '@media print',
-            'dark mode': '@media (prefers-color-scheme: dark)',
-            'darkmode': '@media (prefers-color-scheme: dark)',
-            'reduced motion': '@media (prefers-reduced-motion: reduce)',
-            'reducedmotion': '@media (prefers-reduced-motion: reduce)',
-            'high contrast': '@media (prefers-contrast: high)',
-            'highcontrast': '@media (prefers-contrast: high)',
-        }
-        media_query = media_map.get(media_type.replace(' ', ''), f'@media ({media_type})')
-        return f'print("{media_query} {{")'
+        raw_prop = m.group(1).strip().lower()
+        raw_val = _strip_quotes(m.group(2).strip())
+        css_prop = PROPERTY_WORD_MAP.get(raw_prop, raw_prop.replace('_', '-').replace(' ', '-'))
+        return f'print({repr("  " + css_prop + ": " + raw_val + ";")})'
 
-    # ── keyframe: animate <name>: ────────────────────────────────────────────
-    m = re.match(r'^animate\s+([a-zA-Z_][a-zA-Z0-9_\-]*)\s*:$', line, re.IGNORECASE)
-    if m:
-        name = m.group(1)
-        return f'print("@keyframes {name} {{")'
-
-    # ── keyframe stop: at <pct>%: ────────────────────────────────────────────
-    m = re.match(r'^at\s+(from|to|\d+%?)\s*:$', line, re.IGNORECASE)
-    if m:
-        pct = m.group(1)
-        return f'print("{pct} {{")'
-
-    # ── define font face with family <f>, src <s> ────────────────────────────
-    m = re.match(r'^define\s+font[-\s]*face\s+with\s+family\s+(.+?),\s+src\s+(.+)$', line, re.IGNORECASE)
-    if m:
-        family = _strip_quotes(m.group(1))
-        src = _strip_quotes(m.group(2))
-        return f'print("@font-face {{ font-family: \\"{family}\\"; src: url(\\"{src}\\"); }}")'
-
-    # ── set <property> to <value> → CSS property ─────────────────────────────
-    m = re.match(r'^set\s+([a-zA-Z_][a-zA-Z0-9_\-]*)\s+(?:to|=)\s+(.+)$', line, re.IGNORECASE)
-    if m:
-        prop = m.group(1).replace('_', '-')
-        val = _strip_quotes(m.group(2))
-        return f'print({repr("  " + prop + ": " + val + ";")})'
-
-    # ── CSS property shorthand: <prop>: <value> ───────────────────────────────
-    # This handles raw property:value pairs inside style blocks
-    m = re.match(r'^([a-zA-Z_][a-zA-Z0-9_\-]*)\s*:\s*(.+)$', line)
-    if m:
-        prop = m.group(1).replace('_', '-')
-        val = _strip_quotes(m.group(2))
-        return f'print({repr("  " + prop + ": " + val + ";")})'
-
-    # ── All unrecognized lines pass through verbatim ──────────────────────────
+    # ── 7. Fallback Passthrough (Raw CSS passthrough for direct standard CSS lines) ──
     return f'print({repr(line)})'
 
 
