@@ -473,18 +473,20 @@ def translate_design_line(line: str) -> str:
         return f"# {line}"
 
     # ── Raw CSS Passthrough Detection ─────────────────────────────────────────
-    # Any line that is unambiguously native CSS passes through verbatim
+    # Bulletproof CSS passthrough: recognizes standard CSS syntax, element selectors, class/ID selectors, media queries
     _is_raw_css = (
         line.endswith('{') or line.endswith(';') or line == '}' or line == '};' or
         line.startswith('.') or line.startswith('#') or line.startswith('@') or
         line.startswith(':') or line.startswith('*') or line.startswith('>') or
         line.startswith('+') or line.startswith('~') or line.startswith('[') or
+        re.match(r'^(?:body|html|div|span|p|a|h1|h2|h3|h4|h5|h6|button|input|label|form|nav|header|footer|section|article|main|aside|table|tr|td|th|pre|code|ul|ol|li|img|svg|iframe|video|audio|fieldset|details|summary)\b', line, re.IGNORECASE) or
         ':hover' in line or ':focus' in line or ':active' in line or
         ':visited' in line or ':checked' in line or ':disabled' in line or
         ':enabled' in line or ':placeholder' in line or ':first-child' in line or
         ':last-child' in line or ':nth-child' in line or ':not(' in line or
         '::before' in line or '::after' in line or '::placeholder' in line or
         '::selection' in line or '/*' in line or '*/' in line or
+        (':' in line and not line.lower().startswith('define ') and not line.lower().startswith('style ')) or
         (line.endswith('}') and '{' in line)  # single-line rule
     )
     if _is_raw_css:
