@@ -1,0 +1,9 @@
+# EnLang AI Terminal Chatbot Application
+# Launch via: enlang run enlang-chatbot
+
+display "================================================================="
+display "  ENLANG NATIVE TERMINAL CHATBOT ENGINE"
+display "================================================================="
+
+import module "enlang_core.chatbot" as chatbot_module
+run chatbot_module

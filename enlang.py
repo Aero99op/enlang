@@ -61,7 +61,17 @@ def main():
     # Command: version
     subparsers.add_parser("version", help="Show EnLang version")
 
+    # Command: chatbot / ai
+    subparsers.add_parser("chatbot", help="Launch EnLang Terminal AI Assistant")
+    subparsers.add_parser("ai", help="Launch EnLang Terminal AI Assistant")
+    subparsers.add_parser("enlang-chatbot", help="Launch EnLang Terminal AI Assistant")
+
     args = parser.parse_args()
+
+    if args.command in ("chatbot", "ai", "enlang-chatbot"):
+        from enlang_core.chatbot import start_chatbot
+        start_chatbot()
+        sys.exit(0)
 
     if args.command == "update":
         from enlang_core.version_manager import update_to_latest
@@ -82,6 +92,11 @@ def main():
     transpiler = EnLangTranspiler()
 
     if args.command == "run":
+        if args.filename.lower().replace(".enlg", "").strip() in ("enlang-chatbot", "chatbot", "ai", "bot") and not os.path.exists(args.filename):
+            from enlang_core.chatbot import start_chatbot
+            start_chatbot()
+            sys.exit(0)
+
         if not os.path.exists(args.filename):
             print(f"Error: File '{args.filename}' not found.", file=sys.stderr)
             sys.exit(1)

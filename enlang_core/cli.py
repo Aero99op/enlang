@@ -155,10 +155,25 @@ def main():
             from enlang_core.web_server import start_enlang_server
             start_enlang_server(port)
 
+    elif cmd in ("chatbot", "ai", "enlang-chatbot", "bot"):
+        try:
+            from .chatbot import start_chatbot
+        except ImportError:
+            from enlang_core.chatbot import start_chatbot
+        start_chatbot()
+        sys.exit(0)
+
     else:
         # Fallback: Treat sys.argv[1] as a file to run directly (e.g. enlang app.enlg)
         file_path = sys.argv[1]
-        if os.path.exists(file_path):
+        if file_path.lower().replace(".enlg", "") in ("enlang-chatbot", "chatbot", "ai", "bot"):
+            try:
+                from .chatbot import start_chatbot
+            except ImportError:
+                from enlang_core.chatbot import start_chatbot
+            start_chatbot()
+            sys.exit(0)
+        elif os.path.exists(file_path):
             run_file(file_path)
         else:
             print(f"Unknown command or file not found: {cmd}")
@@ -174,6 +189,14 @@ def find_free_port(start_port=8080):
     return start_port
 
 def run_file(file_path: str, custom_port: int = None):
+    if file_path.lower().replace(".enlg", "").strip() in ("enlang-chatbot", "chatbot", "ai", "bot") and not os.path.exists(file_path):
+        try:
+            from .chatbot import start_chatbot
+        except ImportError:
+            from enlang_core.chatbot import start_chatbot
+        start_chatbot()
+        return
+
     if not os.path.exists(file_path):
         print(f"Error: File '{file_path}' not found.")
         sys.exit(1)
