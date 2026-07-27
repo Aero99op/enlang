@@ -1012,16 +1012,21 @@ def translate_database_line(line: str, db_var: str = "db") -> str:
     if any(line.startswith(kw) for kw in _raw_sql_starts):
         return f'print({repr(line)})'
 
-    # define table <name> with columns <col1 TYPE, col2 TYPE>
-    m = re.match(r'^define\s+table\s+([a-zA-Z_]\w*)\s+with\s+columns\s+(.+)$', line, re.IGNORECASE)
+    # connect to database <file> as <var>
+    m = re.match(r'^connect\s+to\s+database\s+(.+)\s+as\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
+    if m:
+        return f'print({repr("-- Connected to database " + m.group(1))})'
+
+    # define / create table <name> with columns <col1 TYPE, col2 TYPE>
+    m = re.match(r'^(?:define|create)\s+table\s+([a-zA-Z_]\w*)\s+with\s+columns\s+(.+)$', line, re.IGNORECASE)
     if m:
         tbl, cols_raw = m.group(1), m.group(2)
         cols_parsed = cols_raw.replace(' as ', ' ').replace(' and ', ', ')
         sql = f'CREATE TABLE IF NOT EXISTS {tbl} ({cols_parsed});'
         return f'print({repr(sql)})'
 
-    # define table <name> with columns and constraints <...>
-    m = re.match(r'^define\s+table\s+([a-zA-Z_]\w*)\s+\((.+)\)$', line, re.IGNORECASE)
+    # define / create table <name> with columns and constraints <...>
+    m = re.match(r'^(?:define|create)\s+table\s+([a-zA-Z_]\w*)\s+\((.+)\)$', line, re.IGNORECASE)
     if m:
         tbl, cols = m.group(1), m.group(2)
         sql = f'CREATE TABLE IF NOT EXISTS {tbl} ({cols});'
