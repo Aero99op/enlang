@@ -500,23 +500,82 @@ def translate_design_line(line: str) -> str:
         return f'print({repr(css_rule)})'
 
     # ── 3. Selector Block Declarations ───────────────────────────────────────
-    # Supports: in navbar, in style navbar, in .navbar, in style .navbar, style navbar, style .navbar, in body, in style body, in #header
-    # Brackets { } are OPTIONAL, colons : are OPTIONAL, dots . are OPTIONAL!
-    m = re.match(r'^(?:in\s+style|in|style)\s+([a-zA-Z0-9_\-\#\.\:\|\>\+\s\*]+?)\s*:?\s*\{?$', line, re.IGNORECASE)
+    # Supports: in navbar, in style navbar, in .navbar, in class card, in id header, in all,
+    # in btn on hover, in input on focus, in child p of div, in card before, in selection, etc.
+    m = re.match(r'^(?:in\s+style|in|style)\s+(.+?)\s*:?\s*\{?$', line, re.IGNORECASE)
     if m:
         raw_sel = m.group(1).strip()
-        # Map word equivalents or check if leading dot/hash is missing
         lower_sel = raw_sel.lower()
-        HTML_ELEMENTS = {
-            'body', 'html', 'div', 'span', 'p', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-            'button', 'input', 'label', 'form', 'nav', 'header', 'footer', 'section',
-            'article', 'main', 'aside', 'table', 'tr', 'td', 'th', 'pre', 'code',
-            'ul', 'ol', 'li', 'img', 'svg', 'iframe', 'video', 'audio', 'fieldset', '*'
-        }
-        if raw_sel.startswith('.') or raw_sel.startswith('#') or raw_sel.startswith(':') or raw_sel.startswith('@') or lower_sel in HTML_ELEMENTS or lower_sel.split(':')[0] in HTML_ELEMENTS:
-            final_sel = raw_sel
+
+        # Natural Pseudo-Element / Pseudo-Class Conversions
+        target_sel = lower_sel
+        target_sel = re.sub(r'\s+(?:on|when)\s+hover(?:ed)?$', ':hover', target_sel)
+        target_sel = re.sub(r'\s+(?:on|when)\s+focus(?:ed)?$', ':focus', target_sel)
+        target_sel = re.sub(r'\s+(?:on|when)\s+active$', ':active', target_sel)
+        target_sel = re.sub(r'\s+(?:on|when)\s+checked$', ':checked', target_sel)
+        target_sel = re.sub(r'\s+(?:on|when)\s+disabled$', ':disabled', target_sel)
+        target_sel = re.sub(r'\s+before$', '::before', target_sel)
+        target_sel = re.sub(r'\s+after$', '::after', target_sel)
+        target_sel = re.sub(r'\s+first\s+line$', '::first-line', target_sel)
+        target_sel = re.sub(r'\s+first\s+letter$', '::first-letter', target_sel)
+
+        # Natural Keyword Selectors
+        if target_sel in ('all', 'every', 'universal', '*'):
+            final_sel = '*'
+        elif target_sel in ('selection', 'user selection', 'user-selection'):
+            final_sel = '::selection'
+        # Natural Attribute / Combinator Conversions
+        elif ' with attribute ' in target_sel:
+            parts = target_sel.split(' with attribute ')
+            tag, attr = parts[0].strip(), parts[1].strip()
+            final_sel = f"{tag}[{attr}]"
+        elif ' with ' in target_sel and ' starting with ' in target_sel:
+            m_attr = re.match(r'(.+?)\s+with\s+(.+?)\s+starting\s+with\s+(.+)', target_sel)
+            if m_attr:
+                tag, attr, val = m_attr.group(1).strip(), m_attr.group(2).strip(), _strip_quotes(m_attr.group(3).strip())
+                final_sel = f'{tag}[{attr}^="{val}"]'
+            else:
+                final_sel = target_sel
+        elif ' with ' in target_sel and ' ending with ' in target_sel:
+            m_attr = re.match(r'(.+?)\s+with\s+(.+?)\s+ending\s+with\s+(.+)', target_sel)
+            if m_attr:
+                tag, attr, val = m_attr.group(1).strip(), m_attr.group(2).strip(), _strip_quotes(m_attr.group(3).strip())
+                final_sel = f'{tag}[{attr}$="{val}"]'
+            else:
+                final_sel = target_sel
+        elif ' with ' in target_sel and ' containing ' in target_sel:
+            m_attr = re.match(r'(.+?)\s+with\s+(.+?)\s+containing\s+(.+)', target_sel)
+            if m_attr:
+                tag, attr, val = m_attr.group(1).strip(), m_attr.group(2).strip(), _strip_quotes(m_attr.group(3).strip())
+                final_sel = f'{tag}[{attr}*="{val}"]'
+            else:
+                final_sel = target_sel
+        elif 'child' in target_sel and 'of' in target_sel:
+            m_ch = re.search(r'(?:direct\s+)?child\s+(.+?)\s+of\s+(.+)', target_sel)
+            if m_ch:
+                child_elem, parent_elem = m_ch.group(1).strip(), m_ch.group(2).strip()
+                final_sel = f"{parent_elem} > {child_elem}"
+            else:
+                final_sel = target_sel
+        elif ' inside ' in target_sel:
+            parts = target_sel.split(' inside ')
+            final_sel = f"{parts[1].strip()} {parts[0].strip()}"
+        elif target_sel.startswith('class '):
+            final_sel = '.' + target_sel[6:].strip()
+        elif target_sel.startswith('id '):
+            final_sel = '#' + target_sel[3:].strip()
         else:
-            final_sel = '.' + raw_sel
+            HTML_ELEMENTS = {
+                'body', 'html', 'div', 'span', 'p', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                'button', 'input', 'label', 'form', 'nav', 'header', 'footer', 'section',
+                'article', 'main', 'aside', 'table', 'tr', 'td', 'th', 'pre', 'code',
+                'ul', 'ol', 'li', 'img', 'svg', 'iframe', 'video', 'audio', 'fieldset', '*'
+            }
+            base_elem = target_sel.split(':')[0].split('.')[0].split('#')[0]
+            if target_sel.startswith('.') or target_sel.startswith('#') or target_sel.startswith(':') or target_sel.startswith('@') or target_sel.startswith('[') or base_elem in HTML_ELEMENTS:
+                final_sel = target_sel
+            else:
+                final_sel = '.' + target_sel
         
         return f'print({repr(final_sel + " {")})'
 
