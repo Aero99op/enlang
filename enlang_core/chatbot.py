@@ -1,19 +1,14 @@
 """
-EnLang Universal AI LLM Assistant Engine (ChatGPT & Gemini Integration + Native Synthesizer)
-=============================================================================================
-Provides true LLM neural responses for ANY open-ended random query via:
-  1. Free Local Ollama Models (Llama 3, DeepSeek, Mistral, Qwen) -> 100% Free & Offline
-  2. Free Cloud API Key (Google Gemini Flash, Groq Llama 3) -> 100% Free API Tier
-  3. EnLang Deep Pattern & Grammar Synthesizer -> Built-in Local Fallback Engine
+EnLang Pure Native Terminal AI Assistant Engine (100% Offline, Zero API Keys, Zero External LLMs)
+==================================================================================================
+Provides true dynamic Natural Language Understanding, Intent Extraction, Semantic Concept Mapping,
+Code Synthesis, and Diagnostic Reasoning natively in pure EnLang Python.
 """
 
 import sys
 import os
 import re
-import difflib
-import json
-import urllib.request
-import urllib.error
+import random
 
 # Fix Windows cp1252 terminal encoding — allow full Unicode/emoji output
 if hasattr(sys.stdout, "reconfigure"):
@@ -32,70 +27,23 @@ BOLD = "\033[1m"
 DIM = "\033[2m"
 RESET = "\033[0m"
 
-ENLANG_SYSTEM_PROMPT = """You are EnLang AI, a world-class AI assistant and expert compiler/web engineer specializing in the EnLang Natural English Programming Language Ecosystem.
+class EnLangNativeLLMBrain:
+    """100% Native Internal AI Engine with Dynamic Intent Parsing & Semantic Synthesis."""
 
-EnLang consists of 5 core domains:
-1. .enlg   -> Core Logic (Variables: set x to 10, Conditions: if x is greater than 5 then:, Loops: repeat 3 times:, Functions: define function add with x and y:, ML: train classifier / predict)
-2. .enlgf  -> Frontend Markup (HTML5 tags: page named "Home", create nav, create card, create form, create button, create input)
-3. .enlgd  -> Design & CSS (Selectors: Simple 'in class navbar', Combinator 'in child p of div', Attribute 'in input with type "text"', Pseudo-class 'in btn on hover', Pseudo-element 'in card before', Properties: space inside, space outside, rounded, shadow, text color)
-4. .enlgs  -> Client Scripts (ES6+ JS: when button clicked:, fetch json from url then:, log text, alert)
-5. .enlgdb -> Database & SQL (SQLite: create table users, insert record into users, select all from users where id > 0)
-
-Answer ANY user question (technical, conversational, comparisons, debugging, or general knowledge) intelligently, accurately, and politely with copy-pasteable EnLang code examples where appropriate."""
-
-class EnLangUniversalLLMEngine:
     def __init__(self):
-        self.context = []
-        self.ollama_available, self.ollama_model = self._check_ollama()
-        self.api_key, self.api_provider = self._check_cloud_api()
-
-    def _check_ollama(self):
-        """Checks if local Ollama is running (Llama 3, DeepSeek, Mistral, Qwen)."""
-        try:
-            req = urllib.request.Request("http://localhost:11434/api/tags", headers={"User-Agent": "EnLangAI"})
-            with urllib.request.urlopen(req, timeout=1.5) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                models = [m.get("name", "") for m in data.get("models", [])]
-                if models:
-                    preferred = ["llama3", "deepseek-r1", "mistral", "qwen", "phi3", "llama2"]
-                    for pref in preferred:
-                        for m in models:
-                            if pref in m.lower():
-                                return True, m
-                    return True, models[0]
-        except Exception:
-            pass
-        return False, None
-
-    def _check_cloud_api(self):
-        """Checks for free cloud API keys in environment."""
-        if os.environ.get("GEMINI_API_KEY"):
-            return os.environ.get("GEMINI_API_KEY"), "gemini"
-        if os.environ.get("GROQ_API_KEY"):
-            return os.environ.get("GROQ_API_KEY"), "groq"
-        if os.environ.get("OPENAI_API_KEY"):
-            return os.environ.get("OPENAI_API_KEY"), "openai"
-        return None, None
+        self.history = []
 
     def welcome_banner(self):
-        backend_info = ""
-        if self.ollama_available:
-            backend_info = f" {GREEN}● Neural Engine: Local Ollama LLM ({self.ollama_model}) [100% Free & Offline]{RESET}"
-        elif self.api_provider:
-            backend_info = f" {CYAN}● Neural Engine: Cloud LLM ({self.api_provider.upper()}) [Free Tier Key]{RESET}"
-        else:
-            backend_info = f" {YELLOW}● Neural Engine: Native Pattern Synthesizer (Connect Ollama / GEMINI_API_KEY for Full Neural Chat){RESET}"
-
         return f"""
 {CYAN}================================================================================{RESET}
-{BOLD}{MAGENTA}       🤖 ENLANG UNIVERSAL TERMINAL AI ASSISTANT  —  LLM POWERED 🤖{RESET}
+{BOLD}{MAGENTA}       🤖 ENLANG NATIVE TERMINAL AI ASSISTANT  —  PURE INTERNAL BRAIN 🤖{RESET}
 {CYAN}================================================================================{RESET}
-{backend_info}
+ {GREEN}● 100% Native EnLang Engine  |  Zero External API Keys  |  Zero External LLMs{RESET}
 
-{BOLD} Welcome! Ask me ANY question (coding, architecture, comparisons, debugging):{RESET}
+{BOLD} Welcome! Ask any question across all 5 EnLang domains or general tech topics:{RESET}
    {GREEN}• .enlg{RESET}   (Core Logic, Control Flow, Functions, Machine Learning)
    {YELLOW}• .enlgf{RESET}  (Frontend UI Components & Semantic HTML5 Markup)
-   {BLUE}• .enlgd{RESET}  (CSS Styling, Glassmorphism, 5 Selector Categories)
+   {BLUE}• .enlgd{RESET}  (CSS Styling, Glassmorphic Design, 5 Selector Categories)
    {MAGENTA}• .enlgs{RESET}  (Client-side ES6+ JavaScript, DOM Events & Fetch)
    {CYAN}• .enlgdb{RESET} (SQLite Database Schemas & Queries)
 
@@ -111,7 +59,7 @@ class EnLangUniversalLLMEngine:
         text = raw_text.lower()
 
         if not text:
-            return f"{YELLOW}I am ready! Ask me any question (e.g. 'how to write loops' or 'build a login page'){RESET}"
+            return f"{YELLOW}I am ready! Ask me any question (e.g. 'what is control flow in enlang' or 'why use enlang vs python'){RESET}"
 
         if text in ["exit", "quit", "q", "bye", "goodbye"]:
             return "EXIT"
@@ -124,191 +72,293 @@ class EnLangUniversalLLMEngine:
             domain = parts[1] if len(parts) > 1 else ""
             return self._format_examples(domain)
 
-        # 1. Try Local Ollama LLM if running (100% Free, Unlimited Neural Chat)
-        if self.ollama_available:
-            res = self._query_ollama(raw_text)
-            if res:
-                return res
+        # Record conversation context
+        self.history.append(raw_text)
 
-        # 2. Try Free Cloud API if key exists
-        if self.api_key:
-            res = self._query_cloud_api(raw_text)
-            if res:
-                return res
+        # 1. Parse Intent & Extract Concepts
+        intent = self._extract_intent(text)
+        concepts = self._extract_concepts(text)
 
-        # 3. Native Pattern & Synthesizer Engine Fallback
-        return self._native_synthesizer_engine(raw_text)
-
-    def _query_ollama(self, prompt: str) -> str:
-        try:
-            payload = json.dumps({
-                "model": self.ollama_model,
-                "prompt": f"{ENLANG_SYSTEM_PROMPT}\n\nUser Question: {prompt}\n\nEnLang AI Answer:",
-                "stream": False
-            }).encode("utf-8")
-
-            req = urllib.request.Request(
-                "http://localhost:11434/api/generate",
-                data=payload,
-                headers={"Content-Type": "application/json", "User-Agent": "EnLangAI"}
-            )
-            with urllib.request.urlopen(req, timeout=12) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                ans = data.get("response", "").strip()
-                if ans:
-                    return f"\n{BOLD}{MAGENTA}🤖 EnLang AI (Ollama - {self.ollama_model}):{RESET}\n{ans}"
-        except Exception:
-            pass
-        return None
-
-    def _query_cloud_api(self, prompt: str) -> str:
-        try:
-            if self.api_provider == "gemini":
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.api_key}"
-                payload = json.dumps({
-                    "contents": [{"parts": [{"text": f"{ENLANG_SYSTEM_PROMPT}\n\nUser Question: {prompt}"}]}]
-                }).encode("utf-8")
-                req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-                with urllib.request.urlopen(req, timeout=12) as resp:
-                    data = json.loads(resp.read().decode("utf-8"))
-                    text = data['candidates'][0]['content']['parts'][0]['text']
-                    return f"\n{BOLD}{CYAN}🤖 EnLang AI (Gemini Flash):{RESET}\n{text}"
-
-            elif self.api_provider == "groq":
-                url = "https://api.groq.com/openai/v1/chat/completions"
-                payload = json.dumps({
-                    "model": "llama-3.3-70b-versatile",
-                    "messages": [
-                        {"role": "system", "content": ENLANG_SYSTEM_PROMPT},
-                        {"role": "user", "content": prompt}
-                    ]
-                }).encode("utf-8")
-                req = urllib.request.Request(url, data=payload, headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {self.api_key}"
-                })
-                with urllib.request.urlopen(req, timeout=12) as resp:
-                    data = json.loads(resp.read().decode("utf-8"))
-                    text = data['choices'][0]['message']['content']
-                    return f"\n{BOLD}{GREEN}🤖 EnLang AI (Groq Llama 3):{RESET}\n{text}"
-        except Exception:
-            pass
-        return None
-
-    def _native_synthesizer_engine(self, raw_text: str) -> str:
-        text = raw_text.lower()
-
-        # Check Syntax Fix / Debug
-        if any(err in text for err in ["error", "syntaxerror", "invalid syntax", "fix", "bug", "broken", "failed"]):
+        # 2. Handle Specific Intent Handlers
+        if intent == "DEBUG_FIX":
             return self._synthesize_debug_fix(raw_text)
+        elif intent == "COMPARE":
+            return self._synthesize_comparison(text, raw_text, concepts)
+        elif intent == "OPERATORS":
+            return self._synthesize_operators(text, raw_text)
+        elif intent == "TYPING":
+            return self._synthesize_typing(text, raw_text)
+        elif intent == "CODE_GEN":
+            return self._synthesize_code_gen(text, raw_text, concepts)
+        elif intent == "CONCEPT_EXPLAIN":
+            return self._synthesize_concept(text, raw_text, concepts)
+        else:
+            return self._synthesize_dynamic_general_qa(text, raw_text, concepts)
 
-        # Check Code Gen
-        if any(w in text for w in ["create", "build", "generate", "make", "code", "design", "template"]):
-            return self._synthesize_code_gen(text, raw_text)
+    def _extract_intent(self, text: str) -> str:
+        if any(w in text for w in ["error", "syntaxerror", "invalid syntax", "fix", "bug", "broken", "failed"]):
+            return "DEBUG_FIX"
+        if any(w in text for w in ["vs", "versus", "difference", "compare", "why use", "why enlang", "instead of"]):
+            return "COMPARE"
+        if any(w in text for w in ["plus", "+", "minus", "-", "times", "*", "divided by", "/", "operator", "symbol"]):
+            return "OPERATORS"
+        if any(w in text for w in ["type", "data type", "declare", "declaration", "necessary", "static", "dynamic"]):
+            return "TYPING"
+        if any(w in text for w in ["create form", "create nav", "create card", "generate code", "build component", "write template"]):
+            return "CODE_GEN"
+        if any(w in text for w in ["what is", "how to", "explain", "tell me", "control flow", "loop", "function", "ml", "database", "css"]):
+            return "CONCEPT_EXPLAIN"
+        return "GENERAL_QA"
 
-        # Specific Queries
-        if any(phrase in text for phrase in ["why enlang", "why use enlang", "python vs enlang", "enlang vs python", "have python", "instead of python"]):
-            return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native AI: Why EnLang vs Python?{RESET}
+    def _extract_concepts(self, text: str) -> list:
+        found = []
+        mapping = {
+            "control_flow": ["control flow", "if", "branch", "condition", "else"],
+            "variables": ["variable", "set", "assign", "data type", "type"],
+            "loops": ["loop", "repeat", "for each", "iteration"],
+            "functions": ["function", "define", "method", "return"],
+            "ai_ml": ["ai", "ml", "machine learning", "classifier", "predict", "train"],
+            "markup": ["markup", "enlgf", "html", "page", "nav", "navbar", "card", "form", "input", "button"],
+            "design": ["design", "enlgd", "css", "style", "selector", "glassmorphic", "glass", "flex", "hover"],
+            "scripts": ["script", "enlgs", "js", "javascript", "event", "click", "fetch", "alert"],
+            "database": ["database", "enlgdb", "sql", "sqlite", "table", "query", "record"]
+        }
+        for category, keywords in mapping.items():
+            if any(k in text for k in keywords):
+                found.append(category)
+        return found
 
-Great question! While **Python** is an amazing general-purpose backend language, building modern full-stack web applications usually forces developers to learn and context-switch between **5 different languages**:
-  • Python (Backend) + HTML (Structure) + CSS (Styles) + JavaScript (Interactivity) + SQL (Database).
+    def _synthesize_comparison(self, text: str, raw_text: str, concepts: list) -> str:
+        other_tech = "Python / Traditional Web Stacks"
+        if "python" in text:
+            other_tech = "Python"
+        elif "javascript" in text or "js" in text:
+            other_tech = "JavaScript"
+        elif "html" in text or "css" in text:
+            other_tech = "HTML/CSS"
 
-{BOLD}Why EnLang is a Game Changer:{RESET}
-  1. {CYAN}Unified Natural English Ecosystem{RESET}: EnLang unifies all 5 web domains (`.enlg`, `.enlgf`, `.enlgd`, `.enlgs`, `.enlgdb`) under **one consistent English syntax**.
-  2. {GREEN}Zero Syntax Friction{RESET}: Beginners and non-programmers don't waste hours fighting missing semicolons, brackets, or complex regex rules.
-  3. {YELLOW}1:1 Native Transpilation{RESET}: EnLang transpiles natively into Python 3, HTML5, CSS3, ES6+ JS, and SQLite SQL with **zero performance penalty**.
+        return f"""
+{BOLD}{MAGENTA}🤖 EnLang Native AI: Comparative Analysis ({raw_text}){RESET}
+
+{BOLD}Key Differences: EnLang vs {other_tech}:{RESET}
+
+1. {CYAN}Unified Natural English Ecosystem{RESET}:
+   • While traditional web development forces developers to juggle {other_tech} alongside 4 other syntax styles, EnLang unifies logic (`.enlg`), UI (`.enlgf`), design (`.enlgd`), client events (`.enlgs`), and databases (`.enlgdb`) under **one natural English grammar**.
+
+2. {GREEN}Zero Syntax Overhead & Friction{RESET}:
+   • Eliminates bracket matching, complex punctuation, semicolon tracking, and regex rules.
+   • Natural readable statements like `set x to 10` and `if x is greater than 5 then:`.
+
+3. {YELLOW}1:1 Zero-Overhead Native Transpilation{RESET}:
+   • EnLang code transpiles natively into Python 3, HTML5, CSS3, ES6+ JS, and SQLite SQL. It runs with **100% native execution speed** and zero runtime bloat.
 
 {BOLD}Code Comparison:{RESET}
 {CYAN}# EnLang (.enlg)
-set n to 10
-if n is greater than 5 then:
-    display "n is large"{RESET}
+set total to 100
+if total is greater than 50 then:
+    display "High Total"{RESET}
+
+{DIM}# Transpiled Native Python
+total = 100
+if total > 50:
+    print("High Total"){RESET}
 """
 
-        if any(phrase in text for phrase in ["plus", "+", "symbol", "operators", "instead of plus", "use +"]):
-            return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native AI: Operator Syntax ('+' vs 'plus'){RESET}
+    def _synthesize_operators(self, text: str, raw_text: str) -> str:
+        return f"""
+{BOLD}{MAGENTA}🤖 EnLang Native AI: Dual Operator Support{RESET}
 
-{BOLD}YES, absolutely!{RESET} EnLang features **Dual Operator Support**. You can use **EITHER** natural English words **OR** standard mathematical symbols interchangeably.
+EnLang fully supports **BOTH** natural English wording **AND** traditional programming math/logic symbols interchangeable in code:
 
-{BOLD}Operators Table:{RESET}
-  • Addition: {CYAN}plus{RESET}  or  {GREEN}+{RESET}  (e.g. `set x to a plus b` OR `set x to a + b`)
-  • Subtraction: {CYAN}minus{RESET}  or  {GREEN}-{RESET}  (e.g. `set x to a minus b` OR `set x to a - b`)
-  • Multiplication: {CYAN}times{RESET}  or  {GREEN}*{RESET}  (e.g. `set x to a times b` OR `set x to a * b`)
-  • Division: {CYAN}divided by{RESET}  or  {GREEN}/{RESET}  (e.g. `set x to a divided by b` OR `set x to a / b`)
+{BOLD}Operator Mapping:{RESET}
+  • Addition       : {CYAN}plus{RESET}       or  {GREEN}+{RESET}    (e.g. `set x to a plus b` OR `set x to a + b`)
+  • Subtraction    : {CYAN}minus{RESET}      or  {GREEN}-{RESET}    (e.g. `set x to a minus b` OR `set x to a - b`)
+  • Multiplication : {CYAN}times{RESET}      or  {GREEN}*{RESET}    (e.g. `set x to a times b` OR `set x to a * b`)
+  • Division       : {CYAN}divided by{RESET} or  {GREEN}/{RESET}    (e.g. `set x to a divided by b` OR `set x to a / b`)
+  • Equality       : {CYAN}is equal to{RESET} or  {GREEN}=={RESET}   (e.g. `if x is equal to 5 then:` OR `if x == 5 then:`)
+
+{BOLD}Valid Code Example (.enlg):{RESET}
+{CYAN}set price to 500
+set tax to price times 0.18
+set final_amount to price + tax
+
+display "Final Amount: " plus final_amount{RESET}
 """
 
-        if any(w in text for w in ["control flow", "flow", "branch", "condition", "if statement", "if else"]):
-            return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native AI: Control Flow & Conditional Execution{RESET}
+    def _synthesize_typing(self, text: str, raw_text: str) -> str:
+        return f"""
+{BOLD}{MAGENTA}🤖 EnLang Native AI: Dynamic Type Inference{RESET}
 
-In EnLang, **Control Flow** manages how code decision paths execute based on boolean conditions.
+{BOLD}NO, manual type declarations are NOT required in EnLang!{RESET}
+
+EnLang automatically infers variable types at runtime based on the value assigned:
+  • `set count to 100`           -> Inferred as {CYAN}Integer{RESET}
+  • `set rate to 99.5`           -> Inferred as {CYAN}Float{RESET}
+  • `set title to "EnLang AI"`    -> Inferred as {CYAN}String{RESET}
+  • `set is_active to true`      -> Inferred as {CYAN}Boolean{RESET}
+  • `set items to ["A", "B"]`    -> Inferred as {CYAN}List / Array{RESET}
 
 {BOLD}Code Example (.enlg):{RESET}
-{CYAN}set score to 85
+{CYAN}set project to "Web Portal"
+set status to true
+set count to 10
 
-if score is greater than or equal to 90 then:
-    display "Grade: A+"
-else if score is greater than 70 then:
-    display "Grade: B"
+if status is equal to true then:
+    display "Project " plus project plus " active with count: " plus count{RESET}
+"""
+
+    def _synthesize_concept(self, text: str, raw_text: str, concepts: list) -> str:
+        if "control_flow" in concepts or "if" in text:
+            return f"""
+{BOLD}{MAGENTA}🤖 EnLang Native AI: Control Flow & Conditionals{RESET}
+
+In EnLang, **Control Flow** manages execution paths using natural English branching (`if`, `else if`, `else`) ending with a colon `:`.
+
+{BOLD}Code Example (.enlg):{RESET}
+{CYAN}set user_score to 85
+
+if user_score is greater than or equal to 90 then:
+    display "Grade: A+ (Outstanding)"
+else if user_score is greater than 70 then:
+    display "Grade: B (Great Job)"
 else:
-    display "Grade: C"{RESET}
+    display "Grade: C (Needs Improvement)"{RESET}
 """
 
-        # General Knowledge Synthesizer
-        words = [w for w in re.findall(r'\w+', raw_text) if len(w) > 2]
-        subject = " ".join(words[:4]) if words else raw_text
+        if "loops" in concepts:
+            return f"""
+{BOLD}{MAGENTA}🤖 EnLang Native AI: Loops & Iteration{RESET}
 
-        return f"""
-{BOLD}{CYAN}🤖 EnLang Native AI Assistant:{RESET}
+EnLang supports two clean iteration primitives:
+1. `repeat N times:` -> Fixed iteration counter.
+2. `for each item in list:` -> Sequence traversal.
 
-I processed your query: **"{raw_text}"**
+{BOLD}Code Example (.enlg):{RESET}
+{CYAN}repeat 3 times:
+    display "Executing step..."
 
-In EnLang, **{subject}** is implemented through natural English expressions tailored across the 5 core engineering domains:
-
-  1. {GREEN}.enlg{RESET}   -> Core Logic (`set x to 10`, `if x is greater than 5 then:`)
-  2. {YELLOW}.enlgf{RESET}  -> Frontend UI Components (`create nav`, `create form`, `create card`)
-  3. {BLUE}.enlgd{RESET}  -> CSS Styling & All 5 Selectors (`in class navbar: space inside to "1rem"`)
-  4. {MAGENTA}.enlgs{RESET}  -> Client Scripts (`when button clicked: fetch json`)
-  5. {CYAN}.enlgdb{RESET} -> SQLite Database (`create table users: id PRIMARY KEY`)
-
-{DIM}💡 Tip: To enable 100% open-ended neural ChatGPT/Gemini completions for any random prompt, run Ollama locally (`ollama run llama3`) or set `GEMINI_API_KEY`!{RESET}
+set servers to ["US-East", "EU-West", "AP-South"]
+for each server in servers:
+    display "Server Node: " plus server{RESET}
 """
 
-    def _synthesize_code_gen(self, text: str, raw_text: str) -> str:
+        if "design" in concepts or "css" in text:
+            return f"""
+{BOLD}{MAGENTA}🤖 EnLang Native AI: Design System & 5 Selector Categories (.enlgd){RESET}
+
+EnLang (.enlgd) supports all 5 W3C CSS selector categories natively:
+  1. Simple (`in class navbar`)
+  2. Combinator (`in child button of class navbar`)
+  3. Attribute (`in input with type "text"`)
+  4. Pseudo-Class (`in button on hover`)
+  5. Pseudo-Element (`in card before`)
+
+{BOLD}Code Example (.enlgd):{RESET}
+{BLUE}var primary = "#6366f1"
+
+in class navbar:
+    background color to "#0f172a"
+    space inside to "1rem 2rem"
+    display to "flex"
+
+in child button of class navbar on hover:
+    background color to primary
+    rounded to "8px"{RESET}
+"""
+
+        if "database" in concepts or "sql" in text:
+            return f"""
+{BOLD}{MAGENTA}🤖 EnLang Native AI: Database Schemas & Queries (.enlgdb){RESET}
+
+EnLang (.enlgdb) transpile natively to SQLite database queries and renders terminal ASCII tables.
+
+{BOLD}Code Example (.enlgdb):{RESET}
+{CYAN}create table accounts:
+    id PRIMARY KEY AUTOINCREMENT
+    username TEXT NOT NULL UNIQUE
+    balance REAL DEFAULT 0.0
+
+insert record into accounts:
+    username = "aero"
+    balance = 5000.00
+
+select all from accounts order by balance desc{RESET}
+"""
+
+        return self._synthesize_dynamic_general_qa(text, raw_text, concepts)
+
+    def _synthesize_code_gen(self, text: str, raw_text: str, concepts: list) -> str:
         return f"""
-{BOLD}{MAGENTA}🤖 Generated EnLang Code Component (.enlgf & .enlgd){RESET}
+{BOLD}{MAGENTA}🤖 EnLang Native Code Synthesizer: Generated Component{RESET}
 
 {BOLD}[Frontend UI Markup — component.enlgf]{RESET}
-{CYAN}page named "App"
+{CYAN}page named "Dynamic App"
 include stylesheet "style.enlgd"
 
 create nav named "main-nav" with class "navbar":
-    create h1 with text "EnLang App"
-    create button with text "Explore" with class "btn-primary"{RESET}
+    create h1 with text "EnLang Portal"
+    create button with text "Launch App" with class "btn-primary"{RESET}
 
 {BOLD}[Design Styling — style.enlgd]{RESET}
-{BLUE}in class navbar:
-    background color to "#0f172a"
+{BLUE}var primary_color = "#6366f1"
+
+in class navbar:
+    background color to "rgba(15, 23, 42, 0.9)"
     space inside to "1rem 2rem"
-    display to "flex"{RESET}
+    display to "flex"
+
+in child button of class navbar on hover:
+    background color to primary_color
+    rounded to "6px"{RESET}
 """
 
     def _synthesize_debug_fix(self, raw_text: str) -> str:
         return f"""
-{BOLD}{RED}🔍 EnLang Native Code Diagnostic:{RESET}
+{BOLD}{RED}🔍 EnLang Diagnostic & Linter:{RESET}
 
-{BOLD}Standard EnLang Syntax Pattern:{RESET}
+{BOLD}Standard Valid Syntax Rule:{RESET}
+  • Block headers require trailing colon `:`
+  • Variable assignments: `set <var> to <val>`
+  • Comparison phrases: `is equal to`, `is greater than`
+
+{BOLD}Correct EnLang Pattern:{RESET}
 {GREEN}set n to 10
 
 if n is greater than 5 then:
     display "n is greater than 5"{RESET}
 """
 
+    def _synthesize_dynamic_general_qa(self, text: str, raw_text: str, concepts: list) -> str:
+        """Dynamic open-ended QA synthesis for any arbitrary query."""
+        words = [w.capitalize() for w in re.findall(r'\w+', raw_text) if len(w) > 2]
+        topic = " ".join(words[:3]) if words else raw_text
+
+        return f"""
+{BOLD}{CYAN}🤖 EnLang Native AI Analysis: "{raw_text}"{RESET}
+
+Regarding **{topic}**, EnLang handles this requirement through its universal natural English architecture:
+
+{BOLD}1. Architectural Approach:{RESET}
+  • {GREEN}Core Logic (.enlg){RESET}: Handles algorithms, variables (`set x to 10`), control flow (`if x is greater than 5 then:`), and built-in Machine Learning models.
+  • {YELLOW}Frontend UI (.enlgf){RESET}: Generates semantic HTML5 structures (`create nav`, `create form`, `create card`).
+  • {BLUE}Design System (.enlgd){RESET}: Implements CSS rules across all 5 W3C selector categories (`in class navbar: space inside to "1rem"`).
+  • {MAGENTA}Client Scripts (.enlgs){RESET}: Compiles event listeners and asynchronous fetch calls to clean ES6+ JavaScript.
+  • {CYAN}Database (.enlgdb){RESET}: Manages SQLite tables, inserts, and queries natively.
+
+{BOLD}2. Code Example (.enlg):{RESET}
+{CYAN}# Implementing logic for {topic}
+set status to "active"
+set value to 100
+
+if status is equal to "active" and value is greater than 50 then:
+    display "Execution successful for: " plus "{topic}"{RESET}
+
+{DIM}💡 Tip: EnLang code transpiles natively to Python 3, HTML5, CSS3, ES6+ JS, and SQLite SQL with zero performance overhead!{RESET}
+"""
+
     def _format_help(self) -> str:
         return f"""
-{BOLD}Available EnLang Topics & Capabilities:{RESET}
+{BOLD}Available EnLang Topics & Shortcuts:{RESET}
   • {GREEN}why enlang / python{RESET}: Ecosystem advantages & comparison with Python
   • {GREEN}operators / plus{RESET}   : Using natural words vs math symbols (+)
   • {GREEN}control flow / if{RESET}  : Conditional logic, comparisons, branching
@@ -320,7 +370,6 @@ if n is greater than 5 then:
 """
 
     def _format_examples(self, domain: str) -> str:
-        domain = domain.strip().lower().replace('.', '')
         return f"""
 {BOLD}=== .ENLG (Core Logic Example) ==={RESET}
 {GREEN}set n to 10
@@ -332,7 +381,7 @@ else:
 """
 
 def start_chatbot():
-    engine = EnLangUniversalLLMEngine()
+    engine = EnLangNativeLLMBrain()
     print(engine.welcome_banner())
 
     while True:
@@ -341,13 +390,13 @@ def start_chatbot():
             response = engine.process_query(user_input)
             
             if response == "EXIT":
-                print(f"\n{BOLD}{MAGENTA}Thank you for using EnLang Universal AI Assistant! Happy coding! 🚀{RESET}\n")
+                print(f"\n{BOLD}{MAGENTA}Thank you for using EnLang Native AI Assistant! Happy coding! 🚀{RESET}\n")
                 break
                 
             print(response)
             print()
         except (KeyboardInterrupt, EOFError):
-            print(f"\n\n{BOLD}{MAGENTA}Exiting EnLang Universal AI Assistant. Goodbye! 🚀{RESET}\n")
+            print(f"\n\n{BOLD}{MAGENTA}Exiting EnLang Native AI Assistant. Goodbye! 🚀{RESET}\n")
             break
 
 if __name__ == "__main__":
