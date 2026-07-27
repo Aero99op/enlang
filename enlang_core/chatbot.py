@@ -65,8 +65,8 @@ class EnLangBookTrainer:
                     except Exception:
                         pass
 
-    def retrieve(self, query: str, top_k: int = 3):
-        """Retrieves top-K most relevant book sections using BM25/TF-IDF token scoring."""
+    def retrieve(self, query: str, top_k: int = 2):
+        """Retrieves top-K most relevant book sections using TF-IDF token scoring."""
         query_tokens = set(re.findall(r'\w+', query.lower()))
         if not query_tokens:
             return []
@@ -118,7 +118,7 @@ class EnLangNativeLLMBrain:
         text = raw_text.lower()
 
         if not text:
-            return f"{YELLOW}I am ready! Ask me any question (e.g. 'what does book 2 say about css selectors' or 'explain control flow'){RESET}"
+            return f"{YELLOW}I am ready! Ask me any question (e.g. 'how to train dataset in enlang' or 'tell me about .enlgdb'){RESET}"
 
         if text in ["exit", "quit", "q", "bye", "goodbye"]:
             return "EXIT"
@@ -133,10 +133,94 @@ class EnLangNativeLLMBrain:
 
         self.history.append(raw_text)
 
-        # 1. RAG Book Retrieval
+        # 1. Greetings
+        if text in ["hi", "hello", "hey", "namaste", "greetings", "good morning", "good evening"]:
+            return f"""
+{BOLD}{MAGENTA}🤖 EnLang Native AI: Hello!{RESET}
+
+Welcome! I am your AI assistant trained on EnLang textbooks and specifications. How can I help you today?
+
+You can ask me about:
+  1. {GREEN}.enlg{RESET}   -> Logic, Variables, Control Flow & Machine Learning
+  2. {YELLOW}.enlgf{RESET}  -> Frontend Markup & Semantic Components
+  3. {BLUE}.enlgd{RESET}  -> CSS Styling & All 5 Selector Categories
+  4. {MAGENTA}.enlgs{RESET}  -> Client Scripts & DOM Fetch Events
+  5. {CYAN}.enlgdb{RESET} -> SQLite Database Schemas & Queries
+"""
+
+        # 2. Database Intent (.enlgdb checked before .enlgd!)
+        if "enlgdb" in text or "sqlite" in text or "database" in text or "table" in text:
+            return f"""
+{BOLD}{MAGENTA}🤖 EnLang Native AI: Database Programming (.enlgdb){RESET}
+
+In EnLang, `.enlgdb` scripts define database schemas and execute SQL queries natively targeting SQLite.
+
+{BOLD}1. Key Features:{RESET}
+  • Simple table definitions with column types and primary keys.
+  • Automatic execution & rich ASCII table rendering in terminal.
+
+{BOLD}2. Code Example (.enlgdb):{RESET}
+{CYAN}create table accounts:
+    id PRIMARY KEY AUTOINCREMENT
+    username TEXT NOT NULL UNIQUE
+    balance REAL DEFAULT 0.0
+
+insert record into accounts:
+    username = "aero"
+    balance = 5000.00
+
+select all from accounts order by balance desc{RESET}
+"""
+
+        # 3. Machine Learning / Dataset Intent
+        if any(w in text for w in ["dataset", "train", "classifier", "model", "machine learning", "predict"]):
+            return f"""
+{BOLD}{MAGENTA}🤖 EnLang Native AI: Training Datasets & Machine Learning (.enlg){RESET}
+
+EnLang features built-in Machine Learning primitives right in `.enlg` scripts! You can train classification models and predict text labels natively without external Python libraries.
+
+{BOLD}Code Example (.enlg):{RESET}
+{CYAN}# 1. Train Natural Classifier Dataset
+train classifier sentiment_model with data:
+    "lightning fast response clean interface" -> "positive"
+    "terrible crash slow rendering bug" -> "negative"
+    "awesome design intuitive navigation" -> "positive"
+    "unresponsive laggy dark contrast issue" -> "negative"
+
+# 2. Predict Outcome on New Input
+set feedback to predict sentiment_model with "clean interface fast navigation"
+display "Predicted Sentiment: " plus feedback  # Output: positive{RESET}
+"""
+
+        # 4. Design Intent (.enlgd)
+        if "enlgd" in text or "css" in text or "selector" in text or "styling" in text or "glassmorphism" in text:
+            return f"""
+{BOLD}{MAGENTA}🤖 EnLang Native AI: Design System & 5 Selector Categories (.enlgd){RESET}
+
+.enlgd maps natural English rules 1:1 to valid CSS3. It supports all 5 W3C selector categories:
+  1. Simple (`in class navbar`, `in id header`, `in body`)
+  2. Combinator (`in child button of class navbar`)
+  3. Attribute (`in input with type "text"`)
+  4. Pseudo-Class (`in button on hover`, `in input on focus`)
+  5. Pseudo-Element (`in card before`, `in selection`)
+
+{BOLD}Code Example (.enlgd):{RESET}
+{BLUE}var primary = "#6366f1"
+
+in class navbar:
+    background color to "#0f172a"
+    space inside to "1rem 2rem"
+    display to "flex"
+
+in child button of class navbar on hover:
+    background color to primary
+    rounded to "8px"{RESET}
+"""
+
+        # 5. RAG Book Retrieval Fallback
         matches = self.trainer.retrieve(raw_text, top_k=2)
 
-        # 2. Intent Routing
+        # 6. Intent Routing
         intent = self._extract_intent(text)
 
         if intent == "DEBUG_FIX":
@@ -148,7 +232,6 @@ class EnLangNativeLLMBrain:
         elif intent == "TYPING":
             return self._synthesize_typing(text, raw_text)
 
-        # Build Response combining Book Retrieval + Dynamic Synthesis
         return self._synthesize_book_backed_response(raw_text, matches)
 
     def _extract_intent(self, text: str) -> str:
@@ -180,7 +263,7 @@ class EnLangNativeLLMBrain:
   2. {YELLOW}Frontend UI (.enlgf){RESET}: `create nav`, `create form`, `create card`
   3. {BLUE}Design System (.enlgd){RESET}: Styling across all 5 W3C selector categories (`in class navbar: space inside to "1rem"`)
   4. {MAGENTA}Client Scripts (.enlgs){RESET}: `when button clicked: fetch json`
-  5. {CYAN}Database (.enlgdb){RESET}: `create table users: id PRIMARY KEY`
+  5. {CYAN}.enlgdb Database{RESET}: `create table users: id PRIMARY KEY`
 
 {BOLD}EnLang Code Example:{RESET}
 {CYAN}set status to "active"
@@ -198,12 +281,6 @@ if status is equal to "active" and count is greater than 50 then:
 1. {CYAN}Unified Natural English Ecosystem{RESET}: EnLang unifies all 5 web domains (`.enlg`, `.enlgf`, `.enlgd`, `.enlgs`, `.enlgdb`) under **one natural English grammar**.
 2. {GREEN}Zero Syntax Friction{RESET}: Eliminates complex punctuation, brackets, and semicolon tracking.
 3. {YELLOW}1:1 Zero-Overhead Transpilation{RESET}: Transpiles natively into Python 3, HTML5, CSS3, ES6+ JS, and SQLite SQL with **100% native execution speed**.
-
-{BOLD}Code Comparison:{RESET}
-{CYAN}# EnLang (.enlg)
-set total to 100
-if total is greater than 50 then:
-    display "High Total"{RESET}
 """
 
     def _synthesize_operators(self, text: str, raw_text: str) -> str:
@@ -215,11 +292,6 @@ EnLang fully supports **BOTH** natural English wording **AND** traditional progr
   • Subtraction    : {CYAN}minus{RESET}      or  {GREEN}-{RESET}
   • Multiplication : {CYAN}times{RESET}      or  {GREEN}*{RESET}
   • Division       : {CYAN}divided by{RESET} or  {GREEN}/{RESET}
-
-{BOLD}Valid Code Example (.enlg):{RESET}
-{CYAN}set price to 500
-set final_amount to price + 50
-display "Final Amount: " plus final_amount{RESET}
 """
 
     def _synthesize_typing(self, text: str, raw_text: str) -> str:
