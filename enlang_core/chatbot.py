@@ -348,12 +348,13 @@ class EnLangNativeLLMBrain:
         return self._native_book_rag_engine(raw_text, text, detected_domain)
 
     def _query_groq(self, prompt: str, rag_context: str = "") -> str:
-        """Queries Groq Llama 3.3 70B."""
+        """Queries Groq Llama 3.3 70B with Temperature 0.0 for 100% Deterministic Spec Adherence."""
         try:
             url = "https://api.groq.com/openai/v1/chat/completions"
             system_prompt = ENLANG_SYSTEM_PROMPT + rag_context
             payload = json.dumps({
                 "model": "llama-3.3-70b-versatile",
+                "temperature": 0.0,
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt}
@@ -378,7 +379,8 @@ class EnLangNativeLLMBrain:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={self.gemini_key}"
             system_prompt = ENLANG_SYSTEM_PROMPT + rag_context
             payload = json.dumps({
-                "contents": [{"parts": [{"text": f"{system_prompt}\n\nUser Question: {prompt}"}]}]
+                "contents": [{"parts": [{"text": f"{system_prompt}\n\nUser Question: {prompt}"}]}],
+                "generationConfig": {"temperature": 0.0}
             }).encode("utf-8")
             req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=10) as resp:
@@ -396,6 +398,7 @@ class EnLangNativeLLMBrain:
             system_prompt = ENLANG_SYSTEM_PROMPT + rag_context
             payload = json.dumps({
                 "model": "meta-llama/llama-3.2-11b-vision-instruct:free",
+                "temperature": 0.0,
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt}
