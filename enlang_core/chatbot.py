@@ -33,54 +33,63 @@ RESET = "\033[0m"
 
 ENLANG_SYSTEM_PROMPT = """You are EnLang AI, the official AI assistant and language engine for EnLang — the Universal Natural English Programming Language Ecosystem.
 
-### ENLANG SYNTAX SPECIFICATION RULES (CRITICAL - YOU MUST FOLLOW THESE STRICTLY):
-1. **Core Logic (.enlg)**:
-   - Output: ALWAYS use `display <expr>` (e.g. `display "Hello"`). NEVER output `print` or `log text:`.
-   - Variables: ALWAYS use `set <var> to <val>` (e.g. `set count to 0`).
-   - Functions: ALWAYS use `function <name> with <arg1> and <arg2>:` (e.g. `function isPalindrome with text:`).
-   - Invocations: ALWAYS use `call <name> with <arg>` (e.g. `call isPalindrome with userInput`).
-   - Counter Loops: ALWAYS use `repeat <N> times:` (e.g. `repeat 5 times:`).
-   - Collection Loops: ALWAYS use `for each <item> in <list>:` (e.g. `for each color in colors:`).
-   - Conditional Loops: ALWAYS use `while <condition> then:` (e.g. `while count is less than 5 then:`).
-   - Inputs: ALWAYS use `set <var> to ask <prompt>` or `ask <prompt> and store in <var>`.
+### STRICT RULES FOR ZERO HALLUCINATION (MUST FOLLOW 100%):
+1. **NO DOMAIN MIXING**:
+   - In `.enlg` (Core Logic) scripts: NEVER put UI/HTML commands like `page named ...`, `create nav`, or HTML tags. Logic scripts start DIRECTLY with variables (`set`), conditions (`if`), loops (`while`/`repeat`/`for each`), or output (`display`).
+   - `page named "..."` belongs ONLY in `.enlgf` (Frontend Markup) files.
 
-2. **Frontend Markup (.enlgf)**:
-   - Page declaration: `page named "Home"`
-   - Elements: `create nav`, `create card`, `create button with text "Submit"`
+2. **NUMERIC COMPARISONS & INPUT**:
+   - `ask "..."` returns a string. When taking numeric input for comparisons (e.g. attendance percentage, age, score), ALWAYS convert it to integer/decimal first:
+     ```enlg
+     set score to ask "Enter score: "
+     convert score to integer
+     if score is greater than 90 then:
+         display "Passed"
+     ```
 
-3. **Design (.enlgd)**:
-   - Selectors: `in class navbar`, `in btn on hover`, `in card`
-   - Properties: `background color: #1e1e2e`, `padding: 20px`, `rounded: 8px`
+3. **CORE LOGIC SYNTAX (.enlg)**:
+   - Output: ALWAYS use `display <expr>`. NEVER use `print` or `log text:`.
+   - Variables: ALWAYS use `set <var> to <val>`.
+   - Functions: ALWAYS use `function <name> with <arg1> and <arg2>:`.
+   - Invocations: ALWAYS use `call <name> with <arg>`.
+   - Counter Loops: ALWAYS use `repeat <N> times:`.
+   - Collection Loops: ALWAYS use `for each <item> in <list>:`.
+   - Conditional Loops: ALWAYS use `while <condition> then:`.
 
-4. **Client Script (.enlgs)**:
-   - Events: `when button clicked:`, `fetch json from url "..." then:`
-   - Script Actions: `log text: "Clicked"`, `alert "Done"`
+4. **FRONTEND MARKUP SYNTAX (.enlgf)**:
+   - Page: `page named "Home"`
+   - UI Elements: `create div with text "Hello"`, `create button with text "Submit"`
 
-5. **Database (.enlgdb)**:
-   - `create table users with columns id integer, name text`
+5. **DESIGN SYNTAX (.enlgd)**:
+   - Selectors: `in class navbar`, `in btn on hover`
+   - Properties: `background color: #1e1e2e`, `padding: 20px`
 
-### GOLDEN ENLANG CODE EXAMPLES:
-Example 1: Function & Loop in .enlg
+6. **CLIENT SCRIPT SYNTAX (.enlgs)**:
+   - `when button clicked:`, `log text: "Clicked"`, `alert "Saved"`
+
+### GOLDEN VERIFIED ENLANG CODE EXAMPLE (.enlg):
 ```enlg
-function isPalindrome with text:
-    set reversedText to reverse of text
-    if text is equal to reversedText then:
-        display "The text is a palindrome."
-    else:
-        display "The text is not a palindrome."
+set attendees to []
+set attendeeName to ask "Enter student name: "
+set attendancePercentage to ask "Enter attendance percentage (0-100): "
+convert attendancePercentage to integer
 
-set userInput to ask "Enter a string: "
-call isPalindrome with userInput
+if attendancePercentage is greater than or equal to 90 then:
+    set feedback to "High - Excellent attendance!"
+else if attendancePercentage is greater than or equal to 80 then:
+    set feedback to "Medium - Good attendance."
+else:
+    set feedback to "Low - Need more attendance."
+
+set attendee to attendeeName plus " - " plus attendancePercentage plus "% - " plus feedback
+add attendee to attendees
+
+display "Attendance Record: "
+for each record in attendees:
+    display record
 ```
 
-Example 2: Collection Loop in .enlg
-```enlg
-set items to ["Apple", "Banana", "Cherry"]
-for each item in items:
-    display item
-```
-
-Answer ALL user questions accurately. Whenever you write EnLang code, use EXACT valid EnLang syntax adhering to the rules above."""
+Always double check the reference context below and enforce 100% exact syntax matching."""
 
 def _load_key_from_env_or_config(key_name: str) -> str:
     """Safely retrieves API key from environment, local .env, or ~/.enlang/keys.json."""
@@ -120,32 +129,53 @@ class EnLangBookTrainer:
         self.index_knowledge_base()
 
     def index_knowledge_base(self):
-        """Discovers and indexes all EnLang textbook chapters & reference markdown files."""
-        if not os.path.exists(self.books_dir):
-            return
+        """Discovers and indexes all EnLang textbook chapters & core grammar/transpiler code files."""
+        # 1. Index Books
+        if os.path.exists(self.books_dir):
+            for root, _, files in os.walk(self.books_dir):
+                for file in files:
+                    if file.endswith(".md") or file.startswith("build_quality_"):
+                        filepath = os.path.join(root, file)
+                        try:
+                            with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+                                content = f.read()
 
-        for root, _, files in os.walk(self.books_dir):
-            for file in files:
-                if file.endswith(".md") or file.startswith("build_quality_"):
-                    filepath = os.path.join(root, file)
-                    try:
-                        with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-                            content = f.read()
+                            sections = re.split(r'\n(?=#+\s+)', content)
+                            for sec in sections:
+                                sec = sec.strip()
+                                if len(sec) > 40:
+                                    lines = sec.split('\n')
+                                    title = lines[0].lstrip('#').strip()
+                                    self.knowledge_chunks.append({
+                                        "source": file,
+                                        "title": title,
+                                        "content": sec,
+                                        "tokens": set(re.findall(r'\w+', sec.lower()))
+                                    })
+                        except Exception:
+                            pass
 
-                        sections = re.split(r'\n(?=#+\s+)', content)
-                        for sec in sections:
-                            sec = sec.strip()
-                            if len(sec) > 40:
-                                lines = sec.split('\n')
-                                title = lines[0].lstrip('#').strip()
-                                self.knowledge_chunks.append({
-                                    "source": file,
-                                    "title": title,
-                                    "content": sec,
-                                    "tokens": set(re.findall(r'\w+', sec.lower()))
-                                })
-                    except Exception:
-                        pass
+        # 2. Index Core Grammar & Transpiler Source Code for 100% Exact Syntax Matching
+        core_dir = os.path.dirname(os.path.abspath(__file__))
+        core_files = ["grammar.py", "transpiler.py", "interpreter.py", "checker.py"]
+        for fname in core_files:
+            fpath = os.path.join(core_dir, fname)
+            if os.path.exists(fpath):
+                try:
+                    with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
+                        content = f.read()
+                    sections = content.split("\n\n")
+                    for sec in sections:
+                        sec = sec.strip()
+                        if len(sec) > 50:
+                            self.knowledge_chunks.append({
+                                "source": fname,
+                                "title": f"EnLang Core Engine ({fname})",
+                                "content": sec[:1500],
+                                "tokens": set(re.findall(r'\w+', sec.lower()))
+                            })
+                except Exception:
+                    pass
 
     def retrieve(self, query: str, top_k: int = 2):
         """Retrieves top-K most relevant book sections using TF-IDF token scoring."""
