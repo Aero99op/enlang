@@ -1,0 +1,6 @@
+display "hello world"
+
+set n to 10
+
+if n is greater than 5 then:
+    display "n is greater than 5"

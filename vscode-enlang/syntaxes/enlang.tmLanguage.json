@@ -82,7 +82,7 @@
       "patterns": [
         {
           "name": "keyword.other.web.enlang",
-          "match": "\\b(page|title|include|stylesheet|script|create|main|section|div|h1|h2|h3|h4|h5|h6|p|button|input|form|label|table|tr|th|td|ul|ol|li|nav|header|footer|style|theme|media|hover|active|focus|on|click|submit|log|alert|fetch|json|@js)\\b"
+          "match": "\\b(page|title|include|stylesheet|script|create|main|section|div|h1|h2|h3|h4|h5|h6|p|button|input|form|label|table|tr|th|td|ul|ol|li|nav|header|footer|style|theme|media|hover|active|focus|on|click|submit|log|alert|fetch|json|var|token|color|in|inside|child|of|before|after|selection|starting|ending|containing|space|rounded|shadow|direction|columns|blur|web|glass|@js)\\b"
         }
       ]
     },
