@@ -202,9 +202,23 @@ class EnLangTranspiler:
     # PYTHON TARGET  (.enlg)
     # ─────────────────────────────────────────────────────────────────────────
 
+    def _normalize_natural_english_line(self, line: str) -> str:
+        """Pre-normalizes common conversational variations into standard EnLang syntax before matching."""
+        # 1. 'define function foo' / 'create function foo' -> 'function foo'
+        line = re.sub(r'^\s*(?:define|create|make|build)\s+function\b', 'function', line, flags=re.IGNORECASE)
+        # 2. 'repeat for each item in list:' -> 'for each item in list:'
+        line = re.sub(r'^\s*repeat\s+for\s+each\b', 'for each', line, flags=re.IGNORECASE)
+        # 3. 'log text: "msg"' / 'log text "msg"' -> 'display "msg"' in .enlg
+        line = re.sub(r'^\s*log\s+text:?\s*', 'display ', line, flags=re.IGNORECASE)
+        # 4. 'call function foo' / 'run function foo' -> 'call foo'
+        line = re.sub(r'^\s*(call|run|execute|start)\s+(?:function|func|procedure)\s+', r'\1 ', line, flags=re.IGNORECASE)
+        # 5. 'repeat until <cond>:' -> 'while not '
+        line = re.sub(r'^\s*repeat\s+until\s+', 'while not ', line, flags=re.IGNORECASE)
+        return line
+
     def _transpile_python_line(self, line: str) -> str:
         """Full EnLang → Python transpiler with NLP fallback."""
-        line = line.strip()
+        line = self._normalize_natural_english_line(line.strip())
 
         has_colon = line.endswith(":")
         clean_line = line[:-1].strip() if has_colon else line
