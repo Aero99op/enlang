@@ -23,7 +23,7 @@ CORE_DIR = os.path.join(INSTALL_DIR, "enlang_core")
 def print_banner():
     print("=" * 65)
     print("        ENLANG UNIVERSAL PROGRAMMING LANGUAGE INSTALLER        ")
-    print("              Version 2.0.0 — Enterprise Edition              ")
+    print("              Version 1.2.8 — Enterprise Edition              ")
     print("           Author & Architect: Spandan Prayas Patra           ")
     print("=" * 65)
     print()

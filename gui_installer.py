@@ -59,7 +59,7 @@ class EnLangInstallerGUI:
 
         sub_label = tk.Label(
             header_frame,
-            text="Version 2.0.0 — Enterprise Specification Edition | Author: Spandan Prayas Patra",
+            text="Version 1.2.8 — Enterprise Specification Edition | Author: Spandan Prayas Patra",
             font=("Segoe UI", 9),
             fg="#c7d2fe",
             bg=self.PRIMARY,
