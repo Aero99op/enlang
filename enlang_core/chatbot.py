@@ -34,7 +34,7 @@ RESET = "\033[0m"
 ENLANG_SYSTEM_PROMPT = """You are EnLang AI, a world-class AI assistant and expert compiler/web engineer specializing in the EnLang Natural English Programming Language Ecosystem.
 
 EnLang consists of 5 core domains:
-1. .enlg   -> Core Logic (Variables: set x to 10, Conditions: if x is greater than 5 then:, Loops: repeat 3 times:, Functions: define function add with x and y:, ML: train classifier / predict)
+1. .enlg   -> Core Logic (Variables: set x to 10, Conditions: if x is greater than 5 then:, Loops: repeat 3 times: / for each item in list: / repeat for each item in list: / repeat until condition:, Output: display "msg" / log text: "msg", Functions: define function add with x and y:, ML: train classifier / predict)
 2. .enlgf  -> Frontend Markup (HTML5 tags: page named "Home", create nav, create card, create form, create button, create input)
 3. .enlgd  -> Design & CSS (Selectors: Simple 'in class navbar', Combinator 'in child p of div', Attribute 'in input with type "text"', Pseudo-class 'in btn on hover', Pseudo-element 'in card before', Properties: space inside, space outside, rounded, shadow, text color)
 4. .enlgs  -> Client Scripts (ES6+ JS: when button clicked:, fetch json from url then:, log text, alert)

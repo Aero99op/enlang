@@ -361,9 +361,9 @@ class EnLangTranspiler:
             return f"{m.group(1)} -= {clean_expression(m.group(2))}"
 
         # ── Output ────────────────────────────────────────────────────────
-        m = re.match(r'^(display|print|show|say|log)(?:\s*\((.*)\)|\s+(.*))$', line, re.IGNORECASE)
+        m = re.match(r'^(?:display|print|show|say|log\s+text:?|log)(?:\s*\((.*)\)|\s+(.*))$', line, re.IGNORECASE)
         if m:
-            exprs = m.group(2) if m.group(2) is not None else m.group(3)
+            exprs = m.group(1) if m.group(1) is not None else m.group(2)
             return f"print({_safe_concat_expr(clean_expression(exprs))})"
 
         # ── User Input ────────────────────────────────────────────────────
@@ -613,10 +613,15 @@ class EnLangTranspiler:
             count = clean_expression(m.group(1))
             return f"for _ in range(int({count})):"
 
-        m = re.match(r'^for\s+each\s+([a-zA-Z_]\w*)\s+in\s+(.+?)(?:\s+do)?\s*:?\s*$', line, re.IGNORECASE)
+        m = re.match(r'^(?:repeat\s+)?for\s+each\s+([a-zA-Z_]\w*)\s+in\s+(.+?)(?:\s+do)?\s*:?\s*$', line, re.IGNORECASE)
         if m:
             item, coll = m.group(1), clean_expression(m.group(2).rstrip(":"))
             return f"for {item} in {coll}:"
+
+        m = re.match(r'^repeat\s+until\s+(.+?)(?:\s+do)?\s*:?\s*$', line, re.IGNORECASE)
+        if m:
+            cond = clean_expression(m.group(1).rstrip(":"))
+            return f"while not ({cond}):"
 
         m = re.match(r'^while\s+(.+?)(?:\s+do)?\s*:?\s*$', line, re.IGNORECASE)
         if m:
