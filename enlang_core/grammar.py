@@ -45,6 +45,7 @@ EXPRESSION_REPLACEMENTS = [
     (r'\bdivided by\b',               '/'),
     (r'\bmodulo\b',                   '%'),
     (r'\bpower of\b',                 '**'),
+    (r'\breverse\s+of\s+([a-zA-Z_]\w*)\b', r'str(\1)[::-1]'),
     (r'\band\b',                      'and'),
     (r'\bor\b',                       'or'),
     (r'\bnot\b',                      'not'),

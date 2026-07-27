@@ -335,7 +335,12 @@ class EnLangTranspiler:
             t1, t2, var = clean_expression(m.group(1)), clean_expression(m.group(2)), m.group(3)
             return f"from enlang_core.nlp_engine import calculate_similarity; {var} = calculate_similarity({t1}, {t2})"
 
-        # ── Variable Assignment ───────────────────────────────────────────
+        # ── Variable Assignment & Input ───────────────────────────────────
+        m = re.match(r'^(?:set|let)\s+([a-zA-Z_]\w*)\s+(?:to|=|is)\s+(?:ask|input|read)\s+(.+)$', line, re.IGNORECASE)
+        if m:
+            var, prompt = m.group(1), clean_expression(m.group(2))
+            return f"print(str({prompt}), end='', flush=True); {var} = input()"
+
         m = re.match(r'^store\s+(.+)\s+in\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
         if m:
             val, var = clean_expression(m.group(1)), m.group(2)
@@ -367,11 +372,15 @@ class EnLangTranspiler:
             return f"print({_safe_concat_expr(clean_expression(exprs))})"
 
         # ── User Input ────────────────────────────────────────────────────
+        m = re.match(r'^(?:set|let)\s+([a-zA-Z_]\w*)\s+(?:to|=|is)\s+(?:ask|input|read)\s+(.+)$', line, re.IGNORECASE)
+        if m:
+            var, prompt = m.group(1), clean_expression(m.group(2))
+            return f"print(str({prompt}), end='', flush=True); {var} = input()"
+
         m = re.match(r'^ask\s+(.+?)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
         if m:
-            prompt = m.group(1)
-            var = m.group(2)
-            return f"print(f'\\n[INPUT REQUIRED] ' + str({prompt}), end='', flush=True); {var} = input()"
+            prompt, var = clean_expression(m.group(1)), m.group(2)
+            return f"print(str({prompt}), end='', flush=True); {var} = input()"
 
         # ── Database (from .enlg backend) ─────────────────────────────────
         m = re.match(r'^connect\s+to\s+database\s+(.+)\s+as\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
@@ -629,32 +638,32 @@ class EnLangTranspiler:
             return f"while {cond}:"
 
         # ── Functions ─────────────────────────────────────────────────────
-        # 1. Standard: function foo(n): or func foo(n):
-        m = re.match(r'^(?:function|func)\s+([a-zA-Z_]\w*)\s*\(([^)]*)\)\s*:?\s*$', line, re.IGNORECASE)
+        # 1. Standard: function foo(n): or define function foo(n):
+        m = re.match(r'^(?:define\s+)?(?:function|func)\s+([a-zA-Z_]\w*)\s*\(([^)]*)\)\s*:?\s*$', line, re.IGNORECASE)
         if m:
             name, params = m.group(1), m.group(2)
             return f"def {name}({params}):"
 
-        # 2. Natural English: function foo using n: / function foo taking n: / function foo given n:
-        m = re.match(r'^(?:function|func|action|task|procedure|process)\s+([a-zA-Z_]\w*)\s+(?:using|taking|given|with|for)\s+([a-zA-Z_]\w*(?:\s*,\s*[a-zA-Z_]\w*)*)\s*:?\s*$', line, re.IGNORECASE)
+        # 2. Natural English: define function foo with n: / function foo using n:
+        m = re.match(r'^(?:define\s+)?(?:function|func|action|task|procedure|process)\s+([a-zA-Z_]\w*)\s+(?:using|taking|given|with|for)\s+([a-zA-Z_]\w*(?:\s*,\s*[a-zA-Z_]\w*)*)\s*:?\s*$', line, re.IGNORECASE)
         if m:
             name, params = m.group(1), m.group(2)
             return f"def {name}({params}):"
 
-        # 2b. Parameterless function: function foo:
-        m = re.match(r'^(?:function|func|action|task|procedure|process)\s+([a-zA-Z_]\w*)\s*:?\s*$', line, re.IGNORECASE)
+        # 2b. Parameterless function: define function foo:
+        m = re.match(r'^(?:define\s+)?(?:function|func|action|task|procedure|process)\s+([a-zA-Z_]\w*)\s*:?\s*$', line, re.IGNORECASE)
         if m:
             name = m.group(1)
             return f"def {name}():"
 
-        # 3. Invocation: start foo from 1 / start foo with 1 / call foo with 1 / run foo with 1
-        m = re.match(r'^(?:start|call|run|execute|begin|perform|next|apply)\s+([a-zA-Z_]\w*)\s+(?:from|with|using|for)\s+(.+)$', line, re.IGNORECASE)
+        # 3. Invocation: call function foo with 1 / call foo with 1 / run function foo with 1
+        m = re.match(r'^(?:start|call|run|execute|begin|perform|next|apply)\s+(?:function\s+|func\s+|procedure\s+)?([a-zA-Z_]\w*)\s+(?:from|with|using|for)\s+(.+)$', line, re.IGNORECASE)
         if m:
             name, val = m.group(1), clean_expression(m.group(2))
             return f"{name}({val})"
 
-        # 3b. Parameterless Invocation: call foo / run foo / start foo
-        m = re.match(r'^(?:start|call|run|execute|begin|perform)\s+([a-zA-Z_]\w*)\s*$', line, re.IGNORECASE)
+        # 3b. Parameterless Invocation: call function foo / call foo
+        m = re.match(r'^(?:start|call|run|execute|begin|perform)\s+(?:function\s+|func\s+|procedure\s+)?([a-zA-Z_]\w*)\s*$', line, re.IGNORECASE)
         if m:
             name = m.group(1)
             return f"{name}()"
