@@ -274,11 +274,30 @@ class EnLangNativeLLMBrain:
 
         self.history.append(raw_text)
 
+        # Domain Detection for RAG Focus
+        detected_domain = ""
+        for dom in ["enlgf", "enlgd", "enlgs", "enlgdb", "enlg"]:
+            if dom in text:
+                detected_domain = dom
+                break
+        if not detected_domain:
+            if any(w in text for w in ["css", "style", "color", "design", "selector"]):
+                detected_domain = "enlgd"
+            elif any(w in text for w in ["html", "markup", "page", "card", "button", "frontend"]):
+                detected_domain = "enlgf"
+            elif any(w in text for w in ["js", "javascript", "fetch", "event", "click", "script"]):
+                detected_domain = "enlgs"
+            elif any(w in text for w in ["sql", "database", "table", "query", "db"]):
+                detected_domain = "enlgdb"
+            elif any(w in text for w in ["logic", "variable", "if", "loop", "function"]):
+                detected_domain = "enlg"
+
         # Retrieve RAG Book Context
-        matches = self.trainer.retrieve(raw_text, top_k=2)
+        search_query = f"{detected_domain} {raw_text}" if detected_domain else raw_text
+        matches = self.trainer.retrieve(search_query, top_k=4)
         rag_context = ""
         if matches:
-            rag_context = "\n\nRelevant EnLang Master Textbook Reference:\n" + "\n---\n".join([m['content'][:800] for m in matches])
+            rag_context = f"\n\nOfficial EnLang Book & Codebase References (Focus: {detected_domain or 'General'}):\n" + "\n---\n".join([f"[{m['source']} - {m['title']}]\n{m['content']}" for m in matches])
 
         # 1. Try Free High-Speed Cloud LLM APIs (Groq -> Gemini -> OpenRouter -> Ollama)
         if self.groq_key:
@@ -302,10 +321,10 @@ class EnLangNativeLLMBrain:
                 return res
 
         # 2. Native Book-Trained RAG Fallback Engine
-        return self._native_book_rag_engine(raw_text, text)
+        return self._native_book_rag_engine(raw_text, text, detected_domain)
 
     def _query_groq(self, prompt: str, rag_context: str = "") -> str:
-        """Queries Groq Llama 3.3 70B (Free Tier: 14,400 free requests per day, ~500 tokens/sec)."""
+        """Queries Groq Llama 3.3 70B."""
         try:
             url = "https://api.groq.com/openai/v1/chat/completions"
             system_prompt = ENLANG_SYSTEM_PROMPT + rag_context
@@ -390,41 +409,22 @@ class EnLangNativeLLMBrain:
             pass
         return None
 
-    def _native_book_rag_engine(self, raw_text: str, text: str) -> str:
+    def _native_book_rag_engine(self, raw_text: str, text: str, domain: str = "") -> str:
         if text in ["hi", "hello", "hey", "namaste", "greetings", "good morning", "good evening"]:
             return f"""
 {BOLD}{MAGENTA}🤖 EnLang Native AI: Hello!{RESET}
 
 Welcome! I am your AI assistant trained on EnLang textbooks and specifications. How can I help you today?
-
-You can ask me about:
-  1. {GREEN}.enlg{RESET}   -> Logic, Variables, Control Flow & Machine Learning
-  2. {YELLOW}.enlgf{RESET}  -> Frontend Markup & Semantic Components
-  3. {BLUE}.enlgd{RESET}  -> CSS Styling & All 5 Selector Categories
-  4. {MAGENTA}.enlgs{RESET}  -> Client Scripts & DOM Fetch Events
-  5. {CYAN}.enlgdb{RESET} -> SQLite Database Schemas & Queries
 """
 
-        matches = self.trainer.retrieve(raw_text, top_k=2)
-        words = [w.capitalize() for w in re.findall(r'\w+', raw_text) if len(w) > 2]
-        topic = " ".join(words[:4]) if words else raw_text
+        matches = self.trainer.retrieve(raw_text, top_k=3)
+        retrieved_text = ""
+        if matches:
+            retrieved_text = "\n\n" + "\n---\n".join([f"[{m['title']}]\n{m['content']}" for m in matches])
 
         return f"""
-{BOLD}{CYAN}🤖 EnLang Book-Trained AI Analysis: "{raw_text}"{RESET}
-
-{BOLD}Core EnLang Architecture for {topic}:{RESET}
-  1. {GREEN}Core Logic (.enlg){RESET}: `set x to 10`, `if x is greater than 5 then:`, `repeat 3 times:`
-  2. {YELLOW}Frontend UI (.enlgf){RESET}: `create nav`, `create form`, `create card`
-  3. {BLUE}Design System (.enlgd){RESET}: Styling across all 5 W3C selector categories (`in class navbar: space inside to "1rem"`)
-  4. {MAGENTA}Client Scripts (.enlgs){RESET}: `when button clicked: fetch json`
-  5. {CYAN}.enlgdb Database{RESET}: `create table users: id PRIMARY KEY`
-
-{BOLD}EnLang Code Example:{RESET}
-{CYAN}set status to "active"
-set count to 100
-
-if status is equal to "active" and count is greater than 50 then:
-    display "Execution successful for: " plus "{topic}"{RESET}
+{BOLD}{CYAN}🤖 EnLang Book-Trained AI Analysis for "{raw_text}":{RESET}
+{retrieved_text if retrieved_text else "No direct book match found, refer to domain guidelines."}
 """
 
     def _format_help(self) -> str:
@@ -440,14 +440,87 @@ if status is equal to "active" and count is greater than 50 then:
 """
 
     def _format_examples(self, domain: str) -> str:
-        return f"""
-{BOLD}=== .ENLG (Core Logic Example) ==={RESET}
-{GREEN}set n to 10
+        d = domain.lower().replace(".", "")
+        if d == "enlgf":
+            return f"""
+{BOLD}=== .ENLGF (Frontend Markup Template) ==={RESET}
+{YELLOW}page named "Dashboard"
 
-if n is greater than 5 then:
-    display "n is large"
-else:
-    display "n is small"{RESET}
+create nav with id "navbar":
+    create div with text "Logo"
+    create button with text "Logout"
+
+create section with class "hero":
+    create h1 with text "Welcome Back!"
+    create p with text "Here is your system overview."
+
+create form with action "/api/save":
+    create input with type "text" and placeholder "Enter name"
+    create button with type "submit" and text "Save"{RESET}
+"""
+        elif d == "enlgd":
+            return f"""
+{BOLD}=== .ENLGD (Design & CSS System Template - 5 Selectors) ==={RESET}
+{BLUE}# 1. Simple Class Selector
+in class hero:
+    space inside: 40px
+    background color: #1e1e2e
+    rounded: 12px
+
+# 2. Combinator Selector
+in child p of div:
+    text color: #a6adc8
+    font size: 16px
+
+# 3. Attribute Selector
+in input with type "text":
+    border: 1px solid #45475a
+    padding: 10px
+
+# 4. Pseudo-class Selector
+in btn on hover:
+    background color: #89b4fa
+    cursor: pointer
+
+# 5. Pseudo-element Selector
+in card before:
+    content: ""
+    display: block{RESET}
+"""
+        elif d == "enlgs":
+            return f"""
+{BOLD}=== .ENLGS (Client Script Template) ==={RESET}
+{MAGENTA}when button with id "btn-fetch" clicked:
+    log text: "Fetching data from server..."
+    fetch json from url "https://api.example.com/data" then:
+        display json.result
+        alert "Data loaded successfully!"{RESET}
+"""
+        elif d == "enlgdb":
+            return f"""
+{BOLD}=== .ENLGDB (Database Schema & Queries Template) ==={RESET}
+{CYAN}connect to database "app.db" as db
+
+create table users with columns id integer primary key, name text, email text
+
+insert record into users with values 1, "Spandan", "spandan@example.com"
+
+execute query "SELECT * FROM users WHERE id = 1" on db and store in user_record
+display user_record{RESET}
+"""
+        else:
+            return f"""
+{BOLD}=== .ENLG (Core Logic Template) ==={RESET}
+{GREEN}set users to ["Alice", "Bob", "Charlie"]
+
+function greetUser with name:
+    display "Hello, " plus name
+
+for each user in users:
+    call greetUser with user
+
+repeat 3 times:
+    display "Loop iteration active"{RESET}
 """
 
 def start_chatbot():
