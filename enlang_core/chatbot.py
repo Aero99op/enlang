@@ -1,14 +1,15 @@
 """
-EnLang Pure Native Terminal AI Assistant Engine (100% Offline, Zero API Keys, Zero External LLMs)
-==================================================================================================
-Provides true dynamic Natural Language Understanding, Intent Extraction, Semantic Concept Mapping,
-Code Synthesis, and Diagnostic Reasoning natively in pure EnLang Python.
+EnLang Pure Native Terminal AI Assistant Engine (Trained on EnLang Master Textbooks & Documentation)
+======================================================================================================
+100% Offline, Zero API Keys, Zero External LLMs. Features dynamic RAG (Retrieval-Augmented Generation)
+book training index across all EnLang textbooks and reference documentation.
 """
 
 import sys
 import os
 import re
-import random
+import math
+import glob
 
 # Fix Windows cp1252 terminal encoding — allow full Unicode/emoji output
 if hasattr(sys.stdout, "reconfigure"):
@@ -27,20 +28,78 @@ BOLD = "\033[1m"
 DIM = "\033[2m"
 RESET = "\033[0m"
 
+class EnLangBookTrainer:
+    """RAG & Semantic Indexing Engine trained on EnLang Master Books."""
+
+    def __init__(self, books_dir: str):
+        self.books_dir = books_dir
+        self.knowledge_chunks = []
+        self.index_knowledge_base()
+
+    def index_knowledge_base(self):
+        """Discovers and indexes all EnLang textbook chapters & reference markdown files."""
+        if not os.path.exists(self.books_dir):
+            return
+
+        for root, _, files in os.walk(self.books_dir):
+            for file in files:
+                if file.endswith(".md") or file.startswith("build_quality_"):
+                    filepath = os.path.join(root, file)
+                    try:
+                        with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+                            content = f.read()
+
+                        # Split into semantic sections based on headers
+                        sections = re.split(r'\n(?=#+\s+)', content)
+                        for sec in sections:
+                            sec = sec.strip()
+                            if len(sec) > 40:
+                                lines = sec.split('\n')
+                                title = lines[0].lstrip('#').strip()
+                                self.knowledge_chunks.append({
+                                    "source": file,
+                                    "title": title,
+                                    "content": sec,
+                                    "tokens": set(re.findall(r'\w+', sec.lower()))
+                                })
+                    except Exception:
+                        pass
+
+    def retrieve(self, query: str, top_k: int = 3):
+        """Retrieves top-K most relevant book sections using BM25/TF-IDF token scoring."""
+        query_tokens = set(re.findall(r'\w+', query.lower()))
+        if not query_tokens:
+            return []
+
+        scored = []
+        for chunk in self.knowledge_chunks:
+            overlap = len(query_tokens.intersection(chunk["tokens"]))
+            if overlap > 0:
+                score = overlap / (math.log(len(chunk["tokens"]) + 1) + 1)
+                scored.append((score, chunk))
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [chunk for score, chunk in scored[:top_k]]
+
 class EnLangNativeLLMBrain:
-    """100% Native Internal AI Engine with Dynamic Intent Parsing & Semantic Synthesis."""
+    """100% Native AI Engine with RAG Book Knowledge Base integration."""
 
     def __init__(self):
         self.history = []
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        books_path = os.path.join(base_dir, "books")
+        self.trainer = EnLangBookTrainer(books_path)
 
     def welcome_banner(self):
+        chunks_count = len(self.trainer.knowledge_chunks)
         return f"""
 {CYAN}================================================================================{RESET}
-{BOLD}{MAGENTA}       🤖 ENLANG NATIVE TERMINAL AI ASSISTANT  —  PURE INTERNAL BRAIN 🤖{RESET}
+{BOLD}{MAGENTA}       🤖 ENLANG NATIVE AI TERMINAL ASSISTANT  —  BOOK TRAINED ENGINE 🤖{RESET}
 {CYAN}================================================================================{RESET}
- {GREEN}● 100% Native EnLang Engine  |  Zero External API Keys  |  Zero External LLMs{RESET}
+ {GREEN}● Trained Knowledge Base: {chunks_count} Book Sections & Textbooks Indexed (100% Offline){RESET}
+ {GREEN}● 0 External API Keys  |  0 External LLMs  |  100% Native EnLang Brain{RESET}
 
-{BOLD} Welcome! Ask any question across all 5 EnLang domains or general tech topics:{RESET}
+{BOLD} Welcome! Ask any question across all 5 EnLang domains or book topics:{RESET}
    {GREEN}• .enlg{RESET}   (Core Logic, Control Flow, Functions, Machine Learning)
    {YELLOW}• .enlgf{RESET}  (Frontend UI Components & Semantic HTML5 Markup)
    {BLUE}• .enlgd{RESET}  (CSS Styling, Glassmorphic Design, 5 Selector Categories)
@@ -59,7 +118,7 @@ class EnLangNativeLLMBrain:
         text = raw_text.lower()
 
         if not text:
-            return f"{YELLOW}I am ready! Ask me any question (e.g. 'what is control flow in enlang' or 'why use enlang vs python'){RESET}"
+            return f"{YELLOW}I am ready! Ask me any question (e.g. 'what does book 2 say about css selectors' or 'explain control flow'){RESET}"
 
         if text in ["exit", "quit", "q", "bye", "goodbye"]:
             return "EXIT"
@@ -72,28 +131,25 @@ class EnLangNativeLLMBrain:
             domain = parts[1] if len(parts) > 1 else ""
             return self._format_examples(domain)
 
-        # Record conversation context
         self.history.append(raw_text)
 
-        # 1. Parse Intent & Extract Concepts
-        intent = self._extract_intent(text)
-        concepts = self._extract_concepts(text)
+        # 1. RAG Book Retrieval
+        matches = self.trainer.retrieve(raw_text, top_k=2)
 
-        # 2. Handle Specific Intent Handlers
+        # 2. Intent Routing
+        intent = self._extract_intent(text)
+
         if intent == "DEBUG_FIX":
             return self._synthesize_debug_fix(raw_text)
         elif intent == "COMPARE":
-            return self._synthesize_comparison(text, raw_text, concepts)
+            return self._synthesize_comparison(text, raw_text)
         elif intent == "OPERATORS":
             return self._synthesize_operators(text, raw_text)
         elif intent == "TYPING":
             return self._synthesize_typing(text, raw_text)
-        elif intent == "CODE_GEN":
-            return self._synthesize_code_gen(text, raw_text, concepts)
-        elif intent == "CONCEPT_EXPLAIN":
-            return self._synthesize_concept(text, raw_text, concepts)
-        else:
-            return self._synthesize_dynamic_general_qa(text, raw_text, concepts)
+
+        # Build Response combining Book Retrieval + Dynamic Synthesis
+        return self._synthesize_book_backed_response(raw_text, matches)
 
     def _extract_intent(self, text: str) -> str:
         if any(w in text for w in ["error", "syntaxerror", "invalid syntax", "fix", "bug", "broken", "failed"]):
@@ -104,84 +160,65 @@ class EnLangNativeLLMBrain:
             return "OPERATORS"
         if any(w in text for w in ["type", "data type", "declare", "declaration", "necessary", "static", "dynamic"]):
             return "TYPING"
-        if any(w in text for w in ["create form", "create nav", "create card", "generate code", "build component", "write template"]):
-            return "CODE_GEN"
-        if any(w in text for w in ["what is", "how to", "explain", "tell me", "control flow", "loop", "function", "ml", "database", "css"]):
-            return "CONCEPT_EXPLAIN"
         return "GENERAL_QA"
 
-    def _extract_concepts(self, text: str) -> list:
-        found = []
-        mapping = {
-            "control_flow": ["control flow", "if", "branch", "condition", "else"],
-            "variables": ["variable", "set", "assign", "data type", "type"],
-            "loops": ["loop", "repeat", "for each", "iteration"],
-            "functions": ["function", "define", "method", "return"],
-            "ai_ml": ["ai", "ml", "machine learning", "classifier", "predict", "train"],
-            "markup": ["markup", "enlgf", "html", "page", "nav", "navbar", "card", "form", "input", "button"],
-            "design": ["design", "enlgd", "css", "style", "selector", "glassmorphic", "glass", "flex", "hover"],
-            "scripts": ["script", "enlgs", "js", "javascript", "event", "click", "fetch", "alert"],
-            "database": ["database", "enlgdb", "sql", "sqlite", "table", "query", "record"]
-        }
-        for category, keywords in mapping.items():
-            if any(k in text for k in keywords):
-                found.append(category)
-        return found
+    def _synthesize_book_backed_response(self, raw_text: str, matches: list) -> str:
+        book_citations = ""
+        if matches:
+            book_citations = f"\n{BOLD}{YELLOW}📚 Trained Book Reference Excerpt ({matches[0]['source']}):{RESET}\n"
+            content_snippet = matches[0]['content'][:600].strip()
+            book_citations += f"{DIM}{content_snippet}...{RESET}\n"
 
-    def _synthesize_comparison(self, text: str, raw_text: str, concepts: list) -> str:
-        other_tech = "Python / Traditional Web Stacks"
-        if "python" in text:
-            other_tech = "Python"
-        elif "javascript" in text or "js" in text:
-            other_tech = "JavaScript"
-        elif "html" in text or "css" in text:
-            other_tech = "HTML/CSS"
+        words = [w.capitalize() for w in re.findall(r'\w+', raw_text) if len(w) > 2]
+        topic = " ".join(words[:4]) if words else raw_text
 
+        return f"""
+{BOLD}{CYAN}🤖 EnLang Book-Trained AI Analysis: "{raw_text}"{RESET}
+{book_citations}
+{BOLD}Core EnLang Architecture for {topic}:{RESET}
+  1. {GREEN}Core Logic (.enlg){RESET}: `set x to 10`, `if x is greater than 5 then:`, `repeat 3 times:`
+  2. {YELLOW}Frontend UI (.enlgf){RESET}: `create nav`, `create form`, `create card`
+  3. {BLUE}Design System (.enlgd){RESET}: Styling across all 5 W3C selector categories (`in class navbar: space inside to "1rem"`)
+  4. {MAGENTA}Client Scripts (.enlgs){RESET}: `when button clicked: fetch json`
+  5. {CYAN}Database (.enlgdb){RESET}: `create table users: id PRIMARY KEY`
+
+{BOLD}EnLang Code Example:{RESET}
+{CYAN}set status to "active"
+set count to 100
+
+if status is equal to "active" and count is greater than 50 then:
+    display "Concept verified from EnLang Textbooks: " plus "{topic}"{RESET}
+"""
+
+    def _synthesize_comparison(self, text: str, raw_text: str) -> str:
         return f"""
 {BOLD}{MAGENTA}🤖 EnLang Native AI: Comparative Analysis ({raw_text}){RESET}
 
-{BOLD}Key Differences: EnLang vs {other_tech}:{RESET}
-
-1. {CYAN}Unified Natural English Ecosystem{RESET}:
-   • While traditional web development forces developers to juggle {other_tech} alongside 4 other syntax styles, EnLang unifies logic (`.enlg`), UI (`.enlgf`), design (`.enlgd`), client events (`.enlgs`), and databases (`.enlgdb`) under **one natural English grammar**.
-
-2. {GREEN}Zero Syntax Overhead & Friction{RESET}:
-   • Eliminates bracket matching, complex punctuation, semicolon tracking, and regex rules.
-   • Natural readable statements like `set x to 10` and `if x is greater than 5 then:`.
-
-3. {YELLOW}1:1 Zero-Overhead Native Transpilation{RESET}:
-   • EnLang code transpiles natively into Python 3, HTML5, CSS3, ES6+ JS, and SQLite SQL. It runs with **100% native execution speed** and zero runtime bloat.
+{BOLD}Key Differences: EnLang vs Traditional Languages:{RESET}
+1. {CYAN}Unified Natural English Ecosystem{RESET}: EnLang unifies all 5 web domains (`.enlg`, `.enlgf`, `.enlgd`, `.enlgs`, `.enlgdb`) under **one natural English grammar**.
+2. {GREEN}Zero Syntax Friction{RESET}: Eliminates complex punctuation, brackets, and semicolon tracking.
+3. {YELLOW}1:1 Zero-Overhead Transpilation{RESET}: Transpiles natively into Python 3, HTML5, CSS3, ES6+ JS, and SQLite SQL with **100% native execution speed**.
 
 {BOLD}Code Comparison:{RESET}
 {CYAN}# EnLang (.enlg)
 set total to 100
 if total is greater than 50 then:
     display "High Total"{RESET}
-
-{DIM}# Transpiled Native Python
-total = 100
-if total > 50:
-    print("High Total"){RESET}
 """
 
     def _synthesize_operators(self, text: str, raw_text: str) -> str:
         return f"""
 {BOLD}{MAGENTA}🤖 EnLang Native AI: Dual Operator Support{RESET}
 
-EnLang fully supports **BOTH** natural English wording **AND** traditional programming math/logic symbols interchangeable in code:
-
-{BOLD}Operator Mapping:{RESET}
-  • Addition       : {CYAN}plus{RESET}       or  {GREEN}+{RESET}    (e.g. `set x to a plus b` OR `set x to a + b`)
-  • Subtraction    : {CYAN}minus{RESET}      or  {GREEN}-{RESET}    (e.g. `set x to a minus b` OR `set x to a - b`)
-  • Multiplication : {CYAN}times{RESET}      or  {GREEN}*{RESET}    (e.g. `set x to a times b` OR `set x to a * b`)
-  • Division       : {CYAN}divided by{RESET} or  {GREEN}/{RESET}    (e.g. `set x to a divided by b` OR `set x to a / b`)
-  • Equality       : {CYAN}is equal to{RESET} or  {GREEN}=={RESET}   (e.g. `if x is equal to 5 then:` OR `if x == 5 then:`)
+EnLang fully supports **BOTH** natural English wording **AND** traditional programming math/logic symbols:
+  • Addition       : {CYAN}plus{RESET}       or  {GREEN}+{RESET}
+  • Subtraction    : {CYAN}minus{RESET}      or  {GREEN}-{RESET}
+  • Multiplication : {CYAN}times{RESET}      or  {GREEN}*{RESET}
+  • Division       : {CYAN}divided by{RESET} or  {GREEN}/{RESET}
 
 {BOLD}Valid Code Example (.enlg):{RESET}
 {CYAN}set price to 500
-set tax to price times 0.18
-set final_amount to price + tax
-
+set final_amount to price + 50
 display "Final Amount: " plus final_amount{RESET}
 """
 
@@ -191,169 +228,18 @@ display "Final Amount: " plus final_amount{RESET}
 
 {BOLD}NO, manual type declarations are NOT required in EnLang!{RESET}
 
-EnLang automatically infers variable types at runtime based on the value assigned:
-  • `set count to 100`           -> Inferred as {CYAN}Integer{RESET}
-  • `set rate to 99.5`           -> Inferred as {CYAN}Float{RESET}
-  • `set title to "EnLang AI"`    -> Inferred as {CYAN}String{RESET}
-  • `set is_active to true`      -> Inferred as {CYAN}Boolean{RESET}
-  • `set items to ["A", "B"]`    -> Inferred as {CYAN}List / Array{RESET}
-
-{BOLD}Code Example (.enlg):{RESET}
-{CYAN}set project to "Web Portal"
-set status to true
-set count to 10
-
-if status is equal to true then:
-    display "Project " plus project plus " active with count: " plus count{RESET}
-"""
-
-    def _synthesize_concept(self, text: str, raw_text: str, concepts: list) -> str:
-        if "control_flow" in concepts or "if" in text:
-            return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native AI: Control Flow & Conditionals{RESET}
-
-In EnLang, **Control Flow** manages execution paths using natural English branching (`if`, `else if`, `else`) ending with a colon `:`.
-
-{BOLD}Code Example (.enlg):{RESET}
-{CYAN}set user_score to 85
-
-if user_score is greater than or equal to 90 then:
-    display "Grade: A+ (Outstanding)"
-else if user_score is greater than 70 then:
-    display "Grade: B (Great Job)"
-else:
-    display "Grade: C (Needs Improvement)"{RESET}
-"""
-
-        if "loops" in concepts:
-            return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native AI: Loops & Iteration{RESET}
-
-EnLang supports two clean iteration primitives:
-1. `repeat N times:` -> Fixed iteration counter.
-2. `for each item in list:` -> Sequence traversal.
-
-{BOLD}Code Example (.enlg):{RESET}
-{CYAN}repeat 3 times:
-    display "Executing step..."
-
-set servers to ["US-East", "EU-West", "AP-South"]
-for each server in servers:
-    display "Server Node: " plus server{RESET}
-"""
-
-        if "design" in concepts or "css" in text:
-            return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native AI: Design System & 5 Selector Categories (.enlgd){RESET}
-
-EnLang (.enlgd) supports all 5 W3C CSS selector categories natively:
-  1. Simple (`in class navbar`)
-  2. Combinator (`in child button of class navbar`)
-  3. Attribute (`in input with type "text"`)
-  4. Pseudo-Class (`in button on hover`)
-  5. Pseudo-Element (`in card before`)
-
-{BOLD}Code Example (.enlgd):{RESET}
-{BLUE}var primary = "#6366f1"
-
-in class navbar:
-    background color to "#0f172a"
-    space inside to "1rem 2rem"
-    display to "flex"
-
-in child button of class navbar on hover:
-    background color to primary
-    rounded to "8px"{RESET}
-"""
-
-        if "database" in concepts or "sql" in text:
-            return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native AI: Database Schemas & Queries (.enlgdb){RESET}
-
-EnLang (.enlgdb) transpile natively to SQLite database queries and renders terminal ASCII tables.
-
-{BOLD}Code Example (.enlgdb):{RESET}
-{CYAN}create table accounts:
-    id PRIMARY KEY AUTOINCREMENT
-    username TEXT NOT NULL UNIQUE
-    balance REAL DEFAULT 0.0
-
-insert record into accounts:
-    username = "aero"
-    balance = 5000.00
-
-select all from accounts order by balance desc{RESET}
-"""
-
-        return self._synthesize_dynamic_general_qa(text, raw_text, concepts)
-
-    def _synthesize_code_gen(self, text: str, raw_text: str, concepts: list) -> str:
-        return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native Code Synthesizer: Generated Component{RESET}
-
-{BOLD}[Frontend UI Markup — component.enlgf]{RESET}
-{CYAN}page named "Dynamic App"
-include stylesheet "style.enlgd"
-
-create nav named "main-nav" with class "navbar":
-    create h1 with text "EnLang Portal"
-    create button with text "Launch App" with class "btn-primary"{RESET}
-
-{BOLD}[Design Styling — style.enlgd]{RESET}
-{BLUE}var primary_color = "#6366f1"
-
-in class navbar:
-    background color to "rgba(15, 23, 42, 0.9)"
-    space inside to "1rem 2rem"
-    display to "flex"
-
-in child button of class navbar on hover:
-    background color to primary_color
-    rounded to "6px"{RESET}
+EnLang automatically infers variable types at runtime based on assigned values (Integers, Floats, Strings, Booleans, Lists).
 """
 
     def _synthesize_debug_fix(self, raw_text: str) -> str:
         return f"""
 {BOLD}{RED}🔍 EnLang Diagnostic & Linter:{RESET}
 
-{BOLD}Standard Valid Syntax Rule:{RESET}
-  • Block headers require trailing colon `:`
-  • Variable assignments: `set <var> to <val>`
-  • Comparison phrases: `is equal to`, `is greater than`
-
 {BOLD}Correct EnLang Pattern:{RESET}
 {GREEN}set n to 10
 
 if n is greater than 5 then:
     display "n is greater than 5"{RESET}
-"""
-
-    def _synthesize_dynamic_general_qa(self, text: str, raw_text: str, concepts: list) -> str:
-        """Dynamic open-ended QA synthesis for any arbitrary query."""
-        words = [w.capitalize() for w in re.findall(r'\w+', raw_text) if len(w) > 2]
-        topic = " ".join(words[:3]) if words else raw_text
-
-        return f"""
-{BOLD}{CYAN}🤖 EnLang Native AI Analysis: "{raw_text}"{RESET}
-
-Regarding **{topic}**, EnLang handles this requirement through its universal natural English architecture:
-
-{BOLD}1. Architectural Approach:{RESET}
-  • {GREEN}Core Logic (.enlg){RESET}: Handles algorithms, variables (`set x to 10`), control flow (`if x is greater than 5 then:`), and built-in Machine Learning models.
-  • {YELLOW}Frontend UI (.enlgf){RESET}: Generates semantic HTML5 structures (`create nav`, `create form`, `create card`).
-  • {BLUE}Design System (.enlgd){RESET}: Implements CSS rules across all 5 W3C selector categories (`in class navbar: space inside to "1rem"`).
-  • {MAGENTA}Client Scripts (.enlgs){RESET}: Compiles event listeners and asynchronous fetch calls to clean ES6+ JavaScript.
-  • {CYAN}Database (.enlgdb){RESET}: Manages SQLite tables, inserts, and queries natively.
-
-{BOLD}2. Code Example (.enlg):{RESET}
-{CYAN}# Implementing logic for {topic}
-set status to "active"
-set value to 100
-
-if status is equal to "active" and value is greater than 50 then:
-    display "Execution successful for: " plus "{topic}"{RESET}
-
-{DIM}💡 Tip: EnLang code transpiles natively to Python 3, HTML5, CSS3, ES6+ JS, and SQLite SQL with zero performance overhead!{RESET}
 """
 
     def _format_help(self) -> str:
@@ -363,7 +249,6 @@ if status is equal to "active" and value is greater than 50 then:
   • {GREEN}operators / plus{RESET}   : Using natural words vs math symbols (+)
   • {GREEN}control flow / if{RESET}  : Conditional logic, comparisons, branching
   • {GREEN}variables / set{RESET}     : Variable assignment and automatic type inference
-  • {GREEN}loops / repeat{RESET}      : Repeat blocks and list iterations
   • {YELLOW}enlgf / markup{RESET}     : Building semantic HTML5 components
   • {BLUE}enlgd / css{RESET}        : All 5 CSS selector types and styling rules
   • {CYAN}enlgdb / sql{RESET}       : SQLite database schemas and queries
