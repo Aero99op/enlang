@@ -1,8 +1,8 @@
 """
-EnLang Pure Native Terminal AI Assistant Engine (Trained on EnLang Master Textbooks & Documentation)
-======================================================================================================
-100% Offline, Zero API Keys, Zero External LLMs. Features dynamic RAG (Retrieval-Augmented Generation)
-book training index across all EnLang textbooks and reference documentation.
+EnLang Hybrid AI Terminal Assistant Engine (Groq Llama 3.3 70B / Multi-Provider Powered)
+=======================================================================================
+Secure API Key Management: Loads keys from Environment Variables (GROQ_API_KEY, GEMINI_API_KEY),
+local .env files, or ~/.enlang/keys.json with automatic RAG Book Knowledge fallback.
 """
 
 import sys
@@ -10,6 +10,9 @@ import os
 import re
 import math
 import glob
+import json
+import urllib.request
+import urllib.error
 
 # Fix Windows cp1252 terminal encoding — allow full Unicode/emoji output
 if hasattr(sys.stdout, "reconfigure"):
@@ -27,6 +30,46 @@ BLUE = "\033[94m"
 BOLD = "\033[1m"
 DIM = "\033[2m"
 RESET = "\033[0m"
+
+ENLANG_SYSTEM_PROMPT = """You are EnLang AI, a world-class AI assistant and expert compiler/web engineer specializing in the EnLang Natural English Programming Language Ecosystem.
+
+EnLang consists of 5 core domains:
+1. .enlg   -> Core Logic (Variables: set x to 10, Conditions: if x is greater than 5 then:, Loops: repeat 3 times:, Functions: define function add with x and y:, ML: train classifier / predict)
+2. .enlgf  -> Frontend Markup (HTML5 tags: page named "Home", create nav, create card, create form, create button, create input)
+3. .enlgd  -> Design & CSS (Selectors: Simple 'in class navbar', Combinator 'in child p of div', Attribute 'in input with type "text"', Pseudo-class 'in btn on hover', Pseudo-element 'in card before', Properties: space inside, space outside, rounded, shadow, text color)
+4. .enlgs  -> Client Scripts (ES6+ JS: when button clicked:, fetch json from url then:, log text, alert)
+5. .enlgdb -> Database & SQL (SQLite: create table users, insert record into users, select all from users where id > 0)
+
+Answer ANY user question (technical, conversational, comparisons, debugging, or general knowledge) intelligently, accurately, and politely with copy-pasteable EnLang code examples where appropriate."""
+
+def _load_key_from_env_or_config(key_name: str) -> str:
+    """Safely retrieves API key from environment, local .env, or ~/.enlang/keys.json."""
+    val = os.environ.get(key_name)
+    if val:
+        return val.strip()
+
+    # Try local .env file
+    if os.path.exists(".env"):
+        try:
+            with open(".env", "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith(f"{key_name}="):
+                        return line.split("=", 1)[1].strip().strip('"').strip("'")
+        except Exception:
+            pass
+
+    # Try home directory keys.json
+    home_key_file = os.path.expanduser(os.path.join("~", ".enlang", "keys.json"))
+    if os.path.exists(home_key_file):
+        try:
+            with open(home_key_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if key_name in data:
+                    return data[key_name].strip()
+        except Exception:
+            pass
+
+    return None
 
 class EnLangBookTrainer:
     """RAG & Semantic Indexing Engine trained on EnLang Master Books."""
@@ -49,7 +92,6 @@ class EnLangBookTrainer:
                         with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                             content = f.read()
 
-                        # Split into semantic sections based on headers
                         sections = re.split(r'\n(?=#+\s+)', content)
                         for sec in sections:
                             sec = sec.strip()
@@ -82,7 +124,7 @@ class EnLangBookTrainer:
         return [chunk for score, chunk in scored[:top_k]]
 
 class EnLangNativeLLMBrain:
-    """100% Native AI Engine with RAG Book Knowledge Base integration."""
+    """Hybrid AI Assistant Engine with Secure API Key Management & RAG Book Fallback."""
 
     def __init__(self):
         self.history = []
@@ -90,16 +132,45 @@ class EnLangNativeLLMBrain:
         books_path = os.path.join(base_dir, "books")
         self.trainer = EnLangBookTrainer(books_path)
 
+        self.groq_key = _load_key_from_env_or_config("GROQ_API_KEY")
+        self.gemini_key = _load_key_from_env_or_config("GEMINI_API_KEY")
+        self.openrouter_key = _load_key_from_env_or_config("OPENROUTER_API_KEY")
+        self.ollama_available, self.ollama_model = self._check_ollama()
+
+    def _check_ollama(self):
+        try:
+            req = urllib.request.Request("http://localhost:11434/api/tags", headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=1.2) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                models = [m.get("name", "") for m in data.get("models", [])]
+                if models:
+                    return True, models[0]
+        except Exception:
+            pass
+        return False, None
+
     def welcome_banner(self):
         chunks_count = len(self.trainer.knowledge_chunks)
+        active_backend = ""
+
+        if self.groq_key:
+            active_backend = f" {GREEN}● Engine: Groq Llama 3.3 70B (Ultra-Fast 500+ tok/sec | Secure Cloud API Key){RESET}"
+        elif self.gemini_key:
+            active_backend = f" {CYAN}● Engine: Google Gemini 2.0 Flash (Cloud Key Active){RESET}"
+        elif self.openrouter_key:
+            active_backend = f" {MAGENTA}● Engine: OpenRouter Free Models Aggregator{RESET}"
+        elif self.ollama_available:
+            active_backend = f" {BLUE}● Engine: Local Ollama Neural Model ({self.ollama_model}){RESET}"
+        else:
+            active_backend = f" {YELLOW}● Engine: Book-Trained RAG Engine ({chunks_count} Sections Indexed | 100% Offline){RESET}"
+
         return f"""
 {CYAN}================================================================================{RESET}
-{BOLD}{MAGENTA}       🤖 ENLANG NATIVE AI TERMINAL ASSISTANT  —  BOOK TRAINED ENGINE 🤖{RESET}
+{BOLD}{MAGENTA}       🤖 ENLANG TERMINAL AI ASSISTANT  —  HYBRID NEURAL & RAG BRAIN 🤖{RESET}
 {CYAN}================================================================================{RESET}
- {GREEN}● Trained Knowledge Base: {chunks_count} Book Sections & Textbooks Indexed (100% Offline){RESET}
- {GREEN}● 0 External API Keys  |  0 External LLMs  |  100% Native EnLang Brain{RESET}
+{active_backend}
 
-{BOLD} Welcome! Ask any question across all 5 EnLang domains or book topics:{RESET}
+{BOLD} Welcome! Ask me ANY question (coding, architecture, comparisons, debugging):{RESET}
    {GREEN}• .enlg{RESET}   (Core Logic, Control Flow, Functions, Machine Learning)
    {YELLOW}• .enlgf{RESET}  (Frontend UI Components & Semantic HTML5 Markup)
    {BLUE}• .enlgd{RESET}  (CSS Styling, Glassmorphic Design, 5 Selector Categories)
@@ -118,7 +189,7 @@ class EnLangNativeLLMBrain:
         text = raw_text.lower()
 
         if not text:
-            return f"{YELLOW}I am ready! Ask me any question (e.g. 'how to train dataset in enlang' or 'tell me about .enlgdb'){RESET}"
+            return f"{YELLOW}I am ready! Ask me any question (e.g. 'write a login form in enlangf' or 'explain control flow'){RESET}"
 
         if text in ["exit", "quit", "q", "bye", "goodbye"]:
             return "EXIT"
@@ -133,7 +204,123 @@ class EnLangNativeLLMBrain:
 
         self.history.append(raw_text)
 
-        # 1. Greetings
+        # Retrieve RAG Book Context
+        matches = self.trainer.retrieve(raw_text, top_k=2)
+        rag_context = ""
+        if matches:
+            rag_context = "\n\nRelevant EnLang Master Textbook Reference:\n" + "\n---\n".join([m['content'][:800] for m in matches])
+
+        # 1. Try Free High-Speed Cloud LLM APIs (Groq -> Gemini -> OpenRouter -> Ollama)
+        if self.groq_key:
+            res = self._query_groq(raw_text, rag_context)
+            if res:
+                return res
+
+        if self.gemini_key:
+            res = self._query_gemini(raw_text, rag_context)
+            if res:
+                return res
+
+        if self.openrouter_key:
+            res = self._query_openrouter(raw_text, rag_context)
+            if res:
+                return res
+
+        if self.ollama_available:
+            res = self._query_ollama(raw_text, rag_context)
+            if res:
+                return res
+
+        # 2. Native Book-Trained RAG Fallback Engine
+        return self._native_book_rag_engine(raw_text, text)
+
+    def _query_groq(self, prompt: str, rag_context: str = "") -> str:
+        """Queries Groq Llama 3.3 70B (Free Tier: 14,400 free requests per day, ~500 tokens/sec)."""
+        try:
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            system_prompt = ENLANG_SYSTEM_PROMPT + rag_context
+            payload = json.dumps({
+                "model": "llama-3.3-70b-versatile",
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ]
+            }).encode("utf-8")
+            req = urllib.request.Request(url, data=payload, headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.groq_key}",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            })
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                text = data['choices'][0]['message']['content']
+                return f"\n{BOLD}{GREEN}🤖 EnLang AI (Groq Llama 3.3 70B):{RESET}\n{text}"
+        except Exception:
+            pass
+        return None
+
+    def _query_gemini(self, prompt: str, rag_context: str = "") -> str:
+        """Queries Google Gemini 2.0 Flash."""
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={self.gemini_key}"
+            system_prompt = ENLANG_SYSTEM_PROMPT + rag_context
+            payload = json.dumps({
+                "contents": [{"parts": [{"text": f"{system_prompt}\n\nUser Question: {prompt}"}]}]
+            }).encode("utf-8")
+            req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                text = data['candidates'][0]['content']['parts'][0]['text']
+                return f"\n{BOLD}{CYAN}🤖 EnLang AI (Google Gemini 2.0 Flash):{RESET}\n{text}"
+        except Exception:
+            pass
+        return None
+
+    def _query_openrouter(self, prompt: str, rag_context: str = "") -> str:
+        """Queries OpenRouter Free Tier Models."""
+        try:
+            url = "https://openrouter.ai/api/v1/chat/completions"
+            system_prompt = ENLANG_SYSTEM_PROMPT + rag_context
+            payload = json.dumps({
+                "model": "meta-llama/llama-3.2-11b-vision-instruct:free",
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ]
+            }).encode("utf-8")
+            req = urllib.request.Request(url, data=payload, headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.openrouter_key}",
+                "User-Agent": "Mozilla/5.0"
+            })
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                text = data['choices'][0]['message']['content']
+                return f"\n{BOLD}{MAGENTA}🤖 EnLang AI (OpenRouter Free API):{RESET}\n{text}"
+        except Exception:
+            pass
+        return None
+
+    def _query_ollama(self, prompt: str, rag_context: str = "") -> str:
+        """Queries Local Ollama Instance."""
+        try:
+            system_prompt = ENLANG_SYSTEM_PROMPT + rag_context
+            payload = json.dumps({
+                "model": self.ollama_model,
+                "prompt": f"{system_prompt}\n\nUser Question: {prompt}\n\nEnLang AI Answer:",
+                "stream": False
+            }).encode("utf-8")
+            req = urllib.request.Request("http://localhost:11434/api/generate", data=payload, headers={"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                text = data.get("response", "").strip()
+                if text:
+                    return f"\n{BOLD}{BLUE}🤖 EnLang AI (Local Ollama - {self.ollama_model}):{RESET}\n{text}"
+        except Exception:
+            pass
+        return None
+
+    def _native_book_rag_engine(self, raw_text: str, text: str) -> str:
         if text in ["hi", "hello", "hey", "namaste", "greetings", "good morning", "good evening"]:
             return f"""
 {BOLD}{MAGENTA}🤖 EnLang Native AI: Hello!{RESET}
@@ -148,116 +335,13 @@ You can ask me about:
   5. {CYAN}.enlgdb{RESET} -> SQLite Database Schemas & Queries
 """
 
-        # 2. Database Intent (.enlgdb checked before .enlgd!)
-        if "enlgdb" in text or "sqlite" in text or "database" in text or "table" in text:
-            return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native AI: Database Programming (.enlgdb){RESET}
-
-In EnLang, `.enlgdb` scripts define database schemas and execute SQL queries natively targeting SQLite.
-
-{BOLD}1. Key Features:{RESET}
-  • Simple table definitions with column types and primary keys.
-  • Automatic execution & rich ASCII table rendering in terminal.
-
-{BOLD}2. Code Example (.enlgdb):{RESET}
-{CYAN}create table accounts:
-    id PRIMARY KEY AUTOINCREMENT
-    username TEXT NOT NULL UNIQUE
-    balance REAL DEFAULT 0.0
-
-insert record into accounts:
-    username = "aero"
-    balance = 5000.00
-
-select all from accounts order by balance desc{RESET}
-"""
-
-        # 3. Machine Learning / Dataset Intent
-        if any(w in text for w in ["dataset", "train", "classifier", "model", "machine learning", "predict"]):
-            return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native AI: Training Datasets & Machine Learning (.enlg){RESET}
-
-EnLang features built-in Machine Learning primitives right in `.enlg` scripts! You can train classification models and predict text labels natively without external Python libraries.
-
-{BOLD}Code Example (.enlg):{RESET}
-{CYAN}# 1. Train Natural Classifier Dataset
-train classifier sentiment_model with data:
-    "lightning fast response clean interface" -> "positive"
-    "terrible crash slow rendering bug" -> "negative"
-    "awesome design intuitive navigation" -> "positive"
-    "unresponsive laggy dark contrast issue" -> "negative"
-
-# 2. Predict Outcome on New Input
-set feedback to predict sentiment_model with "clean interface fast navigation"
-display "Predicted Sentiment: " plus feedback  # Output: positive{RESET}
-"""
-
-        # 4. Design Intent (.enlgd)
-        if "enlgd" in text or "css" in text or "selector" in text or "styling" in text or "glassmorphism" in text:
-            return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native AI: Design System & 5 Selector Categories (.enlgd){RESET}
-
-.enlgd maps natural English rules 1:1 to valid CSS3. It supports all 5 W3C selector categories:
-  1. Simple (`in class navbar`, `in id header`, `in body`)
-  2. Combinator (`in child button of class navbar`)
-  3. Attribute (`in input with type "text"`)
-  4. Pseudo-Class (`in button on hover`, `in input on focus`)
-  5. Pseudo-Element (`in card before`, `in selection`)
-
-{BOLD}Code Example (.enlgd):{RESET}
-{BLUE}var primary = "#6366f1"
-
-in class navbar:
-    background color to "#0f172a"
-    space inside to "1rem 2rem"
-    display to "flex"
-
-in child button of class navbar on hover:
-    background color to primary
-    rounded to "8px"{RESET}
-"""
-
-        # 5. RAG Book Retrieval Fallback
         matches = self.trainer.retrieve(raw_text, top_k=2)
-
-        # 6. Intent Routing
-        intent = self._extract_intent(text)
-
-        if intent == "DEBUG_FIX":
-            return self._synthesize_debug_fix(raw_text)
-        elif intent == "COMPARE":
-            return self._synthesize_comparison(text, raw_text)
-        elif intent == "OPERATORS":
-            return self._synthesize_operators(text, raw_text)
-        elif intent == "TYPING":
-            return self._synthesize_typing(text, raw_text)
-
-        return self._synthesize_book_backed_response(raw_text, matches)
-
-    def _extract_intent(self, text: str) -> str:
-        if any(w in text for w in ["error", "syntaxerror", "invalid syntax", "fix", "bug", "broken", "failed"]):
-            return "DEBUG_FIX"
-        if any(w in text for w in ["vs", "versus", "difference", "compare", "why use", "why enlang", "instead of"]):
-            return "COMPARE"
-        if any(w in text for w in ["plus", "+", "minus", "-", "times", "*", "divided by", "/", "operator", "symbol"]):
-            return "OPERATORS"
-        if any(w in text for w in ["type", "data type", "declare", "declaration", "necessary", "static", "dynamic"]):
-            return "TYPING"
-        return "GENERAL_QA"
-
-    def _synthesize_book_backed_response(self, raw_text: str, matches: list) -> str:
-        book_citations = ""
-        if matches:
-            book_citations = f"\n{BOLD}{YELLOW}📚 Trained Book Reference Excerpt ({matches[0]['source']}):{RESET}\n"
-            content_snippet = matches[0]['content'][:600].strip()
-            book_citations += f"{DIM}{content_snippet}...{RESET}\n"
-
         words = [w.capitalize() for w in re.findall(r'\w+', raw_text) if len(w) > 2]
         topic = " ".join(words[:4]) if words else raw_text
 
         return f"""
 {BOLD}{CYAN}🤖 EnLang Book-Trained AI Analysis: "{raw_text}"{RESET}
-{book_citations}
+
 {BOLD}Core EnLang Architecture for {topic}:{RESET}
   1. {GREEN}Core Logic (.enlg){RESET}: `set x to 10`, `if x is greater than 5 then:`, `repeat 3 times:`
   2. {YELLOW}Frontend UI (.enlgf){RESET}: `create nav`, `create form`, `create card`
@@ -270,48 +354,7 @@ in child button of class navbar on hover:
 set count to 100
 
 if status is equal to "active" and count is greater than 50 then:
-    display "Concept verified from EnLang Textbooks: " plus "{topic}"{RESET}
-"""
-
-    def _synthesize_comparison(self, text: str, raw_text: str) -> str:
-        return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native AI: Comparative Analysis ({raw_text}){RESET}
-
-{BOLD}Key Differences: EnLang vs Traditional Languages:{RESET}
-1. {CYAN}Unified Natural English Ecosystem{RESET}: EnLang unifies all 5 web domains (`.enlg`, `.enlgf`, `.enlgd`, `.enlgs`, `.enlgdb`) under **one natural English grammar**.
-2. {GREEN}Zero Syntax Friction{RESET}: Eliminates complex punctuation, brackets, and semicolon tracking.
-3. {YELLOW}1:1 Zero-Overhead Transpilation{RESET}: Transpiles natively into Python 3, HTML5, CSS3, ES6+ JS, and SQLite SQL with **100% native execution speed**.
-"""
-
-    def _synthesize_operators(self, text: str, raw_text: str) -> str:
-        return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native AI: Dual Operator Support{RESET}
-
-EnLang fully supports **BOTH** natural English wording **AND** traditional programming math/logic symbols:
-  • Addition       : {CYAN}plus{RESET}       or  {GREEN}+{RESET}
-  • Subtraction    : {CYAN}minus{RESET}      or  {GREEN}-{RESET}
-  • Multiplication : {CYAN}times{RESET}      or  {GREEN}*{RESET}
-  • Division       : {CYAN}divided by{RESET} or  {GREEN}/{RESET}
-"""
-
-    def _synthesize_typing(self, text: str, raw_text: str) -> str:
-        return f"""
-{BOLD}{MAGENTA}🤖 EnLang Native AI: Dynamic Type Inference{RESET}
-
-{BOLD}NO, manual type declarations are NOT required in EnLang!{RESET}
-
-EnLang automatically infers variable types at runtime based on assigned values (Integers, Floats, Strings, Booleans, Lists).
-"""
-
-    def _synthesize_debug_fix(self, raw_text: str) -> str:
-        return f"""
-{BOLD}{RED}🔍 EnLang Diagnostic & Linter:{RESET}
-
-{BOLD}Correct EnLang Pattern:{RESET}
-{GREEN}set n to 10
-
-if n is greater than 5 then:
-    display "n is greater than 5"{RESET}
+    display "Execution successful for: " plus "{topic}"{RESET}
 """
 
     def _format_help(self) -> str:
@@ -347,13 +390,13 @@ def start_chatbot():
             response = engine.process_query(user_input)
             
             if response == "EXIT":
-                print(f"\n{BOLD}{MAGENTA}Thank you for using EnLang Native AI Assistant! Happy coding! 🚀{RESET}\n")
+                print(f"\n{BOLD}{MAGENTA}Thank you for using EnLang AI Assistant! Happy coding! 🚀{RESET}\n")
                 break
                 
             print(response)
             print()
         except (KeyboardInterrupt, EOFError):
-            print(f"\n\n{BOLD}{MAGENTA}Exiting EnLang Native AI Assistant. Goodbye! 🚀{RESET}\n")
+            print(f"\n\n{BOLD}{MAGENTA}Exiting EnLang AI Assistant. Goodbye! 🚀{RESET}\n")
             break
 
 if __name__ == "__main__":
