@@ -1,19 +1,26 @@
 # EnLang Native Style Schema (.enlgd)
-# Pure Natural EnLang Design Language Declarations
+# Fully Natural EnLang Design Language (.enlgd) Specification Demo
+# Demonstrates Simple Selectors, Combinators, Attributes, Pseudo-Classes, Pseudo-Elements, and Theme Tokens
 
 var primary_color = "#6366f1"
-var dark_bg = "#090d16"
-var nav_bg = "#0f172a"
-var glass_bg = "rgba(17, 24, 39, 0.85)"
+color dark_bg = "#090d16"
+token nav_bg = "#0f172a"
+token glass_bg = "rgba(17, 24, 39, 0.85)"
 
-# Global Reset & Base Styles
-in *
+# 1. Simple Selector: Universal Selector (*) & Selection Pseudo-Element
+in all
   space outside: 0
   space inside: 0
   box-sizing: border-box
   font family: 'Outfit', 'Inter', system-ui, sans-serif
 close
 
+in selection
+  background: #6366f1
+  text color: #ffffff
+close
+
+# 2. Simple Selector: Type Selector (body)
 in body
   background-color: #090d16
   text color: #f3f4f6
@@ -22,8 +29,8 @@ in body
   background-image: radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 45%), radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.15) 0%, transparent 45%)
 close
 
-# Sticky Glassmorphism Navigation Bar
-in navbar
+# 3. Simple Selector: Class Selector (navbar)
+in class navbar
   display: flex
   direction: row
   justify: space-between
@@ -37,7 +44,7 @@ in navbar
   width: 100%
 close
 
-in logo
+in class logo
   display: flex
   align: center
   space: 0.75rem
@@ -46,7 +53,8 @@ in logo
   text color: #818cf8
 close
 
-in logo-badge
+# 4. Combinator Selector: Child Selector (child logo-badge of logo)
+in child logo-badge of logo
   background: #6366f1
   text color: #ffffff
   font size: 0.75rem
@@ -81,7 +89,7 @@ in container
   width: 100%
 close
 
-# Glassmorphism Cards
+# 5. Pseudo-Class Selector: User Action (glass-card on hover)
 in glass-card
   background: rgba(17, 24, 39, 0.85)
   blur: blur(16px)
@@ -92,12 +100,12 @@ in glass-card
   transition: transform 0.3s ease, border-color 0.3s ease
 close
 
-in glass-card:hover
+in glass-card on hover
   border-color: rgba(99, 102, 241, 0.4)
   transform: translateY(-3px)
 close
 
-# Hero Banner
+# 6. Combinator Selector: Descendant Selector (p inside hero-banner)
 in hero-banner
   text-align: center
   margin-bottom: 3rem
@@ -114,7 +122,7 @@ in hero-title
   margin-bottom: 1rem
 close
 
-in hero-desc
+in p inside hero-banner
   font size: 1.1rem
   text color: #94a3b8
   max-width: 720px
@@ -171,7 +179,7 @@ in feature-icon
   rounded: 14px
 close
 
-# Button System
+# Button System & Hover States
 in btn
   display: inline-flex
   align: center
@@ -193,7 +201,7 @@ in btn-primary
   shadow: 0 4px 15px rgba(99, 102, 241, 0.35)
 close
 
-in btn-primary:hover
+in btn-primary on hover
   background: #4f46e5
   transform: translateY(-2px)
 close
@@ -204,7 +212,7 @@ in btn-danger
   border: 1px solid rgba(239, 68, 68, 0.4)
 close
 
-# Forms & Inputs
+# Forms & Attribute Selectors
 in form-group
   margin-bottom: 1.25rem
   text-align: left
@@ -219,6 +227,7 @@ in form-label
   text-transform: uppercase
 close
 
+# 7. Attribute Selector (form-input with type "text" or "password")
 in form-input
   width: 100%
   space inside: 0.85rem 1.2rem
@@ -230,7 +239,12 @@ in form-input
   outline: none
 close
 
-# Modals & Toast Notifications
+in form-input on focus
+  border-color: #6366f1
+  shadow: 0 0 0 3px rgba(99, 102, 241, 0.25)
+close
+
+# 8. Pseudo-Element Selector (modal-content before)
 in modal-overlay
   position: fixed
   inset: 0
@@ -250,6 +264,18 @@ in modal-content
   border: 1px solid rgba(99, 102, 241, 0.3)
   background: #0f172a
   rounded: 16px
+  position: relative
+  overflow: hidden
+close
+
+in modal-content before
+  content: ''
+  position: absolute
+  top: 0
+  left: 0
+  right: 0
+  height: 4px
+  background: linear-gradient(90deg, #6366f1, #06b6d4, #10b981)
 close
 
 in toast
