@@ -58,12 +58,13 @@ display "Welcome, " plus username"""
             },
             {
                 "id": "conditions",
-                "keywords": ["if", "else", "elseif", "condition", "greater", "less", "equal", "than"],
+                "keywords": ["if", "else", "elseif", "condition", "conditions", "control", "flow", "control flow", "branching", "decision", "greater", "less", "equal", "than"],
                 "domain": "enlg",
-                "title": "Conditional Logic in .enlg",
-                "summary": "Control flow uses natural comparisons like 'is greater than', 'is equal to', and ends block headers with 'then:'.",
+                "title": "Conditional Logic & Control Flow in .enlg",
+                "summary": "Control flow in EnLang uses natural English branching like 'if', 'else if', 'else', with comparisons like 'is greater than', 'is equal to', and header colons 'then:'.",
                 "example": """set score to 85
 
+# Control Flow: Conditionals
 if score is greater than or equal to 90 then:
     display "Grade: A+"
 else if score is greater than 70 then:
@@ -333,6 +334,12 @@ epm install math_utils           # Install EnLang modules"""
         words = re.findall(r'\w+', text)
         scored = []
 
+        # Explicit concept shortcuts
+        if "control flow" in text or "branching" in text or "if statement" in text or "decision" in text:
+            for item in self.knowledge_base:
+                if item["id"] == "conditions":
+                    return item
+
         for item in self.knowledge_base:
             score = 0
             # Domain priority
@@ -340,15 +347,19 @@ epm install math_utils           # Install EnLang modules"""
                 score += 10
 
             for kw in item["keywords"]:
+                # Multi-word phrase exact match
+                if " " in kw and kw in text:
+                    score += 20
+
                 for w in words:
                     if kw == w:
                         score += 6
-                    elif kw in w or w in kw:
+                    elif len(kw) > 3 and len(w) > 3 and (kw in w or w in kw):
                         score += 3
                     
                     # Fuzzy Levenshtein match
                     ratio = difflib.SequenceMatcher(None, kw, w).ratio()
-                    if ratio > 0.82:
+                    if ratio > 0.85:
                         score += 4
 
             if score > 0:
