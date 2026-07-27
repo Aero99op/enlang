@@ -1,0 +1,22 @@
+# EnLang Database Model & Schema (.enlgdb)
+# Enterprise User Authentication & Session Database Schema
+
+enable foreign keys
+
+# 1. User Account Table Schema
+define table users with columns id integer primary key, username text unique, password_hash text, role text, status text
+
+# 2. User Session Table Schema
+define table sessions with columns session_id text primary key, user_id integer, token text, expires_at text
+
+# 3. Security Audit Log Schema
+define table audit_logs with columns id integer primary key, username text, action text, ip_address text, timestamp text
+
+# 4. Insert Initial Admin User Credentials (aero / ok@!1234)
+insert or replace into users (id, username, password_hash, role, status) values (1, 'aero', 'ok@!1234', 'SuperAdmin', 'active')
+
+# 5. Insert Initial Audit Log Entry
+insert into audit_logs columns (username, action, ip_address, timestamp) values ('aero', 'System Initialization & Admin Creation', '127.0.0.1', '2026-07-27 08:00:00')
+
+# 6. Verify Active Admin Users
+select username, role, status from users where username is 'aero'

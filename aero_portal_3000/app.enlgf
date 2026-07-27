@@ -1,0 +1,115 @@
+# EnLang Pure Native Frontend Syntax (.enlgf)
+# Zero Raw HTML Tags — 100% Native EnLang UI Component Declarations
+
+set page title to "AERO Portal — EnLang Native Multi-Extension Web Application"
+
+create stylesheet with href "https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap"
+
+# 1. Navigation Bar Component (Pure EnLang Syntax)
+create nav with class "navbar"
+  create div with class "logo" with text "⚡ AERO PORTAL"
+    create span with class "logo-badge" with text "EnLang V2.0"
+  close div
+  create div named "userWidget" with class "user-widget"
+    create span with class "status-dot"
+    create span named "userStatusText" with style "color:#9ca3af; font-size:0.9rem;" with text "Status: Unauthenticated"
+    create button named "navAuthBtn" with class "btn btn-primary" with text "Sign In"
+  close div
+close nav
+
+# 2. Main Portal Container Component
+create div with class "container"
+
+  # Hero Banner Component
+  create div with class "glass-card hero-banner"
+    create span with style "background:rgba(99,102,241,0.2); color:#a5b4fc; padding:0.4rem 1rem; border-radius:9999px; font-size:0.85rem; font-weight:700; text-transform:uppercase;" with text "Multi-Extension Architecture"
+    create h1 with class "hero-title" with style "margin-top:1rem;" with text "AERO Enterprise Platform"
+    create p with class "hero-desc" with text "Powered by all 4 EnLang extensions: .enlgf (Frontend UI), .enlgd (Data Schema), .enlgs (Server Logic), and .enlgdb (Database Engine)."
+    
+    create div with style "display:flex; justify-content:center; gap:1rem;"
+      create button named "auditBtn" with class "btn btn-primary" with text "🚀 Execute System Audit"
+      create button named "authBtn" with class "btn btn-danger" with style "background:rgba(255,255,255,0.05); color:white; border:1px solid rgba(255,255,255,0.15);" with text "🔑 Auth Details"
+    close div
+  close div
+
+  # Stats Grid Component
+  create div with class "stats-grid"
+    create div with class "glass-card stat-card" with style "border-left-color:#6366f1;"
+      create div with class "stat-lbl" with text "Authentication Status"
+      create div named "statAuth" with class "stat-val" with style "color:#818cf8;" with text "Locked"
+    close div
+    create div with class "glass-card stat-card" with style "border-left-color:#06b6d4;"
+      create div with class "stat-lbl" with text "EnLGDB Active Queries"
+      create div with class "stat-val" with style "color:#38bdf8;" with text "25 / 25"
+    close div
+    create div with class "glass-card stat-card" with style "border-left-color:#10b981;"
+      create div with class "stat-lbl" with text "Server Port"
+      create div with class "stat-val" with style "color:#34d399;" with text "3000"
+    close div
+    create div with class "glass-card stat-card" with style "border-left-color:#f59e0b;"
+      create div with class "stat-lbl" with text "EnLang Extensions"
+      create div with class "stat-val" with style "color:#fbbf24;" with text "4 Active"
+    close div
+  close div
+
+  # Modular Extensions Showcase Component
+  create div with class "features-grid"
+    create div with class "glass-card feature-card"
+      create div with class "feature-icon" with text "🎨"
+      create h3 with style "font-size:1.4rem; margin-bottom:0.5rem;" with text ".enlgf — Frontend UI"
+      create p with style "color:#9ca3af; line-height:1.5; font-size:0.95rem;" with text "Renders reactive HTML layout components, navigation widgets, hero banners, and interactive modals directly using native EnLang syntax."
+    close div
+    create div with class "glass-card feature-card"
+      create div with class "feature-icon" with text "💅"
+      create h3 with style "font-size:1.4rem; margin-bottom:0.5rem;" with text ".enlgd — Data & Style Schema"
+      create p with style "color:#9ca3af; line-height:1.5; font-size:0.95rem;" with text "Defines design system tokens, CSS variables, glassmorphic cards, vibrant gradients, and responsive layouts."
+    close div
+    create div with class "glass-card feature-card"
+      create div with class "feature-icon" with text "⚙️"
+      create h3 with style "font-size:1.4rem; margin-bottom:0.5rem;" with text ".enlgs — Server API Logic"
+      create p with style "color:#9ca3af; line-height:1.5; font-size:0.95rem;" with text "Handles client authentication, session validation, route controllers, and dynamic client-side interactions."
+    close div
+    create div with class "glass-card feature-card"
+      create div with class "feature-icon" with text "💾"
+      create h3 with style "font-size:1.4rem; margin-bottom:0.5rem;" with text ".enlgdb — Database Framework"
+      create p with style "color:#9ca3af; line-height:1.5; font-size:0.95rem;" with text "Executes relational schema creation, user credentials (aero / ok@!1234), session tables, and audit logs over SQLite SQL."
+    close div
+  close div
+
+  # Interactive Terminal Component
+  create div with class "glass-card" with style "padding:2rem; margin-bottom:3rem;"
+    create div with style "display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;"
+      create h3 with style "font-size:1.2rem; display:flex; align-items:center; gap:0.5rem;" with text "🖥️ EnLang Runtime Terminal"
+      create span with style "font-family:'JetBrains Mono', monospace; font-size:0.8rem; color:#10b981; background:rgba(16,185,129,0.1); padding:0.2rem 0.6rem; border-radius:4px;" with text "PORT 3000 LIVE"
+    close div
+    create pre named "terminalLog" with style "background:#050811; padding:1.2rem; border-radius:10px; border:1px solid rgba(255,255,255,0.08); font-family:'JetBrains Mono', monospace; font-size:0.85rem; color:#a5b4fc; height:180px; overflow-y:auto; line-height:1.6;" with text "[EnLang Server] Initialized web application on port 3000...\n[EnLGDB Engine] Loaded schema.enlgdb (users, sessions, audit_logs)\n[EnLGDB Auth] Seeded Admin User: aero | Password Hash: ok@!1234\n[Ready] Listening for client requests on http://localhost:3000/"
+  close div
+
+close div
+
+# 3. Authentication Login Modal Component (user: aero, password: ok@!1234)
+create div named "loginModal" with class "modal-overlay" with style "display:none;"
+  create div with class "glass-card modal-content"
+    create div with style "font-size:3rem; margin-bottom:0.5rem;" with text "🔐"
+    create h2 with style "font-size:1.75rem; margin-bottom:0.5rem;" with text "Sign In to AERO"
+    create p with style "color:#9ca3af; font-size:0.9rem; margin-bottom:1.5rem;" with text "Enter official user credentials to access admin features."
+    
+    create div with class "form-group"
+      create label with class "form-label" with text "Username"
+      create input named "inputUsername" with class "form-input" with type "text" with value "aero"
+    close div
+    create div with class "form-group"
+      create label with class "form-label" with text "Password"
+      create input named "inputPassword" with class "form-input" with type "password" with value "ok@!1234"
+    close div
+    
+    create div with style "display:flex; gap:1rem; margin-top:1.5rem;"
+      create button named "unlockBtn" with class "btn btn-primary" with style "flex:1;" with text "Unlock Dashboard"
+      create button named "cancelBtn" with class "btn btn-danger" with text "Cancel"
+    close div
+    create p named "loginErrorMsg" with style "color:#f87171; font-size:0.85rem; margin-top:1rem; display:none;"
+  close div
+close div
+
+# Toast Notification Container Component
+create div named "toastMsg" with class "toast" with text "Notification Message"

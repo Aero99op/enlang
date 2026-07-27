@@ -186,13 +186,10 @@ def parse_args_list(args_str: str) -> str:
 
 
 def _strip_quotes(s: str) -> str:
-    """Strips surrounding single or double quotes from a string literal."""
+    """Strips surrounding quotes cleanly."""
     if s is None:
         return ''
-    s = s.strip()
-    if (s.startswith('"') and s.endswith('"')) or (s.startswith("'") and s.endswith("'")):
-        return s[1:-1]
-    return s
+    return s.strip().strip("'\"").strip()
 
 
 def _strip_trailing_colon(s: str) -> str:
@@ -261,76 +258,7 @@ def translate_html_line(line: str) -> str:
         sub_html = f'<p>{sub}</p>' if sub else ''
         return f'print("""<section><h1>{title}</h1>{sub_html}</section>""")'
 
-    # ── create nav with links <l1>, <l2> ────────────────────────────────────
-    m = re.match(r'^create\s+nav(?:\s+named\s+\S+)?\s+with\s+links?\s+(.+)$', line, re.IGNORECASE)
-    if m:
-        raw = parse_args_list(m.group(1))
-        links_html = ''.join([f'<a href="#">{_strip_quotes(l.strip())}</a>' for l in raw.split(',') if l.strip()])
-        return f'print("""<nav><div>{links_html}</div></nav>""")'
-
-    # ── create button named <var> with label <l> [and action <a>] ───────────
-    m = re.match(r'^create\s+button\s+named\s+(\S+)\s+with\s+label\s+(.+?)(?:\s+and\s+action\s+(.+))?$', line, re.IGNORECASE)
-    if m:
-        var = m.group(1)
-        label = _strip_quotes(m.group(2))
-        action = _strip_quotes(m.group(3)) if m.group(3) else ''
-        onclick = f' onclick="{action}"' if action else ''
-        return f'{var} = """<button id="{var}"{onclick}>{label}</button>"""; print({var})'
-
-    # ── create button with label <l> [and action <a>] (unnamed) ────────────
-    m = re.match(r'^create\s+button\s+with\s+label\s+(.+?)(?:\s+and\s+action\s+(.+))?$', line, re.IGNORECASE)
-    if m:
-        label = _strip_quotes(m.group(1))
-        action = _strip_quotes(m.group(2)) if m.group(2) else ''
-        onclick = f' onclick="{action}"' if action else ''
-        return f'print("""<button{onclick}>{label}</button>""")'
-
-    # ── create input named <var> with type <t>, label <l>, placeholder <ph> ─
-    m = re.match(r'^create\s+input\s+named\s+(\S+)\s+with\s+type\s+(.+?),\s+label\s+(.+?),\s+placeholder\s+(.+)$', line, re.IGNORECASE)
-    if m:
-        var = m.group(1)
-        itype = _strip_quotes(m.group(2))
-        label = _strip_quotes(m.group(3))
-        ph = _strip_quotes(m.group(4))
-        return f'{var} = """<div><label for="{var}">{label}</label><input type="{itype}" id="{var}" name="{var}" placeholder="{ph}"></div>"""'
-
-    # ── create input with type <t>, placeholder <ph> [, name <n>] ──────────
-    m = re.match(r'^create\s+input\s+with\s+type\s+(.+?),\s+placeholder\s+(.+?)(?:,\s+name\s+(.+))?$', line, re.IGNORECASE)
-    if m:
-        itype = _strip_quotes(m.group(1))
-        ph = _strip_quotes(m.group(2))
-        name = _strip_quotes(m.group(3)) if m.group(3) else ''
-        name_attr = f' name="{name}"' if name else ''
-        return f'print("""<input type="{itype}"{name_attr} placeholder="{ph}">""")'
-
-    # ── create form named <var> with fields <f1>, <f2> [and action <a>] ─────
-    m = re.match(r'^create\s+form\s+named\s+(\S+)\s+with\s+fields\s+(.+?)(?:\s+and\s+action\s+(.+))?$', line, re.IGNORECASE)
-    if m:
-        var = m.group(1)
-        fields_raw = m.group(2)
-        action = _strip_quotes(m.group(3)) if m.group(3) else '#'
-        fields = [f.strip() for f in parse_args_list(fields_raw).split(',') if f.strip()]
-        fields_html = ''.join([f'<div><label>{f}</label><input type="text" name="{f.lower()}"></div>' for f in fields])
-        return f'print("""<form id="{var}" action="{action}">{fields_html}</form>""")'
-
-    # ── create card named <var> with title <t> [, description <d>] ──────────
-    m = re.match(r'^create\s+card\s+named\s+(\S+)\s+with\s+title\s+(.+?)(?:(?:\s+and\s+|\s*,\s*)description\s+(.+))?$', line, re.IGNORECASE)
-    if m:
-        var = m.group(1)
-        title = _strip_quotes(m.group(2))
-        desc = _strip_quotes(m.group(3)) if m.group(3) else ''
-        desc_html = f'<p>{desc}</p>' if desc else ''
-        return f'{var} = """<div id="{var}"><h2>{title}</h2>{desc_html}</div>"""'
-
-    # ── create table [named <var>] with headers <h1>, <h2> ──────────────────
-    m = re.match(r'^create\s+table\s+(?:named\s+\S+\s+)?with\s+headers?\s+(.+)$', line, re.IGNORECASE)
-    if m:
-        headers = [_strip_quotes(h.strip()) for h in parse_args_list(m.group(1)).split(',') if h.strip()]
-        ths = ''.join([f'<th>{h}</th>' for h in headers])
-        return f'print("""<table><thead><tr>{ths}</tr></thead><tbody></tbody></table>""")'
-
-    # ── create paragraph with text <t> ──────────────────────────────────────
-    m = re.match(r'^create\s+paragraph\s+with\s+text\s+(.+)$', line, re.IGNORECASE)
+    # ── Legacy shortcuts (subsumed by universal tag rule) ─────────────────────
     if m:
         text = _strip_quotes(m.group(1))
         return f'print("""<p>{text}</p>""")'
@@ -427,44 +355,71 @@ def translate_html_line(line: str) -> str:
         tag = m.group(1).lower()
         return f'print("</{tag}>")'
 
-    # ── UNIVERSAL TAG RULE: create <tag> [named <id>] [with text <t>] [with class <c>] [with href <h>] ──
-    # This single universal rule handles ALL HTML5 tags permanently.
-    # Attribute parsing priority: named (id), with text, with class, with href, with src, with type
-    m = re.match(
-        r'^create\s+([a-zA-Z][a-zA-Z0-9_\-]*)'
-        r'(?:\s+named\s+(\S+?))?'
-        r'(?:\s+with\s+class\s+(["\'][^"\']+["\']|[a-zA-Z][a-zA-Z0-9_\-\s]*))?'
-        r'(?:\s+with\s+id\s+(\S+?))?'
-        r'(?:\s+with\s+text\s+(.+?))?'
-        r'(?:\s+with\s+href\s+(\S+?))?'
-        r'(?:\s+with\s+src\s+(\S+?))?'
-        r'(?:\s+with\s+type\s+(\S+?))?'
-        r'(?:\s+with\s+value\s+(.+?))?'
-        r'\s*:?\s*$',
-        line, re.IGNORECASE
-    )
+    # ── UNIVERSAL TAG RULE: create <tag> [named <id>] [with class <c>] [with style <s>] [with text <t>] ──
+    # Flexible attribute parser handling named (id), with class, with style, with text, with href, with src, with type
+    m = re.match(r'^create\s+([a-zA-Z][a-zA-Z0-9_\-]*)(?:\s+(.+))?$', line, re.IGNORECASE)
     if m:
         tag = m.group(1).lower()
-        var = m.group(2)
-        cls = _strip_quotes(m.group(3)) if m.group(3) else None
-        id_explicit = _strip_quotes(m.group(4)) if m.group(4) else None
-        txt = _strip_quotes(m.group(5)) if m.group(5) else None
-        href = _strip_quotes(m.group(6)) if m.group(6) else None
-        src = _strip_quotes(m.group(7)) if m.group(7) else None
-        itype = _strip_quotes(m.group(8)) if m.group(8) else None
-        val = _strip_quotes(m.group(9)) if m.group(9) else None
+        rest = m.group(2) if m.group(2) else ''
 
-        elem_id = var or id_explicit
-        id_attr = f' id="{elem_id}"' if elem_id else ''
-        cls_attr = f' class="{cls}"' if cls else ''
-        href_attr = f' href="{href}"' if href else ''
-        src_attr = f' src="{src}"' if src else ''
-        type_attr = f' type="{itype}"' if itype else ''
-        val_attr = f' value="{val}"' if val else ''
+        # Parse attributes from rest string
+        elem_id = None
+        cls = None
+        style_attr = None
+        txt = None
+        href = None
+        src = None
+        itype = None
+        val = None
 
-        all_attrs = f'{id_attr}{cls_attr}{href_attr}{src_attr}{type_attr}{val_attr}'
+        # Named (id)
+        m_id = re.search(r'(?:named|with\s+id)\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
+        if m_id: elem_id = _strip_quotes(m_id.group(1))
 
-        # Void elements don't have closing tags
+        # Class
+        m_cls = re.search(r'with\s+class\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
+        if m_cls: cls = _strip_quotes(m_cls.group(1))
+
+        # Style
+        m_style = re.search(r'with\s+style\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
+        if m_style: style_attr = _strip_quotes(m_style.group(1))
+
+        # Text
+        m_txt = re.search(r'with\s+text\s+(["\'][^"\']+["\']|.+)', rest, re.IGNORECASE)
+        if m_txt:
+            raw_t = m_txt.group(1)
+            # Remove subsequent keywords if captured
+            for kw in (' with class ', ' with style ', ' with href ', ' with src ', ' with type '):
+                if kw in raw_t.lower():
+                    raw_t = raw_t[:raw_t.lower().index(kw)]
+            txt = _strip_quotes(raw_t.strip())
+
+        # Href
+        m_href = re.search(r'with\s+href\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
+        if m_href: href = _strip_quotes(m_href.group(1))
+
+        # Src
+        m_src = re.search(r'with\s+src\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
+        if m_src: src = _strip_quotes(m_src.group(1))
+
+        # Type
+        m_type = re.search(r'with\s+type\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
+        if m_type: itype = _strip_quotes(m_type.group(1))
+
+        # Value
+        m_val = re.search(r'with\s+value\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
+        if m_val: val = _strip_quotes(m_val.group(1))
+
+        id_str = f' id="{elem_id}"' if elem_id else ''
+        cls_str = f' class="{cls}"' if cls else ''
+        style_str = f' style="{style_attr}"' if style_attr else ''
+        href_str = f' href="{href}"' if href else ''
+        src_str = f' src="{src}"' if src else ''
+        type_str = f' type="{itype}"' if itype else ''
+        val_str = f' value="{val}"' if val else ''
+
+        all_attrs = f'{id_str}{cls_str}{style_str}{href_str}{src_str}{type_str}{val_str}'
+
         if tag in HTML_VOID_ELEMENTS:
             return f'print("""<{tag}{all_attrs}>""")'
 
@@ -933,8 +888,8 @@ def translate_script_line(line: str) -> str:
     if re.match(r'^default\s*:?\s*$', raw, re.IGNORECASE):
         return "print('  default:')"
 
-    # End block / close brace
-    if re.match(r'^(?:end|close|close\s+function|close\s+block|\})\s*$', raw, re.IGNORECASE):
+    # End block / close brace (close if, close function, close try, end if, end function, etc.)
+    if re.match(r'^(?:end|close|close\s+[a-zA-Z_]+|end\s+[a-zA-Z_]+|\})\s*$', raw, re.IGNORECASE):
         return "print('}')"
 
     # For loop: repeat <n> times:
