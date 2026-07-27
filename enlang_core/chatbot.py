@@ -33,6 +33,15 @@ RESET = "\033[0m"
 
 ENLANG_SYSTEM_PROMPT = """You are EnLang AI, the official AI assistant and language engine for EnLang — the Universal Natural English Programming Language Ecosystem.
 
+### ABSOLUTE PRIORITY HIERARCHY (MUST FOLLOW STRICTLY):
+1. **PRIORITY 1 (SUPREME GROUND TRUTH)**: Core Code Files (`grammar.py`, `transpiler.py`, `interpreter.py`, `checker.py`).
+   - The exact regex patterns, keywords, and AST parsers in `grammar.py` and `transpiler.py` are the ABSOLUTE SUPREME TRUTH.
+   - You MUST ONLY generate code that passes the transpiler rules defined in `grammar.py` and `transpiler.py`.
+   - If ANY textbook or external concept conflicts with `grammar.py`/`transpiler.py`, CORE CODE OVERRIDES EVERYTHING 100%.
+
+2. **PRIORITY 2 (SECONDARY GUIDANCE)**: Textbooks & Reference Books.
+   - Use books for architectural concepts, tutorials, and explanations. Never let book examples override the core code implementation.
+
 ### STRICT RULES FOR ZERO HALLUCINATION (MUST FOLLOW 100%):
 1. **NO DOMAIN MIXING**:
    - In `.enlg` (Core Logic) scripts: NEVER put UI/HTML commands like `page named ...`, `create nav`, or HTML tags. Logic scripts start DIRECTLY with variables (`set`), conditions (`if`), loops (`while`/`repeat`/`for each`), or output (`display`).
@@ -64,10 +73,13 @@ ENLANG_SYSTEM_PROMPT = """You are EnLang AI, the official AI assistant and langu
    - Selectors: `in class navbar`, `in btn on hover`
    - Properties: `background color: #1e1e2e`, `padding: 20px`
 
+6. **CLIENT SCRIPT SYNTAX (.enlgs)**:
+   - `when button clicked:`, `log text: "Clicked"`, `alert "Saved"`
+
 7. **DATABASE SYNTAX (.enlgdb)**:
    - NEVER generate standard SQL syntax like `use database`, `create table foo (col as type)`, or multi-row SQL `values (...)`.
    - Connection: ALWAYS use `connect to database "app.db" as db`.
-   - Table Creation: ALWAYS use `create table <name> with columns <col1 type, col2 type>` (e.g. `create table StudentInfo with columns id integer primary key, name text, age integer`).
+   - Table Creation: ALWAYS use `create table <name> with columns <col1 type, col2 type>` or `define table <name> with columns <col1 type, col2 type>`.
    - Insertion: ALWAYS use `insert record into <table_name> with values <val1>, <val2>...`.
    - Queries: ALWAYS use `execute query "<SQL>" on db and store in <var>`.
 
@@ -157,7 +169,7 @@ def _load_key_from_env_or_config(key_name: str) -> str:
     return None
 
 class EnLangBookTrainer:
-    """RAG & Semantic Indexing Engine trained on EnLang Master Books."""
+    """RAG & Semantic Indexing Engine trained on EnLang Master Books & Core Python Files."""
 
     def __init__(self, books_dir: str):
         self.books_dir = books_dir
@@ -165,8 +177,31 @@ class EnLangBookTrainer:
         self.index_knowledge_base()
 
     def index_knowledge_base(self):
-        """Discovers and indexes all EnLang textbook chapters & reference documentation files."""
-        # 1. Index Books & Documentation
+        """Discovers and indexes all EnLang core python files (PRIORITY 1) and textbook chapters (PRIORITY 2)."""
+        # 1. PRIORITY 1: Index Core Codebase Files (Supreme Authority)
+        core_dir = os.path.dirname(os.path.abspath(__file__))
+        core_files = ["grammar.py", "transpiler.py", "interpreter.py", "checker.py"]
+        for fname in core_files:
+            fpath = os.path.join(core_dir, fname)
+            if os.path.exists(fpath):
+                try:
+                    with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
+                        content = f.read()
+                    sections = content.split("\n\n")
+                    for sec in sections:
+                        sec = sec.strip()
+                        if len(sec) > 50:
+                            self.knowledge_chunks.append({
+                                "priority": 1,
+                                "source": f"CORE ENGINE ({fname})",
+                                "title": f"PRIORITY 1: Core Engine Specification ({fname})",
+                                "content": sec[:1500],
+                                "tokens": set(re.findall(r'\w+', sec.lower()))
+                            })
+                except Exception:
+                    pass
+
+        # 2. PRIORITY 2: Index Books & Reference Documentation
         dirs_to_scan = [self.books_dir]
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         dirs_to_scan.append(base_dir)
@@ -193,8 +228,9 @@ class EnLangBookTrainer:
                                     lines = sec.split('\n')
                                     title = lines[0].lstrip('#').strip()
                                     self.knowledge_chunks.append({
+                                        "priority": 2,
                                         "source": file,
-                                        "title": title,
+                                        "title": f"PRIORITY 2: Textbook Reference ({file}) - {title}",
                                         "content": sec,
                                         "tokens": set(re.findall(r'\w+', sec.lower()))
                                     })
@@ -214,7 +250,8 @@ class EnLangBookTrainer:
                 score = overlap / (math.log(len(chunk["tokens"]) + 1) + 1)
                 scored.append((score, chunk))
 
-        scored.sort(key=lambda x: x[0], reverse=True)
+        # Sort by Priority 1 (Core Engine Code) first, then TF-IDF overlap score
+        scored.sort(key=lambda x: (1 if x[1].get("priority", 2) == 1 else 0, x[0]), reverse=True)
         return [chunk for score, chunk in scored[:top_k]]
 
 class EnLangNativeLLMBrain:
