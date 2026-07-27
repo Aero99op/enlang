@@ -92,31 +92,47 @@ for each record in attendees:
 Always double check the reference context below and enforce 100% exact syntax matching."""
 
 def _load_key_from_env_or_config(key_name: str) -> str:
-    """Safely retrieves API key from environment, local .env, or ~/.enlang/keys.json."""
+    """Safely retrieves API key from environment, workspace .env, ~/.env, or ~/.enlang/keys.json."""
     val = os.environ.get(key_name)
     if val:
         return val.strip()
 
-    # Try local .env file
-    if os.path.exists(".env"):
-        try:
-            with open(".env", "r", encoding="utf-8") as f:
-                for line in f:
-                    if line.startswith(f"{key_name}="):
-                        return line.split("=", 1)[1].strip().strip('"').strip("'")
-        except Exception:
-            pass
+    search_dirs = [
+        os.getcwd(),
+        r"d:\enlangg",
+        os.path.expanduser("~"),
+        os.path.join(os.path.expanduser("~"), ".enlang"),
+    ]
+    
+    # Add parent directories of cwd up to root
+    curr = os.getcwd()
+    while True:
+        parent = os.path.dirname(curr)
+        if not parent or parent == curr:
+            break
+        search_dirs.append(parent)
+        curr = parent
 
-    # Try home directory keys.json
-    home_key_file = os.path.expanduser(os.path.join("~", ".enlang", "keys.json"))
-    if os.path.exists(home_key_file):
-        try:
-            with open(home_key_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                if key_name in data:
-                    return data[key_name].strip()
-        except Exception:
-            pass
+    for d in search_dirs:
+        for fname in [".env", ".enlang_keys.json", "keys.json"]:
+            env_file = os.path.join(d, fname)
+            if os.path.exists(env_file):
+                try:
+                    if fname.endswith(".json"):
+                        with open(env_file, "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                            if key_name in data and str(data[key_name]).strip():
+                                return str(data[key_name]).strip()
+                    else:
+                        with open(env_file, "r", encoding="utf-8") as f:
+                            for line in f:
+                                line = line.strip()
+                                if line.startswith(f"{key_name}="):
+                                    k_val = line.split("=", 1)[1].strip().strip('"').strip("'")
+                                    if k_val:
+                                        return k_val
+                except Exception:
+                    pass
 
     return None
 
@@ -129,13 +145,23 @@ class EnLangBookTrainer:
         self.index_knowledge_base()
 
     def index_knowledge_base(self):
-        """Discovers and indexes all EnLang textbook chapters & core grammar/transpiler code files."""
-        # 1. Index Books
-        if os.path.exists(self.books_dir):
-            for root, _, files in os.walk(self.books_dir):
+        """Discovers and indexes all EnLang textbook chapters & reference documentation files."""
+        # 1. Index Books & Documentation
+        dirs_to_scan = [self.books_dir]
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        dirs_to_scan.append(base_dir)
+
+        indexed_paths = set()
+        for b_dir in dirs_to_scan:
+            if not os.path.exists(b_dir):
+                continue
+            for root, _, files in os.walk(b_dir):
                 for file in files:
                     if file.endswith(".md") or file.startswith("build_quality_"):
                         filepath = os.path.join(root, file)
+                        if filepath in indexed_paths:
+                            continue
+                        indexed_paths.add(filepath)
                         try:
                             with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                                 content = f.read()
@@ -154,28 +180,6 @@ class EnLangBookTrainer:
                                     })
                         except Exception:
                             pass
-
-        # 2. Index Core Grammar & Transpiler Source Code for 100% Exact Syntax Matching
-        core_dir = os.path.dirname(os.path.abspath(__file__))
-        core_files = ["grammar.py", "transpiler.py", "interpreter.py", "checker.py"]
-        for fname in core_files:
-            fpath = os.path.join(core_dir, fname)
-            if os.path.exists(fpath):
-                try:
-                    with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
-                        content = f.read()
-                    sections = content.split("\n\n")
-                    for sec in sections:
-                        sec = sec.strip()
-                        if len(sec) > 50:
-                            self.knowledge_chunks.append({
-                                "source": fname,
-                                "title": f"EnLang Core Engine ({fname})",
-                                "content": sec[:1500],
-                                "tokens": set(re.findall(r'\w+', sec.lower()))
-                            })
-                except Exception:
-                    pass
 
     def retrieve(self, query: str, top_k: int = 2):
         """Retrieves top-K most relevant book sections using TF-IDF token scoring."""
