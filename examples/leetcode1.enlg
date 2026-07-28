@@ -1,39 +1,8 @@
-function min_window with s and t:
-    set left to 0
-    set min_len to infinity
-    set min_window to ""
-    set t_count to {}
-    set required to 0
+function factorial with n:
+    if n <= 1 then:
+        return 1
 
-    for each char in t:
-        if char is not in t_count then:
-            set t_count[char] to 0
-            set required to required + 1
-        set t_count[char] to t_count[char] + 1
+    return n * call factorial with n - 1
 
-    set formed to 0
-    set window_counts to {}
-
-    repeat length of s times:
-        set character to s at index left
-        if character is in t_count then:
-            if character is not in window_counts then:
-                set window_counts[character] to 0
-            set window_counts[character] to window_counts[character] + 1
-            if window_counts[character] is equal to t_count[character] then:       
-                set formed to formed + 1
-
-        while formed is equal to required and left is less than length of s:       
-            set character to s at index left
-
-            if length of s from left to length of s is less than min_len then:     
-                set min_len to length of s from left to length of s
-                set min_window to s from left to length of s
-
-            if character is in t_count then:
-                set window_counts[character] to window_counts[character] - 1       
-                if window_counts[character] is less than t_count[character] then:  
-                    set formed to formed - 1
-            set left to left + 1
-
-    return min_window
+set result to call factorial with 5
+display result

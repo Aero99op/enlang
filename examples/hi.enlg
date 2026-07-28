@@ -1,6 +1,9 @@
-display "hello world"
+set attendancePercentage to ask "Enter attendance percentage (0-100): "
+convert attendancePercentage to integer
 
-set n to 10
+if attendancePercentage is greater than or equal to 80 then:
+    set attendanceCategory to "High"
+else:
+    set attendanceCategory to "Low"
 
-if n is greater than 5 then:
-    display "n is greater than 5"
+display "Attendance Category: " plus attendanceCategory

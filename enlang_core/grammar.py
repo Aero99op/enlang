@@ -52,7 +52,7 @@ EXPRESSION_REPLACEMENTS = [
     (r'\blength\s+of\s+([a-zA-Z_]\w*\[[^\]]+\])\b', r'len(\1)'),
     (r'\blength\s+of\s+([a-zA-Z_]\w*)\b', r'len(\1)'),
     (r'\bcreate\s+(?:map|dict|dictionary)\b', '{}'),
-    (r'\bcall\s+([a-zA-Z_]\w*)\s+with\s+([a-zA-Z_0-9,\s"\'\+]+)\b', lambda m: f"{m.group(1)}({parse_args_list(m.group(2))})"),
+    (r'\bcall\s+([a-zA-Z_]\w*)\s+with\s+([a-zA-Z_0-9,\s"\'\+\-\*\/\%\(\)]+)\b', lambda m: f"{m.group(1)}({parse_args_list(m.group(2))})"),
     (r'\band\b',                      'and'),
     (r'\bor\b',                       'or'),
     (r'\bnot\b',                      'not'),
