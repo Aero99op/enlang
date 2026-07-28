@@ -476,6 +476,66 @@ class EnLangNativeLLMBrain:
             pass
         return None
 
+    def _synthesize_native_code(self, raw_text: str, text: str) -> str:
+        """Synthesizes valid EnLang code snippets for common queries when running in offline/API-key-less mode."""
+        # 1. Loop over numbers (e.g. "loop printing number 1 to 10", "for loop from 1 to 5")
+        m_loop = re.search(r'(?:loop|repeat|for)\b.*?\b(?:from\s+(\d+)\s+to\s+(\d+)|(\d+)\s+to\s+(\d+))', text)
+        if m_loop:
+            start_val = m_loop.group(1) or m_loop.group(3) or "1"
+            end_val = m_loop.group(2) or m_loop.group(4) or "10"
+            return f"""
+{BOLD}{GREEN}💡 Generated EnLang Code ({start_val} to {end_val} Loop):{RESET}
+{CYAN}for each i from {start_val} to {end_val}:
+    display i{RESET}
+
+{YELLOW}# To compile and run:{RESET}
+enlang run script.enlg
+"""
+
+        # 2. Loop over list/items
+        if "loop" in text or "repeat" in text or "for each" in text:
+            return f"""
+{BOLD}{GREEN}💡 Generated EnLang Code (Loop Example):{RESET}
+{CYAN}# Loop over range:
+for each i from 1 to 10:
+    display i
+
+# Loop over list:
+set items to ["Apple", "Banana", "Cherry"]
+for each item in items:
+    display item{RESET}
+"""
+
+        # 3. Print / Display
+        if "print" in text or "display" in text or "show" in text or "say" in text:
+            return f"""
+{BOLD}{GREEN}💡 Generated EnLang Code (Output Example):{RESET}
+{CYAN}display "Hello, World!"
+say "Welcome to EnLang!"{RESET}
+"""
+
+        # 4. Function
+        if "function" in text or "func" in text or "def" in text:
+            return f"""
+{BOLD}{GREEN}💡 Generated EnLang Code (Function Example):{RESET}
+{CYAN}function add_numbers with a and b:
+    return a + b
+
+set result to call add_numbers with 5 and 10
+display result{RESET}
+"""
+
+        # 5. Variable / Set / Assign
+        if "variable" in text or "set" in text or "assign" in text or "store" in text:
+            return f"""
+{BOLD}{GREEN}💡 Generated EnLang Code (Variable Example):{RESET}
+{CYAN}set count to 10
+set name to "Spandan"
+display name plus " has count " plus count{RESET}
+"""
+
+        return ""
+
     def _native_book_rag_engine(self, raw_text: str, text: str, domain: str = "") -> str:
         if text in ["hi", "hello", "hey", "namaste", "greetings", "good morning", "good evening"]:
             return f"""
@@ -489,9 +549,21 @@ Welcome! I am your AI assistant trained on EnLang textbooks and specifications. 
         if matches:
             retrieved_text = "\n\n" + "\n---\n".join([f"[{m['title']}]\n{m['content']}" for m in matches])
 
+        code_synth = self._synthesize_native_code(raw_text, text)
+
+        body = retrieved_text if retrieved_text else code_synth
+        if not body:
+            body = f"""
+{BOLD}{GREEN}💡 EnLang Quick Syntax Guide:{RESET}
+  • {CYAN}display "Hello World"{RESET}  (Output text)
+  • {CYAN}for each i from 1 to 10:{RESET} (Loop numbers)
+  • {CYAN}set x to 5{RESET}               (Variables)
+  • {CYAN}function foo with x:{RESET}      (Functions)
+"""
+
         return f"""
 {BOLD}{CYAN}🤖 EnLang Book-Trained AI Analysis for "{raw_text}":{RESET}
-{retrieved_text if retrieved_text else "No direct book match found, refer to domain guidelines."}
+{body}
 """
 
     def _format_help(self) -> str:
