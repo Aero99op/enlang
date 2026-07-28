@@ -45,7 +45,12 @@ EXPRESSION_REPLACEMENTS = [
     (r'\bdivided by\b',               '/'),
     (r'\bmodulo\b',                   '%'),
     (r'\bpower of\b',                 '**'),
-    (r'\breverse\s+of\s+([a-zA-Z_]\w*)\b', r'str(\1)[::-1]'),
+    (r'\b([a-zA-Z_]\w*(?:\[[^\]]+\])*)\s+has\s+key\s+([a-zA-Z_]\w*(?:\[[^\]]+\])*)\b', r'\2 in \1'),
+    (r'\binfinity\b',                 'float("inf")'),
+    (r'\blength\s+of\s+([a-zA-Z_]\w*\[[^\]]+\])\b', r'len(\1)'),
+    (r'\blength\s+of\s+([a-zA-Z_]\w*)\b', r'len(\1)'),
+    (r'\bcreate\s+(?:map|dict|dictionary)\b', '{}'),
+    (r'\bcall\s+([a-zA-Z_]\w*)\s+with\s+([a-zA-Z_0-9,\s"\'\+]+)\b', lambda m: f"{m.group(1)}({parse_args_list(m.group(2))})"),
     (r'\band\b',                      'and'),
     (r'\bor\b',                       'or'),
     (r'\bnot\b',                      'not'),
@@ -388,31 +393,47 @@ def translate_html_line(line: str) -> str:
         m_style = re.search(r'with\s+style\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
         if m_style: style_attr = _strip_quotes(m_style.group(1))
 
-        # Text
-        m_txt = re.search(r'with\s+text\s+(["\'][^"\']+["\']|.+)', rest, re.IGNORECASE)
+        # Text / Label
+        m_txt = re.search(r'with\s+(?:text|label)\s+(["\'][^"\']+["\']|.+)', rest, re.IGNORECASE)
         if m_txt:
             raw_t = m_txt.group(1)
-            # Remove subsequent keywords if captured
-            for kw in (' with class ', ' with style ', ' with href ', ' with src ', ' with type '):
+            for kw in (' with class ', ' with style ', ' with href ', ' with src ', ' with type ', ' and action ', ' with action '):
                 if kw in raw_t.lower():
                     raw_t = raw_t[:raw_t.lower().index(kw)]
             txt = _strip_quotes(raw_t.strip())
+        else:
+            txt = None
 
-        # Href
-        m_href = re.search(r'with\s+href\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
-        if m_href: href = _strip_quotes(m_href.group(1))
+        # Action
+        m_act = re.search(r'(?:with|and)\s+action\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
+        action = _strip_quotes(m_act.group(1)) if m_act else None
 
-        # Src
-        m_src = re.search(r'with\s+src\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
-        if m_src: src = _strip_quotes(m_src.group(1))
+        # Method
+        m_meth = re.search(r'(?:with|and)\s+method\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
+        method = _strip_quotes(m_meth.group(1)) if m_meth else None
 
-        # Type
-        m_type = re.search(r'with\s+type\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
-        if m_type: itype = _strip_quotes(m_type.group(1))
+        # Links / Items / Fields
+        m_items = re.search(r'with\s+(?:links|items|fields)\s+(["\'][^"\']+["\']|.+)', rest, re.IGNORECASE)
+        if m_items:
+            raw_items = m_items.group(1)
+            for kw in (' with class ', ' with style ', ' and action ', ' with action ', ' and method ', ' with method '):
+                if kw in raw_items.lower():
+                    raw_items = raw_items[:raw_items.lower().index(kw)]
+            cleaned_items = _strip_quotes(raw_items.strip())
+            items_list = []
+            for item in cleaned_items.split(','):
+                item = item.strip()
+                if ' and ' in item and not (item.startswith('"') or item.startswith("'")):
+                    parts = item.split(' and ')
+                    items_list.extend([p.strip() for p in parts if p.strip()])
+                elif item:
+                    items_list.append(item)
+        else:
+            items_list = None
 
-        # Value
-        m_val = re.search(r'with\s+value\s+(["\'][^"\']+["\']|\S+)', rest, re.IGNORECASE)
-        if m_val: val = _strip_quotes(m_val.group(1))
+        # Headers
+        m_hdrs = re.search(r'with\s+headers?\s+(["\'][^"\']+["\']|.+)', rest, re.IGNORECASE)
+        hdrs_list = [_strip_quotes(h.strip()) for h in _strip_quotes(m_hdrs.group(1)).split(',') if h.strip()] if m_hdrs else None
 
         id_str = f' id="{elem_id}"' if elem_id else ''
         cls_str = f' class="{cls}"' if cls else ''
@@ -421,11 +442,25 @@ def translate_html_line(line: str) -> str:
         src_str = f' src="{src}"' if src else ''
         type_str = f' type="{itype}"' if itype else ''
         val_str = f' value="{val}"' if val else ''
+        act_str = (f' onclick="{action}"' if action.endswith('()') else f' action="{action}"') if action else ''
+        meth_str = f' method="{method}"' if method else ''
 
-        all_attrs = f'{id_str}{cls_str}{style_str}{href_str}{src_str}{type_str}{val_str}'
+        all_attrs = f'{id_str}{cls_str}{style_str}{href_str}{src_str}{type_str}{val_str}{act_str}{meth_str}'
 
         if tag in HTML_VOID_ELEMENTS:
             return f'print("""<{tag}{all_attrs}>""")'
+
+        if tag in ('nav', 'ul', 'ol') and items_list:
+            inner = "".join(f'<a href="#{i.lower()}">{i}</a>' for i in items_list) if tag == 'nav' else "".join(f'<li>{i}</li>' for i in items_list)
+            return f'print("""<{tag}{all_attrs}>{inner}</{tag}>""")'
+
+        if tag == 'form' and items_list:
+            fields_html = "".join(f'<input type="text" name="{f}" placeholder="{f}">\n' for f in items_list)
+            return f'print("""<{tag}{all_attrs}>\n{fields_html}</{tag}>""")'
+
+        if tag == 'table' and hdrs_list:
+            inner = "<thead><tr>" + "".join(f'<th>{h}</th>' for h in hdrs_list) + "</tr></thead>"
+            return f'print("""<{tag}{all_attrs}>{inner}</{tag}>""")'
 
         if txt is not None:
             return f'print("""<{tag}{all_attrs}>{txt}</{tag}>""")'
@@ -585,15 +620,14 @@ def translate_design_line(line: str) -> str:
         return 'print("}")'
 
     # ── 5. Media Queries & Responsive Directives ─────────────────────────────
-    # Supports: on screen smaller than 1024px:, on screen larger than 768px:
-    m = re.match(r'^on\s+screen\s+(?:smaller|less)\s+than\s+(.+)\s*:?\s*\{?$', line, re.IGNORECASE)
+    m = re.match(r'^(?:when|on)?\s*screen\s+(?:width\s+is\s+)?(?:smaller|less|below|under)\s+(?:than\s+)?(.+?)\s*:?\s*\{?$', line, re.IGNORECASE)
     if m:
-        size = _strip_quotes(m.group(1))
+        size = _strip_quotes(m.group(1).rstrip(':').strip())
         return f'print("@media (max-width: {size}) {{")'
 
-    m = re.match(r'^on\s+screen\s+(?:larger|bigger|greater|more)\s+than\s+(.+)\s*:?\s*\{?$', line, re.IGNORECASE)
+    m = re.match(r'^(?:when|on)?\s*screen\s+(?:width\s+is\s+)?(?:larger|bigger|greater|more)\s+(?:than\s+)?(.+?)\s*:?\s*\{?$', line, re.IGNORECASE)
     if m:
-        size = _strip_quotes(m.group(1))
+        size = _strip_quotes(m.group(1).rstrip(':').strip())
         return f'print("@media (min-width: {size}) {{")'
 
     # ── 6. Property & Value Translation (Natural Property Word Equivalents) ────
@@ -628,8 +662,9 @@ def translate_design_line(line: str) -> str:
         'web blur': '-webkit-backdrop-filter',
     }
 
-    # Match set <prop> to <val> or <prop> : <val> or <prop> = <val>
-    m = re.match(r'^(?:set\s+)?([a-zA-Z_][a-zA-Z0-9_\-\s]*?)\s*(?::|=|\s+to\s+)\s*(.+)$', line, re.IGNORECASE)
+    # Match set <prop> to <val> or <prop> : <val> or <prop> = <val> (excluding selector lines with '{')
+    if not line.endswith('{') and '{' not in line and not line.endswith('}'):
+        m = re.match(r'^(?:set\s+)?([a-zA-Z_][a-zA-Z0-9_\-\s]*?)\s*(?::|=|\s+to\s+)\s*(.+)$', line, re.IGNORECASE)
     if m:
         raw_prop = m.group(1).strip().lower()
         raw_val = _strip_quotes(m.group(2).strip())

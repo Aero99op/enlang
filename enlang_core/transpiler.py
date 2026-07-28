@@ -302,13 +302,49 @@ class EnLangTranspiler:
                 extends_part = ''
             return f"class {name}{extends_part}:"
 
-        # ── v2.0: Async Function ──────────────────────────────────────────
-        m = re.match(r'^(?:async\s+)?function\s+([a-zA-Z_]\w*)\s*\((.*?)\)\s*:?\s*$', line, re.IGNORECASE)
-        if line.lower().startswith('async'):
-            m2 = re.match(r'^async\s+function\s+([a-zA-Z_]\w*)\s*\((.*?)\)\s*:?\s*$', line, re.IGNORECASE)
-            if m2:
-                name, args = m2.group(1), m2.group(2)
-                return f"async def {name}({args}):"
+        # ── Function Definition ──────────────────────────────────────────
+        m = re.match(r'^(?:async\s+)?(?:function|func|def)\s+([a-zA-Z_]\w*)(?:\s+(?:with|using|takes?|has|for|inputs?)\s+(.+?))?\s*:?\s*$', line, re.IGNORECASE)
+        if m:
+            is_async = line.lower().startswith('async')
+            func_name = m.group(1)
+            raw_args = m.group(2)
+            args_str = parse_args_list(raw_args) if raw_args else ""
+            prefix = "async def" if is_async else "def"
+            return f"{prefix} {func_name}({args_str}):"
+
+        # ── Function Invocation with 'call' ───────────────────────────────
+        m = re.match(r'^(?:call|run|execute)\s+(?:function\s+)?([a-zA-Z_]\w*)(?:\s+with\s+(.+))?$', line, re.IGNORECASE)
+        if m:
+            func_name = m.group(1)
+            raw_args = m.group(2)
+            args_str = parse_args_list(raw_args) if raw_args else ""
+            return f"{func_name}({args_str})"
+
+        # ── Range For Loop: for each var from start to end: ──────────────
+        m = re.match(r'^(?:repeat\s+)?for\s+(?:each\s+)?([a-zA-Z_]\w*)\s+from\s+(.+?)\s+to\s+(.+?)\s*:?\s*$', line, re.IGNORECASE)
+        if m:
+            var, start_expr, end_expr = m.group(1), clean_expression(m.group(2)), clean_expression(m.group(3))
+            return f"for {var} in range({start_expr}, {end_expr} + 1):"
+
+        # ── Collection For Loop: for each item in list: ──────────────────
+        m = re.match(r'^(?:repeat\s+)?for\s+(?:each\s+)?([a-zA-Z_]\w*)\s+in\s+(.+?)\s*:?\s*$', line, re.IGNORECASE)
+        if m:
+            var, collection = m.group(1), clean_expression(m.group(2))
+            return f"for {var} in {collection}:"
+
+        # ── While Loop: while condition then: ────────────────────────────
+        m = re.match(r'^while\s+(.+?)\s*(?:then)?\s*:?\s*$', line, re.IGNORECASE)
+        if m:
+            cond = clean_expression(m.group(1).rstrip(':').strip())
+            if cond.lower().endswith(" then"):
+                cond = cond[:-5].strip()
+            return f"while {cond}:"
+
+        # ── Return Statement ──────────────────────────────────────────────
+        m = re.match(r'^return\b(?:\s+(.+))?$', line, re.IGNORECASE)
+        if m:
+            expr = clean_expression(m.group(1)) if m.group(1) else ""
+            return f"return {expr}".strip()
 
         # ── Raw Python pass-through ───────────────────────────────────────
         _py_passthrough_starts = (
@@ -360,7 +396,7 @@ class EnLangTranspiler:
             val, var = clean_expression(m.group(1)), m.group(2)
             return f"{var} = {val}"
 
-        m = re.match(r'^(?:set|let)\s+([a-zA-Z_]\w*)\s+(?:to|=|is)\s+(.+)$', line, re.IGNORECASE)
+        m = re.match(r'^(?:set|let)\s+([a-zA-Z_]\w*(?:\[[^\]]+\])*)\s+(?:to|=|is)\s+(.+)$', line, re.IGNORECASE)
         if m:
             var, expr = m.group(1), clean_expression(m.group(2))
             return f"{var} = {expr}"
