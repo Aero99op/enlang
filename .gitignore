@@ -1,29 +1,44 @@
-# Byte-compiled / optimized / DLL files
+# Python byte-compiled files & caches
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
+.coverage
+htmlcov/
 
-# PyInstaller build artifacts (keep final EnLangInstaller.exe)
+# Packaging & Build Artifacts
 build/
-*.spec
-
-# Distribution / packaging
+dist/
 *.egg-info/
 .eggs/
 
-# IDE / Editor files
+# VS Code Extension Build Outputs
+vscode-enlang/*.vsix
+vscode-enlang/node_modules/
+vscode-enlang/out/
+
+# Spec & Installer build temporary files
+*.spec
+EnLangInstaller.spec
+
+# IDE / OS Files
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS files
 Thumbs.db
 Desktop.ini
+.DS_Store
 
-# Secrets & Environment Configuration
+# Database & Runtime Output Files
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets, Environment & API Keys
 .env
 *.env
 .enlang_keys.json
 keys.json
-
+*.pem
+*.key
