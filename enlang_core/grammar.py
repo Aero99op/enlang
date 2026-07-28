@@ -190,11 +190,71 @@ def clean_js_expression(expr: str) -> str:
 
 
 def parse_args_list(args_str: str) -> str:
-    """Parses 'x and y', 'a, b and c' -> 'a, b, c'."""
+    """Parses arguments cleanly while preserving nested parenthesized expressions and logical operations."""
     if not args_str:
         return ""
-    clean = re.sub(r'\band\b|\bwith\b', ',', args_str, flags=re.IGNORECASE)
-    items = [item.strip() for item in clean.split(',') if item.strip()]
+    args_str = args_str.strip()
+
+    # Don't split 'and' if the expression contains boolean comparison operators
+    if any(op in args_str for op in ['==', '!=', '>', '<', '>=', '<=']):
+        return args_str
+
+    # Bracket-aware splitting
+    items = []
+    current = []
+    depth = 0
+    in_quote = False
+    quote_char = ''
+
+    i = 0
+    while i < len(args_str):
+        char = args_str[i]
+
+        if char in ['"', "'"]:
+            if not in_quote:
+                in_quote = True
+                quote_char = char
+            elif quote_char == char:
+                in_quote = False
+            current.append(char)
+            i += 1
+            continue
+
+        if not in_quote:
+            if char in '([{':
+                depth += 1
+            elif char in ')]}':
+                depth -= 1
+
+            if depth == 0:
+                # Check for ',' delimiter
+                if char == ',':
+                    items.append("".join(current).strip())
+                    current = []
+                    i += 1
+                    continue
+
+                # Check for ' and ' delimiter
+                if args_str[i:i+5].lower() == ' and ':
+                    items.append("".join(current).strip())
+                    current = []
+                    i += 5
+                    continue
+
+                # Check for ' with ' delimiter
+                if args_str[i:i+6].lower() == ' with ':
+                    items.append("".join(current).strip())
+                    current = []
+                    i += 6
+                    continue
+
+        current.append(char)
+        i += 1
+
+    if current:
+        items.append("".join(current).strip())
+
+    items = [item for item in items if item]
     return ", ".join(items)
 
 
