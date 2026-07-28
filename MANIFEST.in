@@ -1,0 +1,5 @@
+include README.md
+include LICENSE
+recursive-include spec *.json *.ebnf
+recursive-include docs *.md
+recursive-include books *.py *.md
