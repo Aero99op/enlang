@@ -1,0 +1,12 @@
+{
+  "primitives": [
+    { "name": "Number", "python": "int | float", "javascript": "number", "sql": "INTEGER | REAL", "description": "Numeric values including integers and floating point numbers." },
+    { "name": "String", "python": "str", "javascript": "string", "sql": "TEXT", "description": "Textual characters enclosed in double or single quotes." },
+    { "name": "Boolean", "python": "bool", "javascript": "boolean", "sql": "INTEGER", "description": "Logical true or false." },
+    { "name": "Null", "python": "None", "javascript": "null", "sql": "NULL", "description": "Absence of value." }
+  ],
+  "compounds": [
+    { "name": "List", "python": "list", "javascript": "Array", "description": "Ordered sequence of items indexed by integers." },
+    { "name": "Map", "python": "dict", "javascript": "Object | Map", "description": "Key-value associative collection." }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "EnLang",
+  "version": "2.0.0",
+  "description": "Universal Natural English Programming Language Specification",
+  "manifest": {
+    "version": "version.json",
+    "grammar": "grammar.ebnf",
+    "keywords": "keywords.json",
+    "operators": "operators.json",
+    "types": "types.json",
+    "builtins": "builtins.json",
+    "stdlib": "stdlib.json"
+  },
+  "domains": [
+    { "extension": ".enlg", "target": "python", "description": "Core Logic & Algorithms" },
+    { "extension": ".enlgf", "target": "html", "description": "Frontend UI Component Markup" },
+    { "extension": ".enlgd", "target": "css", "description": "Glassmorphic & Responsive Styling" },
+    { "extension": ".enlgs", "target": "javascript", "description": "Client-side DOM & Event Scripting" },
+    { "extension": ".enlgdb", "target": "sqlite", "description": "Relational Database Schemas & Queries" }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "functions": [
+    { "name": "length of", "canonical": "len", "args": 1, "description": "Returns the number of elements in a list, map, or string." },
+    { "name": "create map", "canonical": "dict", "args": 0, "description": "Creates an empty key-value associative dictionary." },
+    { "name": "create list", "canonical": "list", "args": 0, "description": "Creates an empty sequence array." },
+    { "name": "infinity", "canonical": "float('inf')", "args": 0, "description": "Represents positive mathematical infinity." }
+  ],
+  "constants": [
+    { "natural": "true", "canonical": "True" },
+    { "natural": "false", "canonical": "False" },
+    { "natural": "null", "canonical": "None" },
+    { "natural": "none", "canonical": "None" }
+  ]
+}

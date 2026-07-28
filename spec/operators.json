@@ -1,0 +1,28 @@
+{
+  "arithmetic": [
+    { "natural": "plus", "symbol": "+" },
+    { "natural": "minus", "symbol": "-" },
+    { "natural": "times", "symbol": "*" },
+    { "natural": "divided by", "symbol": "/" },
+    { "natural": "modulo", "symbol": "%" },
+    { "natural": "power of", "symbol": "**" }
+  ],
+  "relational": [
+    { "natural": "is equal to", "symbol": "==" },
+    { "natural": "is not equal to", "symbol": "!=" },
+    { "natural": "is greater than or equal to", "symbol": ">=" },
+    { "natural": "is less than or equal to", "symbol": "<=" },
+    { "natural": "is greater than", "symbol": ">" },
+    { "natural": "is less than", "symbol": "<" },
+    { "natural": "is in", "symbol": "in" },
+    { "natural": "is not in", "symbol": "not in" },
+    { "natural": "has key", "symbol": "in" }
+  ],
+  "logical": [
+    { "natural": "and", "symbol": "and" },
+    { "natural": "or", "symbol": "or" },
+    { "natural": "not", "symbol": "not" },
+    { "natural": "is true", "symbol": "== True" },
+    { "natural": "is false", "symbol": "== False" }
+  ]
+}

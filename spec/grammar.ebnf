@@ -1,0 +1,41 @@
+(* Formal EBNF Grammar for Canonical EnLang v2.0.0 *)
+
+Program            ::= Statement*
+Statement          ::= Assignment | Display | Input | FunctionDef | FunctionCallStmt | Conditional | Loop | CollectionStmt | FrontendStmt | StylingStmt | DatabaseStmt | ReturnStmt | Comment
+
+Assignment         ::= ("set" | "let" | "store") Variable ("to" | "=" | "is") Expression
+Display            ::= ("display" | "print" | "show" | "output" | "log") Expression
+Input              ::= ("set" | "let") Variable "to" ("ask" | "prompt") StringLiteral
+FunctionDef        ::= ("async"? ("function" | "func" | "def") Identifier ("with" ParameterList)? ":"?) | ("define" "function" Identifier ...)
+FunctionCallStmt   ::= ("call" | "invoke") Identifier ("with" ArgumentList)?
+ReturnStmt         ::= "return" Expression
+Conditional        ::= "if" Expression ("then" | "do")? ":"? Block ("else if" Expression ("then" | "do")? ":"? Block)* ("else" ":"? Block)?
+Loop               ::= ForEachLoop | RepeatLoop | WhileLoop
+ForEachLoop        ::= "for" "each" Identifier ("in" Expression | "from" Expression "to" Expression) ":"? Block
+RepeatLoop         ::= "repeat" Expression "times" ":"? Block
+WhileLoop          ::= "while" Expression ("do" | "then")? ":"? Block
+CollectionStmt     ::= "create" ("map" | "dict" | "dictionary" | "list" | "array") ("named" Identifier)?
+FrontendStmt       ::= "create" ("hero" | "nav" | "button" | "form" | "table" | "card" | "modal" | "sidebar" | "footer") ("named" Identifier)? AttributeList?
+StylingStmt        ::= ("style" | "theme") Identifier AttributeList?
+DatabaseStmt       ::= ("define" | "create") "table" Identifier "with" "columns" ColumnList
+
+Expression         ::= Primary (BinaryOp Primary)*
+Primary            ::= Variable | Literal | FunctionCallExpr | CollectionLiteral | "(" Expression ")"
+Variable           ::= Identifier ("[" Expression "]")* | Identifier ("from" Expression "to" Expression)?
+Literal            ::= NumberLiteral | StringLiteral | BooleanLiteral | NullLiteral
+FunctionCallExpr   ::= Identifier "(" ArgumentList? ")"
+CollectionLiteral  ::= "{" KeyValueList? "}" | "[" ArgumentList? "]"
+BinaryOp           ::= "+" | "-" | "*" | "/" | "%" | "**" | "==" | "!=" | ">=" | "<=" | ">" | "<" | "in" | "not in" | "and" | "or"
+
+Identifier         ::= [a-zA-Z_] [a-zA-Z0-9_]*
+NumberLiteral      ::= [0-9]+ ("." [0-9]+)?
+StringLiteral      ::= '"' [^"]* '"' | "'" [^']* "'"
+BooleanLiteral     ::= "true" | "false" | "True" | "False"
+NullLiteral        ::= "null" | "none" | "None"
+Block              ::= Statement+
+ParameterList      ::= Identifier ("and" Identifier)* | Identifier ("," Identifier)*
+ArgumentList       ::= Expression ("and" Expression)* | Expression ("," Expression)*
+KeyValueList       ::= Expression ":" Expression ("," Expression ":" Expression)*
+AttributeList      ::= ("with" | "having") Identifier Expression ("," Identifier Expression)*
+ColumnList         ::= Identifier Identifier ("," Identifier Identifier)*
+Comment            ::= "--" [^\n]* | "#" [^\n]*

@@ -1,0 +1,13 @@
+{
+  "assignment": ["set", "let", "store", "put", "assign"],
+  "output": ["display", "print", "show", "output", "log"],
+  "input": ["ask", "prompt", "read", "input"],
+  "functions": ["function", "func", "def", "call", "invoke", "return", "with", "using", "and", "takes"],
+  "conditionals": ["if", "then", "else", "otherwise", "when", "unless", "match", "case"],
+  "loops": ["for", "each", "in", "from", "to", "repeat", "times", "while", "do", "until", "loop"],
+  "collections": ["create", "map", "dict", "dictionary", "list", "array", "has", "key", "length", "of", "at", "index", "from", "to"],
+  "frontend": ["create", "make", "render", "build", "hero", "nav", "button", "form", "table", "card", "modal", "sidebar", "footer", "named", "action", "method", "links", "headers"],
+  "styling": ["style", "theme", "color", "background", "margin", "padding", "border", "radius", "shadow", "blur", "glass", "grid", "flex", "transition", "animation", "hover", "screen", "width", "less", "than", "greater"],
+  "database": ["define", "create", "table", "connect", "database", "insert", "select", "query", "where", "columns", "headers"],
+  "logical": ["and", "or", "not", "is", "equal", "greater", "less", "true", "false", "null", "none", "infinity"]
+}

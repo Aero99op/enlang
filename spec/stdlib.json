@@ -1,0 +1,23 @@
+{
+  "modules": [
+    {
+      "name": "Math",
+      "functions": [
+        { "name": "abs", "args": 1, "description": "Absolute value" },
+        { "name": "min", "args": "varargs", "description": "Minimum value" },
+        { "name": "max", "args": "varargs", "description": "Maximum value" },
+        { "name": "pow", "args": 2, "description": "Exponentiation" },
+        { "name": "sqrt", "args": 1, "description": "Square root" }
+      ]
+    },
+    {
+      "name": "String",
+      "functions": [
+        { "name": "lower", "args": 1, "description": "Convert to lowercase" },
+        { "name": "upper", "args": 1, "description": "Convert to uppercase" },
+        { "name": "split", "args": 2, "description": "Split string by delimiter" },
+        { "name": "join", "args": 2, "description": "Join list items by string" }
+      ]
+    }
+  ]
+}
