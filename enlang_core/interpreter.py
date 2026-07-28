@@ -33,6 +33,18 @@ class EnLangInterpreter:
         success = True
         try:
             exec(py_code, exec_globals)
+        except SyntaxError as e:
+            success = False
+            from .checker import check_syntax
+            diags = check_syntax(source_code, file_path)
+            sys.stderr.write(f"Syntax Error: {str(e)}\n")
+            if diags:
+                sys.stderr.write("\n" + "=" * 60 + "\n  EnLang Compiler Diagnostics ('Did You Mean?')\n" + "=" * 60 + "\n")
+                for d in diags:
+                    sys.stderr.write(f"  {d}\n")
+                sys.stderr.write("=" * 60 + "\n")
+            else:
+                traceback.print_exc(file=sys.stderr)
         except Exception as e:
             success = False
             sys.stderr.write(f"Runtime Error: {type(e).__name__}: {str(e)}\n")

@@ -67,6 +67,7 @@ def _check_line(idx: int, raw_line: str, line: str, diagnostics: list):
             ))
 
     # Check 4: Unsupported English phrases
+    # Check 4: Unsupported English phrases & Bare Action Statement Ambiguities
     invalid_phrases = [
         (r'\bis bigger than\b', "Use 'is greater than' instead of 'is bigger than'"),
         (r'\bis same as\b', "Use 'is equal to' instead of 'is same as'"),
@@ -80,6 +81,33 @@ def _check_line(idx: int, raw_line: str, line: str, diagnostics: list):
                 "Unsupported natural phrase detected in statement.",
                 level="ERROR",
                 suggestion=sugg
+            ))
+
+    # Check 5: Bare Action/Function Call Ambiguity (e.g., 'greet "Hello, World!"')
+    m_bare = re.match(r'^\s*([a-zA-Z_]\w*)\s+((["\'].+?["\'])|([a-zA-Z_]\w*|\d+))\s*$', line, re.IGNORECASE)
+    if m_bare:
+        action_word = m_bare.group(1)
+        arg_val = m_bare.group(2)
+        valid_keywords = {'set', 'store', 'save', 'put', 'get', 'call', 'run', 'execute', 'start', 'return', 'import', 'from', 'create', 'define', 'let', 'var', 'if', 'else', 'elif', 'while', 'for', 'repeat', 'function', 'func', 'class', 'match', 'switch', 'case', 'default', 'try', 'except', 'finally', 'display', 'print', 'show', 'log', 'say', 'output', 'write', 'connect', 'include', 'use', 'page', 'theme', 'style', 'animate'}
+        if action_word.lower() not in valid_keywords:
+            suggestion_msg = (
+                f"\n\n  Did you mean one of these output commands?\n"
+                f"    • display {arg_val}\n"
+                f"    • print {arg_val}\n"
+                f"    • show {arg_val}\n"
+                f"    • say {arg_val}\n"
+                f"    • output {arg_val}\n"
+                f"    • write {arg_val}\n\n"
+                f"  Or did you mean to invoke a function?\n"
+                f"    • call {action_word} with {arg_val}\n\n"
+                f"  Or define a custom function?\n"
+                f"    • function {action_word} with message:"
+            )
+            diagnostics.append(Diagnostic(
+                idx,
+                f"Unknown statement '{line}'. Functions must be invoked using 'call'.",
+                level="ERROR",
+                suggestion=suggestion_msg
             ))
 
 def check_syntax(code: str, file_path: str = "main.enlg") -> list:
