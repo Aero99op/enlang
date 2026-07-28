@@ -76,6 +76,42 @@ class EnLangTranspiler:
         self.output_lines = []
         self.last_db_var = "db"
 
+    def _join_multiline_sql_statements(self, raw_lines: list) -> list:
+        """Accumulates multi-line statements in .enlgdb files into clean single-line queries."""
+        joined = []
+        current_stmt = []
+
+        stmt_headers = (
+            r'^(?:connect\s+to|create\s+table|define\s+table|insert\s+|execute\s+query|'
+            r'select\s+|display\s+|drop\s+|add\s+column|rename\s+|delete\s+|create\s+index|'
+            r'create\s+view|enable\s+foreign|begin|commit|rollback)\b'
+        )
+
+        for raw in raw_lines:
+            s = raw.strip()
+            if not s or s.startswith('#') or s.startswith('--'):
+                if current_stmt:
+                    joined.append(" ".join(current_stmt))
+                    current_stmt = []
+                joined.append(raw)
+                continue
+
+            if re.match(stmt_headers, s, re.IGNORECASE):
+                if current_stmt:
+                    joined.append(" ".join(current_stmt))
+                    current_stmt = []
+                current_stmt.append(s)
+            else:
+                if current_stmt:
+                    current_stmt.append(s)
+                else:
+                    joined.append(raw)
+
+        if current_stmt:
+            joined.append(" ".join(current_stmt))
+
+        return joined
+
     def transpile(self, source_code: str, file_path: str = "main.enlg") -> str:
         """
         Master transpile entry point.
@@ -108,6 +144,9 @@ class EnLangTranspiler:
             target = "sql"
         else:
             target = "python"   # .enlg and all other domains
+
+        if target == "sql":
+            raw_lines = self._join_multiline_sql_statements(raw_lines)
 
         in_native_block = False
 

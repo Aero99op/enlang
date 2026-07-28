@@ -1314,5 +1314,17 @@ def translate_database_line(line: str, db_var: str = "db") -> str:
         sql = f'RELEASE SAVEPOINT {m.group(1)};'
         return f'print({repr(sql)})'
 
+    # execute query "<query>" on <db> and store in <var>
+    m = re.match(r'^execute\s+query\s+["\'](.+?)["\']\s+on\s+([a-zA-Z_]\w*)\s+and\s+store\s+in\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
+    if m:
+        query_sql, db_v, target_var = m.group(1), m.group(2), m.group(3)
+        sql = f'{query_sql.strip()};' if not query_sql.strip().endswith(';') else query_sql.strip()
+        return f'print({repr(sql)})'
+
+    # display <var>
+    m = re.match(r'^display\s+([a-zA-Z_]\w*)$', line, re.IGNORECASE)
+    if m:
+        return f'print({repr("-- DISPLAY TABLE: " + m.group(1))})'
+
     # Unknown SQL lines → comment passthrough
     return f'print({repr("-- " + line)})'
