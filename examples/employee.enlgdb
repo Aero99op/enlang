@@ -1,0 +1,47 @@
+
+create table Employee1 with columns id integer primary key, name text, age integer, department text
+insert record into Employee1 with values 1, "John Doe", 30, "Sales"
+insert record into Employee1 with values 2, "Jane Doe", 25, "Marketing"
+insert record into Employee1 with values 3, "Mike Brown", 40, "IT"
+insert record into Employee1 with values 4, "Emily Johnson", 28, "HR"
+insert record into Employee1 with values 5, "David Lee", 35, "Finance"
+
+create table Employee2 with columns id integer primary key, name text, age integer, department text
+insert record into Employee2 with values 6, "Sarah Taylor", 32, "Sales"
+insert record into Employee2 with values 7, "Kevin White", 29, "Marketing"
+insert record into Employee2 with values 8, "Rebecca Martin", 38, "IT"
+insert record into Employee2 with values 9, "Michael Davis", 26, "HR"
+insert record into Employee2 with values 10, "Laura Garcia", 33, "Finance"
+
+create table Employee3 with columns id integer primary key, name text, age integer, department text
+insert record into Employee3 with values 11, "Daniel Thompson", 31, "Sales"        
+insert record into Employee3 with values 12, "Jessica Rodriguez", 27, "Marketing"  
+insert record into Employee3 with values 13, "William Harris", 39, "IT"
+insert record into Employee3 with values 14, "Amanda Miller", 24, "HR"
+insert record into Employee3 with values 15, "James Wilson", 34, "Finance"
+
+create table Employee4 with columns id integer primary key, name text, age integer, department text
+insert record into Employee4 with values 16, "Robert Anderson", 30, "Sales"        
+insert record into Employee4 with values 17, "Lisa Nguyen", 25, "Marketing"        
+insert record into Employee4 with values 18, "Matthew Jackson", 41, "IT"
+insert record into Employee4 with values 19, "Heather Hall", 28, "HR"
+insert record into Employee4 with values 20, "Brian Mitchell", 35, "Finance"       
+
+create table Employee5 with columns id integer primary key, name text, age integer, department text
+insert record into Employee5 with values 21, "Christopher Brooks", 32, "Sales"     
+insert record into Employee5 with values 22, "Melissa Sanchez", 29, "Marketing"    
+insert record into Employee5 with values 23, "Jennifer Lewis", 38, "IT"
+insert record into Employee5 with values 24, "Anthony Brown", 26, "HR"
+insert record into Employee5 with values 25, "Elizabeth Taylor", 33, "Finance"     
+
+execute query "SELECT * FROM Employee1" on db and store in employee1_list
+execute query "SELECT * FROM Employee2" on db and store in employee2_list
+execute query "SELECT * FROM Employee3" on db and store in employee3_list
+execute query "SELECT * FROM Employee4" on db and store in employee4_list
+execute query "SELECT * FROM Employee5" on db and store in employee5_list
+
+display employee1_list
+display employee2_list
+display employee3_list
+display employee4_list
+display employee5_list
