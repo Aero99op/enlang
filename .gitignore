@@ -30,6 +30,11 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
+# Temporary example outputs & generated scripts
+examples/*.py
+examples/*.sql
+examples/*.enlgdb
+
 # Database & Runtime Output Files
 *.db
 *.sqlite
