@@ -1,0 +1,9 @@
+define function isPalindrome with text:
+  set reversedText to reverse of text
+  if text is equal to reversedText then:
+    display "The text is a palindrome."
+  else:
+    display "The text is not a palindrome."
+
+set userInput to ask "Enter a string: "
+call function isPalindrome with userInput

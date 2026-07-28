@@ -1,0 +1,7 @@
+set score to ask "Enter score: "
+convert score to integer
+
+if score is greater than 90 then:
+    display "Passed"
+otherwise:
+    display "Failed"
