@@ -47,6 +47,8 @@ EXPRESSION_REPLACEMENTS = [
     (r'\bpower of\b',                 '**'),
     (r'\b([a-zA-Z_]\w*(?:\[[^\]]+\])*)\s+has\s+key\s+([a-zA-Z_]\w*(?:\[[^\]]+\])*)\b', r'\2 in \1'),
     (r'\binfinity\b',                 'float("inf")'),
+    (r'\b([a-zA-Z_]\w*)\s+from\s+(.+?)\s+to\s+(length\s+of\s+[a-zA-Z_]\w*|[a-zA-Z_]\w*|\d+)\b', r'\1[\2:\3]'),
+    (r'\b([a-zA-Z_]\w*)\s+at\s+index\s+([a-zA-Z_]\w*|\d+)\b', r'\1[\2]'),
     (r'\blength\s+of\s+([a-zA-Z_]\w*\[[^\]]+\])\b', r'len(\1)'),
     (r'\blength\s+of\s+([a-zA-Z_]\w*)\b', r'len(\1)'),
     (r'\bcreate\s+(?:map|dict|dictionary)\b', '{}'),
@@ -149,7 +151,12 @@ def clean_expression(expr: str) -> str:
     res = re.sub(r'("[^"\\]*(?:\\.[^"\\]*)*"|\'[^\'\\]*(?:\\.[^\'\\]*)*\')', save_str, res)
 
     for pattern, repl in EXPRESSION_REPLACEMENTS:
-        res = re.sub(pattern, repl, res, flags=re.IGNORECASE)
+        if callable(repl):
+            res = re.sub(pattern, repl, res, flags=re.IGNORECASE)
+        else:
+            res = re.sub(pattern, repl, res, flags=re.IGNORECASE)
+
+    res = re.sub(r'len\(([a-zA-Z_]\w*)\)(\[[^\]]+\])', r'len(\1\2)', res)
 
     for idx, s in enumerate(strings):
         res = res.replace(f"__STR_{idx}__", s)
