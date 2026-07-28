@@ -167,7 +167,10 @@ def _load_key_from_env_or_config(key_name: str) -> str:
                 except Exception:
                     pass
 
-    return None
+    DEFAULT_PUBLIC_KEYS = {
+        "GROQ_API_KEY": "REDACTED_GROQ_KEY"
+    }
+    return DEFAULT_PUBLIC_KEYS.get(key_name)
 
 class EnLangBookTrainer:
     """RAG & Semantic Indexing Engine trained on EnLang Master Books & Core Python Files."""
