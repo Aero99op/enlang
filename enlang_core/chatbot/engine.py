@@ -13,6 +13,7 @@ import glob
 import json
 import urllib.request
 import urllib.error
+from .prompt_builder import SpecPromptBuilder
 
 # Fix Windows cp1252 terminal encoding — allow full Unicode/emoji output
 if hasattr(sys.stdout, "reconfigure"):
@@ -259,9 +260,10 @@ class EnLangNativeLLMBrain:
 
     def __init__(self):
         self.history = []
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         books_path = os.path.join(base_dir, "books")
         self.trainer = EnLangBookTrainer(books_path)
+        self.spec_builder = SpecPromptBuilder()
 
         self.groq_key = _load_key_from_env_or_config("GROQ_API_KEY")
         self.gemini_key = _load_key_from_env_or_config("GEMINI_API_KEY")
@@ -359,6 +361,7 @@ class EnLangNativeLLMBrain:
         rag_context = ""
         if matches:
             rag_context = f"\n\nOfficial EnLang Book & Codebase References (Focus: {detected_domain or 'General'}):\n" + "\n---\n".join([f"[{m['source']} - {m['title']}]\n{m['content']}" for m in matches])
+        rag_context += "\n\n" + self.spec_builder.build_system_prompt(f".{detected_domain}" if detected_domain else ".enlg")
 
         # 1. Try Free High-Speed Cloud LLM APIs (Groq -> Gemini -> OpenRouter -> Ollama)
         if self.groq_key:
