@@ -1172,7 +1172,7 @@ def translate_database_line(line: str, db_var: str = "db") -> str:
     if m:
         tbl, vals_raw = m.group(1), m.group(2)
         vals = parse_args_list(vals_raw)
-        sql = f'INSERT INTO {tbl} VALUES ({vals});'
+        sql = f'INSERT OR IGNORE INTO {tbl} VALUES ({vals});'
         return f'print({repr(sql)})'
 
     # insert into <table> columns (<cols>) values (<vals>)
