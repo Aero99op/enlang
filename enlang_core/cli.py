@@ -252,14 +252,60 @@ def run_file(file_path: str, custom_port: int = None):
         
         print(f"\n[INFO] Executing EnLang Database Schema '{file_path}'...")
         try:
+            import hashlib
             conn = sqlite3.connect(db_file)
             cursor = conn.cursor()
-            cursor.executescript(sql_script)
+
+            # Ensure internal migration tracking table exists
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS _enlang_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    stmt_hash TEXT UNIQUE,
+                    stmt_text TEXT,
+                    executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+            conn.commit()
+
+            # Split script into individual SQL statements
+            raw_stmts = [s.strip() for s in sql_script.split(";") if s.strip()]
+            executed_count = 0
+            skipped_count = 0
+
+            for stmt in raw_stmts:
+                # Ignore pure comment statements
+                lines = [l for l in stmt.splitlines() if not l.strip().startswith("--")]
+                clean_stmt = " ".join(lines).strip()
+                if not clean_stmt:
+                    continue
+
+                # Compute normalized statement hash
+                norm_stmt = " ".join(clean_stmt.split()).lower()
+                stmt_hash = hashlib.sha256(norm_stmt.encode("utf-8")).hexdigest()
+
+                # Check if statement was already executed in a previous run
+                cursor.execute("SELECT 1 FROM _enlang_history WHERE stmt_hash = ?;", (stmt_hash,))
+                if cursor.fetchone():
+                    skipped_count += 1
+                    continue
+
+                # Execute new or modified statement
+                cursor.execute(stmt + ";")
+                cursor.execute(
+                    "INSERT INTO _enlang_history (stmt_hash, stmt_text) VALUES (?, ?);",
+                    (stmt_hash, clean_stmt[:200])
+                )
+                executed_count += 1
+
             conn.commit()
 
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-            tables = [r[0] for r in cursor.fetchall() if not r[0].startswith("sqlite_")]
-            print(f"[SUCCESS] Database synced -> '{db_file}'\n")
+            tables = [r[0] for r in cursor.fetchall() if not r[0].startswith("sqlite_") and r[0] != "_enlang_history"]
+            
+            summary_msg = f"[SUCCESS] Database synced -> '{db_file}'"
+            if executed_count > 0 or skipped_count > 0:
+                summary_msg += f" ({executed_count} executed, {skipped_count} skipped)"
+            print(summary_msg + "\n")
 
             # Display rich ASCII table for all database tables
             for tbl in tables:
