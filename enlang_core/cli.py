@@ -15,6 +15,12 @@ import sys
 import os
 import argparse
 
+# Fix Windows terminal encoding for full Unicode output
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 VERSION = "1.0.0 — Enterprise Specification Edition"
 
 def format_ascii_table(title: str, headers: list, rows: list) -> str:
@@ -245,25 +251,63 @@ def run_file(file_path: str, custom_port: int = None):
             sql_script = f.read()
         
         print(f"\n[INFO] Executing EnLang Database Schema '{file_path}'...")
-        conn = sqlite3.connect(db_file)
-        cursor = conn.cursor()
-        cursor.executescript(sql_script)
-        conn.commit()
+        try:
+            conn = sqlite3.connect(db_file)
+            cursor = conn.cursor()
+            cursor.executescript(sql_script)
+            conn.commit()
 
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = [r[0] for r in cursor.fetchall() if not r[0].startswith("sqlite_")]
-        print(f"[SUCCESS] Database synced -> '{db_file}'\n")
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            tables = [r[0] for r in cursor.fetchall() if not r[0].startswith("sqlite_")]
+            print(f"[SUCCESS] Database synced -> '{db_file}'\n")
 
-        # Display rich ASCII table for all database tables
-        for tbl in tables:
-            cursor.execute(f"SELECT * FROM {tbl};")
-            rows = cursor.fetchall()
-            cols = [desc[0] for desc in cursor.description] if cursor.description else []
-            print(format_ascii_table(tbl, cols, rows))
-            print()
+            # Display rich ASCII table for all database tables
+            for tbl in tables:
+                cursor.execute(f"SELECT * FROM {tbl};")
+                rows = cursor.fetchall()
+                cols = [desc[0] for desc in cursor.description] if cursor.description else []
+                print(format_ascii_table(tbl, cols, rows))
+                print()
 
-        conn.close()
-        return
+            conn.close()
+            return
+        except sqlite3.IntegrityError as e:
+            err_msg = str(e)
+            print("\n" + "=" * 80)
+            print(f" ❌ ENLANG DATABASE INTEGRITY ERROR  —  [{os.path.basename(file_path)}]")
+            print("=" * 80)
+            print(f" Error Cause : {err_msg}")
+            print("\n 💡 EXPLANATION:")
+            print("    Strict Banking & Enterprise Data Protection Violation!")
+            print("    You attempted to insert a record with a Primary Key or UNIQUE value")
+            print("    that already exists in the database. EnLang strictly blocks duplicate PKs.")
+            print("\n 🔧 HOW TO FIX THIS:")
+            print(f"    • Option 1 (Fresh Reset): Delete '{os.path.basename(db_file)}' or re-seed with clean IDs.")
+            print("    • Option 2 (Idempotent Insertion): Use 'insert into <table> columns (...) values (...)' in your .enlgdb file.")
+            print("    • Option 3 (Update Record): Use 'update <table> set <col>=<val> where id is <x>'.")
+            print("=" * 80 + "\n")
+            sys.exit(1)
+        except sqlite3.OperationalError as e:
+            err_msg = str(e)
+            print("\n" + "=" * 80)
+            print(f" ❌ ENLANG DATABASE OPERATIONAL ERROR  —  [{os.path.basename(file_path)}]")
+            print("=" * 80)
+            print(f" Error Cause : {err_msg}")
+            print("\n 💡 EXPLANATION:")
+            print("    Invalid table name, column name, or database syntax structure.")
+            print("\n 🔧 HOW TO FIX THIS:")
+            print(f"    • Check column data types and foreign key references in '{os.path.basename(file_path)}'.")
+            print(f"    • Run 'enlang check {os.path.basename(file_path)}' to inspect syntax rules.")
+            print("=" * 80 + "\n")
+            sys.exit(1)
+        except Exception as e:
+            err_msg = str(e)
+            print("\n" + "=" * 80)
+            print(f" ❌ ENLANG DATABASE EXECUTION ERROR  —  [{os.path.basename(file_path)}]")
+            print("=" * 80)
+            print(f" Error Cause : {err_msg}")
+            print("=" * 80 + "\n")
+            sys.exit(1)
 
     try:
         from .interpreter import EnLangInterpreter
@@ -278,7 +322,11 @@ def run_file(file_path: str, custom_port: int = None):
     if stdout.strip():
         print(stdout)
     if not ok:
-        print(f"[ERROR] EnLang Runtime Exception:\n{stderr}", file=sys.stderr)
+        print("\n" + "=" * 80, file=sys.stderr)
+        print(f" ❌ ENLANG RUNTIME EXCEPTION  —  [{os.path.basename(file_path)}]", file=sys.stderr)
+        print("=" * 80, file=sys.stderr)
+        print(f"{stderr.strip()}", file=sys.stderr)
+        print("=" * 80 + "\n", file=sys.stderr)
         sys.exit(1)
 
 def build_file(file_path: str):
