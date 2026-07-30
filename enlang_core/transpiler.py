@@ -253,6 +253,11 @@ class EnLangTranspiler:
         line = re.sub(r'^\s*(call|run|execute|start)\s+(?:function|func|procedure)\s+', r'\1 ', line, flags=re.IGNORECASE)
         # 5. 'repeat until <cond>:' -> 'while not '
         line = re.sub(r'^\s*repeat\s+until\s+', 'while not ', line, flags=re.IGNORECASE)
+        # 6. Natural divisibility & even/odd expressions
+        line = re.sub(r'\b([a-zA-Z_]\w*|\d+)\s+is\s+not\s+divisible\s+by\s+([a-zA-Z_]\w*|\d+)\b', r'\1 % \2 != 0', line, flags=re.IGNORECASE)
+        line = re.sub(r'\b([a-zA-Z_]\w*|\d+)\s+is\s+divisible\s+by\s+([a-zA-Z_]\w*|\d+)\b', r'\1 % \2 == 0', line, flags=re.IGNORECASE)
+        line = re.sub(r'\b([a-zA-Z_]\w*|\d+)\s+is\s+even\b', r'\1 % 2 == 0', line, flags=re.IGNORECASE)
+        line = re.sub(r'\b([a-zA-Z_]\w*|\d+)\s+is\s+odd\b', r'\1 % 2 != 0', line, flags=re.IGNORECASE)
         return line
 
     def _transpile_python_line(self, line: str) -> str:
