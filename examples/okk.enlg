@@ -1,0 +1,3 @@
+set colors to ["Red", "Green", "Blue"]
+for each color in colors:
+    display "Color: " plus color
