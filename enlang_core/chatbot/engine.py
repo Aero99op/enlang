@@ -491,7 +491,36 @@ class EnLangNativeLLMBrain:
 
     def _synthesize_native_code(self, raw_text: str, text: str) -> str:
         """Synthesizes valid EnLang code snippets for common queries when running in offline/API-key-less mode."""
-        # 1. Pincode / Bank Auth Logic
+        # 1. LeetCode 66 / Array Integer Increment (Plus One)
+        if any(w in text for w in ["digits", "increment", "plus one", "large integer", "array digits", "leetcode"]):
+            return f"""
+{BOLD}{GREEN}💡 Generated EnLang Code (LeetCode: Array Integer Increment / Plus One):{RESET}
+{CYAN}# Dynamic Algorithmic Solution for Incrementing Array Integer:
+function plus_one with digits:
+    set n to length of digits
+    set i to n minus 1
+    while i is greater than or equal to 0:
+        if digits[i] is less than 9 then:
+            set digits[i] to digits[i] plus 1
+            return digits
+        set digits[i] to 0
+        set i to i minus 1
+    set result to [1] plus digits
+    return result
+
+set test_digits to [1, 2, 3]
+set output to call plus_one with test_digits
+display "Input: [1, 2, 3] -> Output: " plus output
+
+set edge_case to [9, 9]
+set edge_output to call plus_one with edge_case
+display "Edge Case Input: [9, 9] -> Output: " plus edge_output{RESET}
+
+{YELLOW}# To compile and run:{RESET}
+enlang run script.enlg
+"""
+
+        # 2. Pincode / Bank Auth Logic
         if any(w in text for w in ["pin", "pincode", "auth", "login", "password", "bank"]):
             return f"""
 {BOLD}{GREEN}💡 Generated EnLang Code (PIN Authentication Loop):{RESET}
@@ -510,6 +539,54 @@ while attempts is greater than 0 and authenticated is false:
 
 if authenticated is false then:
     display "Card Blocked. Too many failed attempts."{RESET}
+"""
+
+        # 3. Even / Odd / Divisibility Logic
+        if any(w in text for w in ["even", "odd", "divisible", "modulus", "remainder"]):
+            return f"""
+{BOLD}{GREEN}💡 Generated EnLang Code (Divisibility & Parity Logic):{RESET}
+{CYAN}set number to 10
+if number is divisible by 2 then:
+    display "Number is Even"
+else:
+    display "Number is Odd"{RESET}
+"""
+
+        # 4. Fibonacci / Factorial / Math Logic
+        if any(w in text for w in ["fibonacci", "factorial", "prime", "math"]):
+            return f"""
+{BOLD}{GREEN}💡 Generated EnLang Code (Fibonacci Sequence Generator):{RESET}
+{CYAN}function generate_fibonacci with n:
+    set a to 0
+    set b to 1
+    set sequence to []
+    repeat n times:
+        add a to sequence
+        set temp to a plus b
+        set a to b
+        set b to temp
+    return sequence
+
+set result to call generate_fibonacci with 10
+display "First 10 Fibonacci Numbers: " plus result{RESET}
+"""
+
+        # 5. Database / SQLite Operations (.enlgdb)
+        if any(w in text for w in ["db", "database", "sqlite", "table", "sql", "query"]):
+            return f"""
+{BOLD}{GREEN}💡 Generated EnLang Code (.enlgdb Database Script):{RESET}
+{CYAN}connect to database "app.db" as db
+
+create table Users with columns id integer primary key, name text, role text
+
+insert record into Users with values 1, "Alice", "Admin"
+insert record into Users with values 2, "Bob", "Developer"
+
+update Users set role="Lead Developer" where id is 2
+delete record from Users where id is equal to 1
+
+execute query "SELECT * FROM Users" on db and store in user_list
+display user_list{RESET}
 """
 
         # 2. Counter Loop over numbers (e.g. "loop printing number 1 to 10", "for loop from 1 to 5")
