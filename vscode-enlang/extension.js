@@ -1,17 +1,20 @@
 const vscode = require('vscode');
-const { exec } = require('child_process');
-const path = require('path');
 
 /**
- * Calculates correct indentation and returns diagnostics for invalid indentation.
+ * Calculates correct indentation, block structure, and syntax diagnostics in real-time.
  */
-function updateIndentationDiagnostics(document, diagnosticCollection) {
+function updateDiagnostics(document, diagnosticCollection) {
     if (!document || !['enlang', 'enlangf', 'enlangd', 'enlgs', 'enlangdb'].includes(document.languageId)) {
         return;
     }
 
     const diagnostics = [];
-    let expectedIndentLevel = 0;
+    const indentStack = [0];
+    let insideFunction = false;
+    let functionName = '';
+    let functionIndentLevel = -1;
+    let functionHasReturned = false;
+
     const blockHeaderRegex = /:\s*$/;
     const decreaseRegex = /^\s*(?:else|otherwise|elif|except|finally|end\s+match|end\s+interface|end\s+class)\b/i;
 
@@ -24,27 +27,90 @@ function updateIndentationDiagnostics(document, diagnosticCollection) {
             continue;
         }
 
-        if (decreaseRegex.test(trimmed) && expectedIndentLevel > 0) {
-            expectedIndentLevel = Math.max(0, expectedIndentLevel - 1);
-        }
-
         const indentSpaces = text.length - text.trimStart().length;
-        const expectedSpaces = expectedIndentLevel * 4;
 
-        if (indentSpaces !== expectedSpaces && indentSpaces % 4 !== 0) {
+        // 1. 4-Space Multiple Check
+        if (indentSpaces % 4 !== 0) {
             const range = new vscode.Range(i, 0, i, indentSpaces);
-            const needed = expectedSpaces - indentSpaces;
-            let actionHint = needed > 0 ? `Add ${needed} spaces` : `Remove ${Math.abs(needed)} spaces`;
-            const msg = `💡 EnLang Indentation Helper: Line has ${indentSpaces} spaces. Expected ${expectedSpaces} spaces (4-space multiples). [${actionHint}]`;
-            
-            const diagnostic = new vscode.Diagnostic(range, msg, vscode.DiagnosticSeverity.Warning);
-            diagnostic.code = 'enlang-indent';
-            diagnostic.target = { expectedSpaces, lineIndex: i, currentSpaces: indentSpaces };
+            const targetSpaces = Math.round(indentSpaces / 4) * 4;
+            const msg = `📐 EnLang Indentation Error: Line has ${indentSpaces} spaces. EnLang requires 4-space multiples (e.g. ${targetSpaces} spaces).`;
+            const diagnostic = new vscode.Diagnostic(range, msg, vscode.DiagnosticSeverity.Error);
+            diagnostic.code = 'enlang-indent-multiple';
+            diagnostic.target = { expectedSpaces: targetSpaces, lineIndex: i, currentSpaces: indentSpaces };
             diagnostics.push(diagnostic);
         }
 
+        // 2. Block Header Missing Colon Check
+        const blockHeaderKeywords = /^\s*(?:if|otherwise\s+if|elif|else|repeat|for|while|until|function|func|action|task|procedure|process|class|interface|match|switch|try|except|finally)\b/i;
+        if (blockHeaderKeywords.test(trimmed) && !trimmed.endsWith(':') && !/\b(?:then|do)\b/i.test(trimmed)) {
+            const range = new vscode.Range(i, 0, i, text.length);
+            const msg = `⚠️ Syntax Warning: Block header missing trailing colon ':'. Add a colon at the end of the line.`;
+            const diagnostic = new vscode.Diagnostic(range, msg, vscode.DiagnosticSeverity.Warning);
+            diagnostic.code = 'enlang-missing-colon';
+            diagnostic.target = { lineIndex: i, text: text };
+            diagnostics.push(diagnostic);
+        }
+
+        // 3. C-Style Operator Check (&&, ||)
+        if (/\b&&\b|\b\|\|\b/.test(trimmed)) {
+            const range = new vscode.Range(i, 0, i, text.length);
+            const msg = `⚠️ Syntax Hint: C-style logical operators '&&' / '||' detected. Use natural operators 'and' / 'or'.`;
+            const diagnostic = new vscode.Diagnostic(range, msg, vscode.DiagnosticSeverity.Information);
+            diagnostic.code = 'enlang-c-operator';
+            diagnostics.push(diagnostic);
+        }
+
+        // 4. Function & Dead Code Tracking
+        const funcMatch = trimmed.match(/^\s*(?:function|func)\s+([a-zA-Z_]\w*)/i);
+        if (funcMatch) {
+            insideFunction = true;
+            functionName = funcMatch[1];
+            functionIndentLevel = indentSpaces;
+            functionHasReturned = false;
+        }
+
+        if (insideFunction && indentSpaces <= functionIndentLevel && !funcMatch) {
+            insideFunction = false;
+            functionHasReturned = false;
+        }
+
+        if (insideFunction && functionHasReturned && indentSpaces > functionIndentLevel) {
+            const range = new vscode.Range(i, 0, i, text.length);
+            const msg = `⛔ Dead Code / Indentation Warning: Statement '${trimmed}' is indented inside function '${functionName}' after a 'return'. Did you mean to unindent to 0 spaces?`;
+            const diagnostic = new vscode.Diagnostic(range, msg, vscode.DiagnosticSeverity.Warning);
+            diagnostic.code = 'enlang-dead-code';
+            diagnostic.target = { lineIndex: i, currentSpaces: indentSpaces };
+            diagnostics.push(diagnostic);
+        }
+
+        if (/^\s*return\b/i.test(trimmed) && insideFunction) {
+            functionHasReturned = true;
+        }
+
+        // 5. Block Stack & Dedent Alignment
+        if (decreaseRegex.test(trimmed)) {
+            while (indentStack.length > 1 && indentStack[indentStack.length - 1] > indentSpaces) {
+                indentStack.pop();
+            }
+        }
+
+        const expectedSpaces = indentStack[indentStack.length - 1];
+        if (!indentStack.includes(indentSpaces) && indentSpaces !== expectedSpaces + 4) {
+            const range = new vscode.Range(i, 0, i, indentSpaces);
+            const validLevels = Array.from(new Set(indentStack)).sort((a, b) => a - b).join(', ');
+            const msg = `📐 Indentation Misalignment: ${indentSpaces} spaces detected. Expected matching block level [${validLevels}] or ${expectedSpaces + 4} spaces for a new block.`;
+            const diagnostic = new vscode.Diagnostic(range, msg, vscode.DiagnosticSeverity.Error);
+            diagnostic.code = 'enlang-indent-align';
+            diagnostic.target = { expectedSpaces, lineIndex: i, currentSpaces: indentSpaces };
+            diagnostics.push(diagnostic);
+        } else {
+            while (indentStack.length > 1 && indentSpaces < indentStack[indentStack.length - 1]) {
+                indentStack.pop();
+            }
+        }
+
         if (blockHeaderRegex.test(trimmed)) {
-            expectedIndentLevel++;
+            indentStack.push(indentSpaces + 4);
         }
     }
 
@@ -52,33 +118,32 @@ function updateIndentationDiagnostics(document, diagnosticCollection) {
 }
 
 function activate(context) {
-    console.log('EnLang VS Code Extension with Smart Indentation Helper is active!');
+    console.log('EnLang VS Code Extension with Smart Indentation & Diagnostic Engine active!');
 
-    const diagnosticCollection = vscode.languages.createDiagnosticCollection('enlang-indentation');
+    const diagnosticCollection = vscode.languages.createDiagnosticCollection('enlang-diagnostics');
     context.subscriptions.push(diagnosticCollection);
 
-    // Real-time diagnostics on open and edit
     if (vscode.window.activeTextEditor) {
-        updateIndentationDiagnostics(vscode.window.activeTextEditor.document, diagnosticCollection);
+        updateDiagnostics(vscode.window.activeTextEditor.document, diagnosticCollection);
     }
 
     context.subscriptions.push(
         vscode.workspace.onDidChangeTextDocument(e => {
-            updateIndentationDiagnostics(e.document, diagnosticCollection);
+            updateDiagnostics(e.document, diagnosticCollection);
         }),
         vscode.workspace.onDidOpenTextDocument(doc => {
-            updateIndentationDiagnostics(doc, diagnosticCollection);
+            updateDiagnostics(doc, diagnosticCollection);
         })
     );
 
-    // Quick-Fix Provider for Indentation Warning
+    // Quick-Fix Actions for Indentation & Colons
     const quickFixProvider = vscode.languages.registerCodeActionsProvider(
         ['enlang', 'enlangf', 'enlangd', 'enlgs', 'enlangdb'],
         {
             provideCodeActions(document, range, context) {
                 const actions = [];
                 for (const diag of context.diagnostics) {
-                    if (diag.code === 'enlang-indent' && diag.target) {
+                    if ((diag.code === 'enlang-indent-multiple' || diag.code === 'enlang-indent-align') && diag.target) {
                         const { expectedSpaces, lineIndex, currentSpaces } = diag.target;
                         const action = new vscode.CodeAction(
                             `Fix Indentation to ${expectedSpaces} spaces`,
@@ -90,19 +155,44 @@ function activate(context) {
                         action.edit.replace(document.uri, lineRange, ' '.repeat(expectedSpaces));
                         actions.push(action);
                     }
+
+                    if (diag.code === 'enlang-dead-code' && diag.target) {
+                        const { lineIndex, currentSpaces } = diag.target;
+                        const action = new vscode.CodeAction(
+                            `Unindent to top-level (0 spaces)`,
+                            vscode.CodeActionKind.QuickFix
+                        );
+                        action.edit = new vscode.WorkspaceEdit();
+                        const lineRange = new vscode.Range(lineIndex, 0, lineIndex, currentSpaces);
+                        action.edit.replace(document.uri, lineRange, '');
+                        actions.push(action);
+                    }
+
+                    if (diag.code === 'enlang-missing-colon' && diag.target) {
+                        const { lineIndex, text } = diag.target;
+                        const action = new vscode.CodeAction(
+                            `Add trailing colon ':'`,
+                            vscode.CodeActionKind.QuickFix
+                        );
+                        action.isPreferred = true;
+                        action.edit = new vscode.WorkspaceEdit();
+                        const lineRange = new vscode.Range(lineIndex, 0, lineIndex, text.length);
+                        action.edit.replace(document.uri, lineRange, text.trimEnd() + ':');
+                        actions.push(action);
+                    }
                 }
                 return actions;
             }
         }
     );
 
-    // Document Formatting Provider (Format Document: Shift + Alt + F)
+    // Auto-Formatter (Shift + Alt + F)
     const formatterProvider = vscode.languages.registerDocumentFormattingEditProvider(
         ['enlang', 'enlangf', 'enlangd', 'enlgs', 'enlangdb'],
         {
             provideDocumentFormattingEdits(document) {
                 const edits = [];
-                let expectedIndentLevel = 0;
+                let indentStack = [0];
                 const blockHeaderRegex = /:\s*$/;
                 const decreaseRegex = /^\s*(?:else|otherwise|elif|except|finally|end\s+match|end\s+interface|end\s+class)\b/i;
 
@@ -115,12 +205,12 @@ function activate(context) {
                         continue;
                     }
 
-                    if (decreaseRegex.test(trimmed) && expectedIndentLevel > 0) {
-                        expectedIndentLevel = Math.max(0, expectedIndentLevel - 1);
+                    if (decreaseRegex.test(trimmed) && indentStack.length > 1) {
+                        indentStack.pop();
                     }
 
+                    const targetSpaces = indentStack[indentStack.length - 1];
                     const currentSpaces = text.length - text.trimStart().length;
-                    const targetSpaces = expectedIndentLevel * 4;
 
                     if (currentSpaces !== targetSpaces) {
                         const range = new vscode.Range(i, 0, i, currentSpaces);
@@ -128,7 +218,7 @@ function activate(context) {
                     }
 
                     if (blockHeaderRegex.test(trimmed)) {
-                        expectedIndentLevel++;
+                        indentStack.push(targetSpaces + 4);
                     }
                 }
                 return edits;
