@@ -109,7 +109,7 @@ function updateDiagnostics(document, diagnosticCollection) {
 }
 
 function activate(context) {
-    console.log('EnLang VS Code Extension v2.3.2 with Full-Document Scan active!');
+    console.log('EnLang VS Code Extension v2.4.0 (Formatter Disabled) active!');
 
     const diagnosticCollection = vscode.languages.createDiagnosticCollection('enlang-diagnostics');
     context.subscriptions.push(diagnosticCollection);
@@ -127,7 +127,7 @@ function activate(context) {
         })
     );
 
-    // Quick-Fix Actions
+    // Quick-Fix Actions for Indentation & Colons (Available via Lightbulb 💡)
     const quickFixProvider = vscode.languages.registerCodeActionsProvider(
         ['enlang', 'enlangf', 'enlangd', 'enlgs', 'enlangdb'],
         {
@@ -177,44 +177,6 @@ function activate(context) {
         }
     );
 
-    /**
-     * SAFE Formatter (Shift + Alt + F & Ctrl + S):
-     * NEVER forces indentation levels or changes valid 0, 4, 8, 12 space indents!
-     * ONLY fixes non-4 multiples (e.g. 5 spaces -> 4 spaces) and trims trailing whitespace.
-     * This guarantees Ctrl+S (Save) will NEVER alter valid code indentation!
-     */
-    const formatterProvider = vscode.languages.registerDocumentFormattingEditProvider(
-        ['enlang', 'enlangf', 'enlangd', 'enlgs', 'enlangdb'],
-        {
-            provideDocumentFormattingEdits(document) {
-                const edits = [];
-                for (let i = 0; i < document.lineCount; i++) {
-                    const line = document.lineAt(i);
-                    const text = line.text;
-                    const trimmed = text.trim();
-
-                    if (!trimmed) continue;
-
-                    const currentSpaces = text.length - text.trimStart().length;
-
-                    // Only fix if indentation is NOT a multiple of 4 (e.g. 1, 2, 3, 5, 6, 7 spaces)
-                    if (currentSpaces % 4 !== 0) {
-                        const targetSpaces = Math.round(currentSpaces / 4) * 4;
-                        const range = new vscode.Range(i, 0, i, currentSpaces);
-                        edits.push(vscode.TextEdit.replace(range, ' '.repeat(targetSpaces)));
-                    }
-
-                    // Trim trailing whitespace if present
-                    if (text !== text.trimEnd()) {
-                        const endRange = new vscode.Range(i, trimmed.length + currentSpaces, i, text.length);
-                        edits.push(vscode.TextEdit.delete(endRange));
-                    }
-                }
-                return edits;
-            }
-        }
-    );
-
     // Commands
     let runCmd = vscode.commands.registerCommand('enlang.runFile', function () {
         const editor = vscode.window.activeTextEditor;
@@ -246,7 +208,7 @@ function activate(context) {
         terminal.sendText('enlang server --port 8000');
     });
 
-    context.subscriptions.push(quickFixProvider, formatterProvider, runCmd, buildCmd, checkCmd, serverCmd);
+    context.subscriptions.push(quickFixProvider, runCmd, buildCmd, checkCmd, serverCmd);
 }
 
 function deactivate() {}
