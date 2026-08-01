@@ -257,91 +257,205 @@ def _load_key_from_env_or_config(key_name: str) -> str:
     }
     return DEFAULT_PUBLIC_KEYS.get(key_name)
 
-class EnLangBookTrainer:
-    """RAG & Semantic Indexing Engine trained on EnLang Master Books & Core Python Files."""
+def _extract_live_syntax_map() -> str:
+    """
+    Dynamically reads ALL core .py files from enlang_core/ at runtime.
+    Extracts regex rules from transpiler.py, expression operators from grammar.py,
+    and NLP rewriter rules — builds a compact 100% accurate syntax reference.
+    This is injected into every AI system prompt so the AI reads the LIVE source code,
+    never hallucinating syntax that doesn't exist.
+    """
+    core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # enlang_core/
 
-    def __init__(self, books_dir: str):
-        self.books_dir = books_dir
+    # --- 1. Extract regex rules from transpiler.py ---
+    transpiler_rules = []
+    transpiler_path = os.path.join(core_dir, "transpiler.py")
+    if os.path.exists(transpiler_path):
+        try:
+            with open(transpiler_path, "r", encoding="utf-8", errors="ignore") as f:
+                lines = f.readlines()
+            i = 0
+            while i < len(lines):
+                line = lines[i].strip()
+                # Capture comment labels like: # ── Variable Assignment ──
+                if line.startswith("# ──") or (line.startswith("#") and "──" in line):
+                    comment = line.lstrip("# ─").strip()
+                    # Look ahead for regex pattern
+                    for j in range(i+1, min(i+4, len(lines))):
+                        next_line = lines[j].strip()
+                        m = re.search(r"re\.match\(r'([^']+)'", next_line)
+                        if m:
+                            raw_pat = m.group(1)
+                            # Convert regex to readable example (strip anchors/groups)
+                            readable = re.sub(r'^\^|\$$', '', raw_pat)
+                            readable = re.sub(r'\(\?:([^)]+)\)', r'[\1]', readable)
+                            readable = re.sub(r'\\s\+', ' ', readable)
+                            readable = re.sub(r'\\s\*', '', readable)
+                            readable = re.sub(r'\\b', '', readable)
+                            readable = re.sub(r'\(.*?\)', '<...>', readable)
+                            readable = readable[:80]
+                            transpiler_rules.append(f"  [{comment}]: {readable}")
+                            break
+                i += 1
+        except Exception:
+            pass
+
+    # --- 2. Extract EXPRESSION_REPLACEMENTS from grammar.py ---
+    grammar_ops = []
+    grammar_path = os.path.join(core_dir, "grammar.py")
+    if os.path.exists(grammar_path):
+        try:
+            with open(grammar_path, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+            block = re.search(r'EXPRESSION_REPLACEMENTS\s*=\s*\[(.*?)\]', content, re.DOTALL)
+            if block:
+                pairs = re.findall(r"r'([^']+)'\s*,\s*'([^']*)'", block.group(1))
+                for pat, rep in pairs[:25]:
+                    pat_clean = re.sub(r'\\b', '', pat).strip()
+                    grammar_ops.append(f"  '{pat_clean}' => {rep}")
+        except Exception:
+            pass
+
+    # --- 3. Scan all enlang_core/ .py files for function/class names (as capabilities index) ---
+    capabilities = []
+    core_py_files = [
+        "transpiler.py", "grammar.py", "interpreter.py", "checker.py",
+        "ml_engine.py", "web_server.py",
+        os.path.join("nlp_engine", "grammar_rewriter.py"),
+        os.path.join("nlp_engine", "pipeline.py"),
+        os.path.join("optimizer", "constant_folder.py"),
+    ]
+    seen_caps = set()
+    for fname in core_py_files:
+        fpath = os.path.join(core_dir, fname)
+        if not os.path.exists(fpath):
+            continue
+        try:
+            with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
+                for line in f:
+                    line = line.strip()
+                    m = re.match(r'def\s+([a-zA-Z_]\w*)\s*\(', line)
+                    if m:
+                        name = m.group(1)
+                        if not name.startswith("_") and name not in seen_caps:
+                            seen_caps.add(name)
+                            capabilities.append(f"  {fname}::{name}()")
+        except Exception:
+            pass
+
+    # --- Build compact output ---
+    lines_out = ["\n\n### LIVE CORE ENGINE SYNTAX MAP (Auto-extracted from enlang_core/ source files at startup)"]
+    lines_out.append("### These are the EXACT rules the EnLang transpiler follows. Follow ONLY these.")
+
+    if transpiler_rules:
+        lines_out.append("\n#### transpiler.py — Python Target Rules (_transpile_python_line):")
+        lines_out.extend(transpiler_rules[:40])  # cap at 40 rules to keep prompt tight
+
+    if grammar_ops:
+        lines_out.append("\n#### grammar.py — EXPRESSION_REPLACEMENTS (operator map):")
+        lines_out.extend(grammar_ops)
+
+    if capabilities:
+        lines_out.append("\n#### Core Engine Public API (available functions across enlang_core/):")
+        lines_out.extend(capabilities[:30])
+
+    lines_out.append("\n### END LIVE CORE ENGINE SYNTAX MAP")
+    return "\n".join(lines_out)
+
+
+# Build live syntax map ONCE at module import (cached)
+_LIVE_SYNTAX_MAP = None
+def _get_live_syntax_map() -> str:
+    global _LIVE_SYNTAX_MAP
+    if _LIVE_SYNTAX_MAP is None:
+        try:
+            _LIVE_SYNTAX_MAP = _extract_live_syntax_map()
+        except Exception:
+            _LIVE_SYNTAX_MAP = ""
+    return _LIVE_SYNTAX_MAP
+
+
+class EnLangCoreIndexer:
+    """
+    PRIORITY 1 ONLY: Semantic indexer trained EXCLUSIVELY on enlang_core/ Python source files.
+    Books/markdown are completely excluded — only transpiler, grammar, nlp_engine, optimizer,
+    ml_engine, interpreter, checker, web_server, and all sub-modules are indexed.
+    """
+
+    CORE_FILES = [
+        "transpiler.py",
+        "grammar.py",
+        "interpreter.py",
+        "checker.py",
+        "ml_engine.py",
+        "web_server.py",
+        os.path.join("nlp_engine", "__init__.py"),
+        os.path.join("nlp_engine", "grammar_rewriter.py"),
+        os.path.join("nlp_engine", "pipeline.py"),
+        os.path.join("nlp_engine", "canonicalizer.py"),
+        os.path.join("nlp_engine", "tokenizer.py"),
+        os.path.join("nlp_engine", "fuzzy_parser.py"),
+        os.path.join("nlp_engine", "synonym_engine.py"),
+        os.path.join("optimizer", "constant_folder.py"),
+        os.path.join("optimizer", "dead_code.py"),
+        os.path.join("analyzer", "semantic_analyzer.py"),
+        os.path.join("analyzer", "type_checker.py"),
+        os.path.join("ir", "ir_builder.py"),
+        os.path.join("ir", "ir_nodes.py"),
+        os.path.join("emitters", "python_emitter.py"),
+        os.path.join("emitters", "html_emitter.py"),
+        os.path.join("emitters", "css_emitter.py"),
+        os.path.join("emitters", "js_emitter.py"),
+        os.path.join("emitters", "sql_emitter.py"),
+    ]
+
+    def __init__(self, books_dir: str = ""):
         self.knowledge_chunks = []
-        self.index_knowledge_base()
+        self._index_core_files()
 
-    def index_knowledge_base(self):
-        """Discovers and indexes all EnLang core python files (PRIORITY 1) and textbook chapters (PRIORITY 2)."""
-        # 1. PRIORITY 1: Index Core Codebase Files (Supreme Authority)
-        core_dir = os.path.dirname(os.path.abspath(__file__))
-        core_files = ["grammar.py", "transpiler.py", "interpreter.py", "checker.py"]
-        for fname in core_files:
+    def _index_core_files(self):
+        """Reads ALL enlang_core/ .py source files and indexes them as knowledge chunks."""
+        core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+        for fname in self.CORE_FILES:
             fpath = os.path.join(core_dir, fname)
-            if os.path.exists(fpath):
-                try:
-                    with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
-                        content = f.read()
-                    sections = content.split("\n\n")
-                    for sec in sections:
-                        sec = sec.strip()
-                        if len(sec) > 50:
-                            self.knowledge_chunks.append({
-                                "priority": 1,
-                                "source": f"CORE ENGINE ({fname})",
-                                "title": f"PRIORITY 1: Core Engine Specification ({fname})",
-                                "content": sec[:1500],
-                                "tokens": set(re.findall(r'\w+', sec.lower()))
-                            })
-                except Exception:
-                    pass
-
-        # 2. PRIORITY 2: Index Books & Reference Documentation
-        dirs_to_scan = [self.books_dir]
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        dirs_to_scan.append(base_dir)
-
-        indexed_paths = set()
-        for b_dir in dirs_to_scan:
-            if not os.path.exists(b_dir):
+            if not os.path.exists(fpath):
                 continue
-            for root, _, files in os.walk(b_dir):
-                for file in files:
-                    if file.endswith(".md") or file.startswith("build_quality_"):
-                        filepath = os.path.join(root, file)
-                        if filepath in indexed_paths:
-                            continue
-                        indexed_paths.add(filepath)
-                        try:
-                            with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-                                content = f.read()
+            try:
+                with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read()
+                # Split on double newlines (natural function/section boundaries)
+                sections = content.split("\n\n")
+                for sec in sections:
+                    sec = sec.strip()
+                    if len(sec) > 40:
+                        self.knowledge_chunks.append({
+                            "priority": 1,
+                            "source": f"CORE ({fname})",
+                            "title": f"[LIVE SOURCE] {fname}",
+                            "content": sec[:2000],
+                            "tokens": set(re.findall(r'\w+', sec.lower()))
+                        })
+            except Exception:
+                pass
 
-                            sections = re.split(r'\n(?=#+\s+)', content)
-                            for sec in sections:
-                                sec = sec.strip()
-                                if len(sec) > 40:
-                                    lines = sec.split('\n')
-                                    title = lines[0].lstrip('#').strip()
-                                    self.knowledge_chunks.append({
-                                        "priority": 2,
-                                        "source": file,
-                                        "title": f"PRIORITY 2: Textbook Reference ({file}) - {title}",
-                                        "content": sec,
-                                        "tokens": set(re.findall(r'\w+', sec.lower()))
-                                    })
-                        except Exception:
-                            pass
-
-    def retrieve(self, query: str, top_k: int = 2):
-        """Retrieves top-K most relevant book sections using TF-IDF token scoring."""
+    def retrieve(self, query: str, top_k: int = 3) -> list:
+        """Semantic TF-IDF retrieval from core source file chunks."""
         query_tokens = set(re.findall(r'\w+', query.lower()))
         if not query_tokens:
             return []
-
         scored = []
         for chunk in self.knowledge_chunks:
             overlap = len(query_tokens.intersection(chunk["tokens"]))
             if overlap > 0:
                 score = overlap / (math.log(len(chunk["tokens"]) + 1) + 1)
                 scored.append((score, chunk))
-
-        # Sort by Priority 1 (Core Engine Code) first, then TF-IDF overlap score
-        scored.sort(key=lambda x: (1 if x[1].get("priority", 2) == 1 else 0, x[0]), reverse=True)
+        scored.sort(key=lambda x: x[0], reverse=True)
         return [chunk for score, chunk in scored[:top_k]]
+
+# Alias for backward compat
+EnLangBookTrainer = EnLangCoreIndexer
+
 
 class EnLangNativeLLMBrain:
     """Hybrid AI Assistant Engine with Secure API Key Management & RAG Book Fallback."""
@@ -443,13 +557,18 @@ class EnLangNativeLLMBrain:
             elif any(w in text for w in ["logic", "variable", "if", "loop", "function"]):
                 detected_domain = "enlg"
 
-        # Retrieve RAG Book Context
+        # Retrieve Core Engine Source Code Context (PRIORITY 1 ONLY — no books)
         search_query = f"{detected_domain} {raw_text}" if detected_domain else raw_text
-        matches = self.trainer.retrieve(search_query, top_k=4)
+        matches = self.trainer.retrieve(search_query, top_k=3)
         rag_context = ""
         if matches:
-            rag_context = f"\n\nOfficial EnLang Book & Codebase References (Focus: {detected_domain or 'General'}):\n" + "\n---\n".join([f"[{m['source']} - {m['title']}]\n{m['content']}" for m in matches])
+            rag_context = f"\n\nLive Core Engine Source References (from enlang_core/ .py files):\n" + "\n---\n".join(
+                [f"[{m['source']} — {m['title']}]\n{m['content']}" for m in matches]
+            )
         rag_context += "\n\n" + self.spec_builder.build_system_prompt(f".{detected_domain}" if detected_domain else ".enlg")
+        # Inject live-extracted syntax map from actual source files
+        rag_context += _get_live_syntax_map()
+
 
         # 1. Try Free Secure Cloudflare Worker Proxy (Zero Client Key Leak)
         res_proxy = self._query_worker_proxy(raw_text, rag_context)
