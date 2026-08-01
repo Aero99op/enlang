@@ -60,7 +60,7 @@ function updateDiagnostics(document, diagnosticCollection) {
             diagnostics.push(diagnostic);
         }
 
-        // 4. Function & Dead Code Tracking
+        // 4. Function & Scope Tracking
         const funcMatch = trimmed.match(/^\s*(?:function|func)\s+([a-zA-Z_]\w*)/i);
         if (funcMatch) {
             insideFunction = true;
@@ -69,14 +69,20 @@ function updateDiagnostics(document, diagnosticCollection) {
             functionHasReturned = false;
         }
 
+        // Pop stack levels if current line is un-indented
+        while (indentStack.length > 1 && indentSpaces < indentStack[indentStack.length - 1]) {
+            indentStack.pop();
+        }
+
         if (insideFunction && indentSpaces <= functionIndentLevel && !funcMatch) {
             insideFunction = false;
             functionHasReturned = false;
         }
 
+        // Detect Dead Code after return inside the same function scope
         if (insideFunction && functionHasReturned && indentSpaces > functionIndentLevel) {
             const range = new vscode.Range(i, 0, i, text.length);
-            const msg = `⛔ Dead Code / Indentation Warning: Statement '${trimmed}' is indented inside function '${functionName}' after a 'return'. Did you mean to unindent to 0 spaces?`;
+            const msg = `⛔ Dead Code / Indentation Warning: Statement '${trimmed}' is indented inside function '${functionName}' after 'return'. Did you mean to unindent to 0 spaces?`;
             const diagnostic = new vscode.Diagnostic(range, msg, vscode.DiagnosticSeverity.Warning);
             diagnostic.code = 'enlang-dead-code';
             diagnostic.target = { lineIndex: i, currentSpaces: indentSpaces };
@@ -85,28 +91,6 @@ function updateDiagnostics(document, diagnosticCollection) {
 
         if (/^\s*return\b/i.test(trimmed) && insideFunction) {
             functionHasReturned = true;
-        }
-
-        // 5. Block Stack & Dedent Alignment
-        if (decreaseRegex.test(trimmed)) {
-            while (indentStack.length > 1 && indentStack[indentStack.length - 1] > indentSpaces) {
-                indentStack.pop();
-            }
-        }
-
-        const expectedSpaces = indentStack[indentStack.length - 1];
-        if (!indentStack.includes(indentSpaces) && indentSpaces !== expectedSpaces + 4) {
-            const range = new vscode.Range(i, 0, i, indentSpaces);
-            const validLevels = Array.from(new Set(indentStack)).sort((a, b) => a - b).join(', ');
-            const msg = `📐 Indentation Misalignment: ${indentSpaces} spaces detected. Expected matching block level [${validLevels}] or ${expectedSpaces + 4} spaces for a new block.`;
-            const diagnostic = new vscode.Diagnostic(range, msg, vscode.DiagnosticSeverity.Error);
-            diagnostic.code = 'enlang-indent-align';
-            diagnostic.target = { expectedSpaces, lineIndex: i, currentSpaces: indentSpaces };
-            diagnostics.push(diagnostic);
-        } else {
-            while (indentStack.length > 1 && indentSpaces < indentStack[indentStack.length - 1]) {
-                indentStack.pop();
-            }
         }
 
         if (blockHeaderRegex.test(trimmed)) {
@@ -118,7 +102,7 @@ function updateDiagnostics(document, diagnosticCollection) {
 }
 
 function activate(context) {
-    console.log('EnLang VS Code Extension with Smart Indentation & Diagnostic Engine active!');
+    console.log('EnLang VS Code Extension active!');
 
     const diagnosticCollection = vscode.languages.createDiagnosticCollection('enlang-diagnostics');
     context.subscriptions.push(diagnosticCollection);
@@ -186,13 +170,14 @@ function activate(context) {
         }
     );
 
-    // Auto-Formatter (Shift + Alt + F)
+    // Smart Auto-Formatter (Shift + Alt + F & Format on Save)
+    // Respects user un-indentation & normalizes non-4 multiples safely
     const formatterProvider = vscode.languages.registerDocumentFormattingEditProvider(
         ['enlang', 'enlangf', 'enlangd', 'enlgs', 'enlangdb'],
         {
             provideDocumentFormattingEdits(document) {
                 const edits = [];
-                let indentStack = [0];
+                let indentLevelStack = [0];
                 const blockHeaderRegex = /:\s*$/;
                 const decreaseRegex = /^\s*(?:else|otherwise|elif|except|finally|end\s+match|end\s+interface|end\s+class)\b/i;
 
@@ -205,12 +190,20 @@ function activate(context) {
                         continue;
                     }
 
-                    if (decreaseRegex.test(trimmed) && indentStack.length > 1) {
-                        indentStack.pop();
+                    const currentSpaces = text.length - text.trimStart().length;
+
+                    // Pop stack if line is unindented by user
+                    while (indentLevelStack.length > 1 && currentSpaces < indentLevelStack[indentLevelStack.length - 1]) {
+                        indentLevelStack.pop();
                     }
 
-                    const targetSpaces = indentStack[indentStack.length - 1];
-                    const currentSpaces = text.length - text.trimStart().length;
+                    // Handle dedent keywords (else, elif, etc.)
+                    if (decreaseRegex.test(trimmed) && indentLevelStack.length > 1) {
+                        indentLevelStack.pop();
+                    }
+
+                    // Round current spaces to nearest 4-space multiple while respecting scope
+                    let targetSpaces = Math.round(currentSpaces / 4) * 4;
 
                     if (currentSpaces !== targetSpaces) {
                         const range = new vscode.Range(i, 0, i, currentSpaces);
@@ -218,7 +211,7 @@ function activate(context) {
                     }
 
                     if (blockHeaderRegex.test(trimmed)) {
-                        indentStack.push(targetSpaces + 4);
+                        indentLevelStack.push(targetSpaces + 4);
                     }
                 }
                 return edits;

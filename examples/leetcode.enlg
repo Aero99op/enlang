@@ -1,0 +1,13 @@
+function move_zeros with nums:
+    set index to 0
+    for each i from 0 to length of nums minus 1:
+        if nums[i] is not equal to 0 then:
+            set temp to nums[index]
+            set nums[index] to nums[i]
+            set nums[i] to temp
+            increment index by 1
+    return nums
+
+set nums to [0, 1, 0, 3, 12]
+set result to call move_zeros with nums
+display result
