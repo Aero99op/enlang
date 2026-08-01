@@ -417,8 +417,13 @@ class EnLangNativeLLMBrain:
                 data = json.loads(resp.read().decode("utf-8"))
                 text = data['choices'][0]['message']['content']
                 return f"\n{BOLD}{GREEN}🤖 EnLang AI (Groq Llama 3.3 70B):{RESET}\n{text}"
-        except Exception:
-            pass
+        except urllib.error.HTTPError as e:
+            if e.code == 401:
+                print(f"\n{YELLOW}⚠️  [EnLang AI Notice: Groq API Key invalid/revoked (HTTP 401). Set a valid key using: $env:GROQ_API_KEY='your_key']{RESET}")
+            else:
+                print(f"\n{YELLOW}⚠️  [EnLang AI Notice: Groq API Error ({e})]{RESET}")
+        except Exception as e:
+            print(f"\n{YELLOW}⚠️  [EnLang AI Notice: Groq API Network Error ({e})]{RESET}")
         return None
 
     def _query_gemini(self, prompt: str, rag_context: str = "") -> str:
@@ -486,7 +491,28 @@ class EnLangNativeLLMBrain:
 
     def _synthesize_native_code(self, raw_text: str, text: str) -> str:
         """Synthesizes valid EnLang code snippets for common queries when running in offline/API-key-less mode."""
-        # 1. Loop over numbers (e.g. "loop printing number 1 to 10", "for loop from 1 to 5")
+        # 1. Pincode / Bank Auth Logic
+        if any(w in text for w in ["pin", "pincode", "auth", "login", "password", "bank"]):
+            return f"""
+{BOLD}{GREEN}💡 Generated EnLang Code (PIN Authentication Loop):{RESET}
+{CYAN}set attempts to 3
+set secret_pin to "1234"
+set authenticated to false
+
+while attempts is greater than 0 and authenticated is false:
+    set input_pin to ask "Enter 4-digit PIN: "
+    if input_pin is equal to secret_pin then:
+        display "Access Granted! Welcome to your Bank Account."
+        set authenticated to true
+    else:
+        set attempts to attempts minus 1
+        display "Incorrect PIN. Attempts remaining: " plus attempts
+
+if authenticated is false then:
+    display "Card Blocked. Too many failed attempts."{RESET}
+"""
+
+        # 2. Counter Loop over numbers (e.g. "loop printing number 1 to 10", "for loop from 1 to 5")
         m_loop = re.search(r'(?:loop|repeat|for)\b.*?\b(?:from\s+(\d+)\s+to\s+(\d+)|(\d+)\s+to\s+(\d+))', text)
         if m_loop:
             start_val = m_loop.group(1) or m_loop.group(3) or "1"
@@ -500,7 +526,7 @@ class EnLangNativeLLMBrain:
 enlang run script.enlg
 """
 
-        # 2. Loop over list/items
+        # 3. Collection Loop over list/items
         if "loop" in text or "repeat" in text or "for each" in text:
             return f"""
 {BOLD}{GREEN}💡 Generated EnLang Code (Loop Example):{RESET}
@@ -509,9 +535,9 @@ for each i from 1 to 10:
     display i
 
 # Loop over list:
-set items to ["Apple", "Banana", "Cherry"]
-for each item in items:
-    display item{RESET}
+set numbers to [10, 20, 30, 40]
+for each num in numbers:
+    display num{RESET}
 """
 
         # 3. Print / Display
