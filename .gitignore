@@ -47,3 +47,4 @@ examples/*.enlgdb
 keys.json
 *.pem
 *.key
+.env 
