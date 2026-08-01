@@ -371,7 +371,12 @@ class EnLangNativeLLMBrain:
             rag_context = f"\n\nOfficial EnLang Book & Codebase References (Focus: {detected_domain or 'General'}):\n" + "\n---\n".join([f"[{m['source']} - {m['title']}]\n{m['content']}" for m in matches])
         rag_context += "\n\n" + self.spec_builder.build_system_prompt(f".{detected_domain}" if detected_domain else ".enlg")
 
-        # 1. Try Free High-Speed Cloud LLM APIs (Groq -> Gemini -> OpenRouter -> Ollama)
+        # 1. Try Free Secure Cloudflare Worker Proxy (Zero Client Key Leak)
+        res_proxy = self._query_worker_proxy(raw_text, rag_context)
+        if res_proxy:
+            return res_proxy
+
+        # 2. Try Local/User Provided API Keys (Groq -> Gemini -> OpenRouter -> Ollama)
         if self.groq_key:
             res = self._query_groq(raw_text, rag_context)
             if res:
@@ -394,6 +399,28 @@ class EnLangNativeLLMBrain:
 
         # 2. Native Book-Trained RAG Fallback Engine
         return self._native_book_rag_engine(raw_text, text, detected_domain)
+
+    def _query_worker_proxy(self, prompt: str, rag_context: str = "") -> str:
+        """Queries Zero-Key Cloudflare Worker Secure Proxy (100% Free, Zero Client Key Leak)."""
+        worker_url = os.environ.get("ENLANG_WORKER_URL", "https://enlang-ai-proxy.workers.dev")
+        try:
+            payload = json.dumps({
+                "prompt": prompt,
+                "rag_context": rag_context,
+                "system_prompt": ENLANG_SYSTEM_PROMPT
+            }).encode("utf-8")
+            req = urllib.request.Request(worker_url, data=payload, headers={
+                "Content-Type": "application/json",
+                "User-Agent": "EnLang-CLI-Client/2.2.5"
+            })
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                if "choices" in data and len(data["choices"]) > 0:
+                    text = data['choices'][0]['message']['content']
+                    return f"\n{BOLD}{GREEN}🤖 EnLang AI (Cloudflare Secure Zero-Key Proxy - Groq Llama 3.3 70B):{RESET}\n{text}"
+        except Exception:
+            pass
+        return None
 
     def _query_groq(self, prompt: str, rag_context: str = "") -> str:
         """Queries Groq Llama 3.3 70B with Temperature 0.0 for 100% Deterministic Spec Adherence."""

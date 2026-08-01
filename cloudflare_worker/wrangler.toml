@@ -1,0 +1,6 @@
+name = "enlang-ai-proxy"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+ENVIRONMENT = "production"
