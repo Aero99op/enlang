@@ -90,6 +90,10 @@ ENLANG_SYSTEM_PROMPT = """You are EnLang AI, the official AI assistant and langu
    - Divisibility: `if x is divisible by 2 then:`, `if x is not divisible by 3 then:`
    - Even/Odd: `if x is even then:`, `if x is odd then:`
 
+9. **COMPLEX ALGORITHMS & PROBLEM SOLVING (LeetCode, DSA, Math, Logic)**:
+   - You are fully capable of solving ANY complex algorithmic problem (LeetCode, HackerRank, Data Structures, Array/String Manipulation, Math Problems, Logic) dynamically in EnLang.
+   - Never give static dummy responses when asked to solve a problem. Analyze the problem step-by-step and write a complete, working EnLang program or function implementing the exact algorithm using valid EnLang syntax.
+
 ### GOLDEN VERIFIED ENLANG CODE EXAMPLE (.enlg):
 ```enlg
 set number to 7
@@ -409,7 +413,7 @@ class EnLangNativeLLMBrain:
                 "Authorization": f"Bearer {self.groq_key}",
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
             })
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=60) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 text = data['choices'][0]['message']['content']
                 return f"\n{BOLD}{GREEN}🤖 EnLang AI (Groq Llama 3.3 70B):{RESET}\n{text}"
@@ -427,7 +431,7 @@ class EnLangNativeLLMBrain:
                 "generationConfig": {"temperature": 0.0}
             }).encode("utf-8")
             req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=60) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 text = data['candidates'][0]['content']['parts'][0]['text']
                 return f"\n{BOLD}{CYAN}🤖 EnLang AI (Google Gemini 2.0 Flash):{RESET}\n{text}"
@@ -453,7 +457,7 @@ class EnLangNativeLLMBrain:
                 "Authorization": f"Bearer {self.openrouter_key}",
                 "User-Agent": "Mozilla/5.0"
             })
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=60) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 text = data['choices'][0]['message']['content']
                 return f"\n{BOLD}{MAGENTA}🤖 EnLang AI (OpenRouter Free API):{RESET}\n{text}"
@@ -471,7 +475,7 @@ class EnLangNativeLLMBrain:
                 "stream": False
             }).encode("utf-8")
             req = urllib.request.Request("http://localhost:11434/api/generate", data=payload, headers={"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=60) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 text = data.get("response", "").strip()
                 if text:
