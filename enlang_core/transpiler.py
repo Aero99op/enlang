@@ -796,6 +796,31 @@ class EnLangTranspiler:
             item, lst = clean_expression(m.group(1)), m.group(2)
             return f"{lst}.append({item})"
 
+        # insert <item> at index <n> in <list> / insert <item> at position <n> in <list>
+        m = re.match(r'^(?:insert|place|put)\s+(.+?)\s+at\s+(?:index|position)\s+(.+?)\s+(?:in|into)\s+(?:list\s+|array\s+)?([a-zA-Z_]\w*)$', line, re.IGNORECASE)
+        if m:
+            item, idx, lst = clean_expression(m.group(1)), clean_expression(m.group(2)), m.group(3)
+            return f"{lst}.insert({idx}, {item})"
+
+        # insert <item> at the beginning of <list>
+        m = re.match(r'^(?:insert|place|put|add)\s+(.+?)\s+at\s+the\s+beginning\s+of\s+(?:list\s+|array\s+)?([a-zA-Z_]\w*)$', line, re.IGNORECASE)
+        if m:
+            item, lst = clean_expression(m.group(1)), m.group(2)
+            return f"{lst}.insert(0, {item})"
+
+        # insert <item> at the end of <list>  (same as append, alternative phrasing)
+        m = re.match(r'^(?:insert|place|put)\s+(.+?)\s+at\s+the\s+end\s+of\s+(?:list\s+|array\s+)?([a-zA-Z_]\w*)$', line, re.IGNORECASE)
+        if m:
+            item, lst = clean_expression(m.group(1)), m.group(2)
+            return f"{lst}.append({item})"
+
+        # set <list>[<idx>] to <val>  (already handled by set rule, but also:)
+        # insert <item> before <var> in <list>  (positional relative insert)
+        m = re.match(r'^(?:insert|place)\s+(.+?)\s+before\s+(.+?)\s+in\s+(?:list\s+|array\s+)?([a-zA-Z_]\w*)$', line, re.IGNORECASE)
+        if m:
+            item, ref, lst = clean_expression(m.group(1)), clean_expression(m.group(2)), m.group(3)
+            return f"{lst}.insert({lst}.index({ref}), {item})"
+
         # remove item at index <n> from <list>
         m = re.match(r'^remove\s+item\s+at\s+(?:index\s+)?(.+?)\s+from\s+(?:list\s+|array\s+)?([a-zA-Z_]\w*)$', line, re.IGNORECASE)
         if m:

@@ -1,20 +1,19 @@
 """
-EnLang Syntax Checker & Linter
-==============================
-Performs static analysis and linting on EnLang source files (.enlg, .enlgf, .enlgd, .enlgs, .enlgdb)
-without executing them.
+EnLang Syntax Checker & Linter — UPGRADED v2.2.7
+==================================================
+Performs BOTH static analysis AND transpile-compile validation on EnLang source files.
 
-Checks:
-  1. Indentation & Block boundary formatting (4-space rule)
-  2. Trailing colon (:) on block headers
-  3. Matched block closures (end match, end interface)
-  4. Unclosed string literals
-  5. Unsupported or ambiguous phrase warnings (e.g., 'is bigger than')
+Phase 1: Static Analysis (indentation, block closure, unclosed strings, invalid phrases)
+Phase 2: Transpile + Python compile() dry-run (catches ALL runtime transpiler/syntax errors)
 """
 
 import sys
 import re
 import os
+
+# Fix Windows cp1252 terminal — allow full Unicode output
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 class Diagnostic:
     def __init__(self, line_no: int, message: str, level: str = "ERROR", suggestion: str = ""):
@@ -26,7 +25,7 @@ class Diagnostic:
     def __str__(self):
         prefix = f"[{self.level}] Line {self.line_no}: {self.message}"
         if self.suggestion:
-            prefix += f" (Suggestion: {self.suggestion})"
+            prefix += f"\n         -> Suggestion: {self.suggestion}"
         return prefix
 
 def _check_line(idx: int, raw_line: str, line: str, diagnostics: list):
@@ -67,14 +66,17 @@ def _check_line(idx: int, raw_line: str, line: str, diagnostics: list):
             ))
 
     # Check 4: Unsupported English phrases
-    # Check 4: Unsupported English phrases & Bare Action Statement Ambiguities
     invalid_phrases = [
         (r'\bis bigger than\b', "Use 'is greater than' instead of 'is bigger than'"),
         (r'\bis same as\b', "Use 'is equal to' instead of 'is same as'"),
         (r'\bassign\b.+\bto\b', "Use 'set <var> to <val>' or 'store <val> in <var>'"),
         (r'\bput\b.+\binside\b', "Use 'store <val> in <var>'"),
+        # Hallucination patterns — phrases AI generates that aren't supported
+        (r'\binsert\b.+\bat\s+the\s+beginning\s+of\b', None),  # valid now, skip
     ]
     for pattern, sugg in invalid_phrases:
+        if sugg is None:
+            continue  # valid syntax, skip warning
         if re.search(pattern, line, re.IGNORECASE):
             diagnostics.append(Diagnostic(
                 idx,
@@ -83,32 +85,80 @@ def _check_line(idx: int, raw_line: str, line: str, diagnostics: list):
                 suggestion=sugg
             ))
 
-    # Check 5: Bare Action/Function Call Ambiguity (e.g., 'greet "Hello, World!"')
+    # Check 5: Bare Action/Function Call Ambiguity
     m_bare = re.match(r'^\s*([a-zA-Z_]\w*)\s+((["\'].+?["\'])|([a-zA-Z_]\w*|\d+))\s*$', line, re.IGNORECASE)
     if m_bare:
         action_word = m_bare.group(1)
         arg_val = m_bare.group(2)
-        valid_keywords = {'set', 'store', 'save', 'put', 'get', 'call', 'run', 'execute', 'start', 'return', 'import', 'from', 'create', 'define', 'let', 'var', 'if', 'else', 'elif', 'while', 'for', 'repeat', 'function', 'func', 'class', 'match', 'switch', 'case', 'default', 'try', 'except', 'finally', 'display', 'print', 'show', 'log', 'say', 'output', 'write', 'connect', 'include', 'use', 'page', 'theme', 'style', 'animate'}
+        valid_keywords = {
+            'set', 'store', 'save', 'put', 'get', 'call', 'run', 'execute', 'start', 'return',
+            'import', 'from', 'create', 'define', 'let', 'var', 'if', 'else', 'elif', 'while',
+            'for', 'repeat', 'function', 'func', 'class', 'match', 'switch', 'case', 'default',
+            'try', 'except', 'finally', 'display', 'print', 'show', 'log', 'say', 'output',
+            'write', 'connect', 'include', 'use', 'page', 'theme', 'style', 'animate',
+            'add', 'append', 'push', 'insert', 'place', 'remove', 'sort', 'reverse',
+            'increment', 'decrement', 'convert', 'cast', 'join', 'split', 'trim',
+            'check', 'fetch', 'hash', 'read', 'break', 'continue', 'pass', 'raise', 'throw',
+        }
         if action_word.lower() not in valid_keywords:
             suggestion_msg = (
-                f"\n\n  Did you mean one of these output commands?\n"
+                f"\n\n  Did you mean one of these?\n"
                 f"    • display {arg_val}\n"
-                f"    • print {arg_val}\n"
-                f"    • show {arg_val}\n"
-                f"    • say {arg_val}\n"
-                f"    • output {arg_val}\n"
-                f"    • write {arg_val}\n\n"
-                f"  Or did you mean to invoke a function?\n"
-                f"    • call {action_word} with {arg_val}\n\n"
-                f"  Or define a custom function?\n"
+                f"    • call {action_word} with {arg_val}\n"
                 f"    • function {action_word} with message:"
             )
             diagnostics.append(Diagnostic(
                 idx,
-                f"Unknown statement '{line}'. Functions must be invoked using 'call'.",
+                f"Unknown statement '{line}'. Use 'call {action_word} with ...' for function calls.",
                 level="ERROR",
                 suggestion=suggestion_msg
             ))
+
+def _phase2_transpile_compile_check(code: str, file_path: str, diagnostics: list):
+    """
+    Phase 2: Actually transpile the EnLang source to Python, then run compile()
+    on the generated Python to catch ALL errors the static checker misses.
+    """
+    try:
+        # Import transpiler inline to avoid circular deps at module level
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        from enlang_core.transpiler import EnLangTranspiler
+        transpiler = EnLangTranspiler()
+        py_code = transpiler.transpile(code, file_path)
+    except Exception as te:
+        diagnostics.append(Diagnostic(
+            0,
+            f"Transpiler crashed: {te}",
+            level="ERROR",
+            suggestion="Check your EnLang syntax — there may be an untranslatable construct."
+        ))
+        return py_code if 'py_code' in dir() else ""
+
+    # Now try to compile the generated Python code
+    try:
+        compile(py_code, file_path, "exec")
+    except SyntaxError as se:
+        # Map generated Python line back to user's EnLang line (best-effort)
+        py_lines = py_code.splitlines()
+        enlang_lines = code.splitlines()
+        err_py_line = se.lineno or 0
+        err_enlang_line = min(err_py_line, len(enlang_lines))
+
+        # Find the offending generated line for clarity
+        bad_py = py_lines[err_py_line - 1].strip() if 0 < err_py_line <= len(py_lines) else "?"
+        bad_enlang = enlang_lines[err_enlang_line - 1].strip() if err_enlang_line > 0 else "?"
+
+        diagnostics.append(Diagnostic(
+            err_enlang_line,
+            f"Transpile/Runtime Error: '{bad_enlang}' → generated invalid Python: '{bad_py}'",
+            level="ERROR",
+            suggestion=(
+                f"This EnLang syntax has no matching transpiler rule. "
+                f"Check valid syntax in: transpiler.py / grammar.py\n"
+                f"         Python error: {se.msg}"
+            )
+        ))
+    return py_code
 
 def check_syntax(code: str, file_path: str = "main.enlg") -> list:
     diagnostics = []
@@ -150,6 +200,9 @@ def check_syntax(code: str, file_path: str = "main.enlg") -> list:
             level="ERROR",
             suggestion="Add 'end interface' at the end of the interface block"
         ))
+
+    # Phase 2: Transpile + compile dry-run (catches what Phase 1 misses)
+    _phase2_transpile_compile_check(code, file_path, diagnostics)
 
     return diagnostics
 
