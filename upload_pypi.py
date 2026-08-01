@@ -20,17 +20,17 @@ def upload_to_pypi(token=None):
 
     cmd = [
         "twine", "upload",
-        "dist/enlang-1.2.0*",
+        "dist/enlang-*",
         "--skip-existing",
         "-u", "__token__",
         "-p", token
     ]
 
-    print(f"Uploading dist/enlang-1.2.0* to PyPI...")
+    print(f"Uploading dist/enlang-* to PyPI...")
     res = subprocess.run(cmd, text=True)
     if res.returncode == 0:
         print("================================================================")
-        print("  [SUCCESS] Successfully uploaded enlang v1.2.0 to PyPI!")
+        print("  [SUCCESS] Successfully uploaded enlang latest release to PyPI!")
         print("  Install with: pip install --upgrade enlang")
         print("================================================================")
     else:
