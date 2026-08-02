@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "enlang"
-version = "2.4.0"
+version = "2.4.1"
 description = "The Universal Natural English Programming Language Transpiler & Compiler Engine"
 authors = [
     { name = "Spandan Prayas Patra", email = "spandanpatra1234@gmail.com" }

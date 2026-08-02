@@ -1,11 +1,14 @@
 """
-EnLang Syntax Checker & Linter — UPGRADED v2.3.0
+EnLang Syntax Checker & Linter — UPGRADED v2.4.1
 ==================================================
 Performs BOTH smart structural/indentation static analysis AND transpile-compile validation.
 
 Phase 1: Smart Block & Indentation Stack Tracking (4-space rule, unexpected indents, dead code)
 Phase 2: Syntax & Operator Linting (invalid keywords, missing 'to', '&&'/'||' check, bracket matching)
 Phase 3: Transpile + Python compile() dry-run validation
+
+Note: Raw embedded blocks (js:, css:, html:, python:, sql:) are treated as raw language content
+and exempted from EnLang-specific 4-space indentation and keyword rules.
 """
 
 import sys
@@ -55,7 +58,6 @@ def check_brackets_and_quotes(idx: int, line: str, diagnostics: list):
             code_snippet=line
         ))
 
-    # Bracket matching
     stack = []
     brackets = {')': '(', ']': '[', '}': '{'}
     for char in line:
@@ -155,60 +157,42 @@ def check_syntax_patterns(idx: int, raw_line: str, line: str, diagnostics: list)
                 code_snippet=line
             ))
 
-    # Check 6: Bare Action/Function Call Ambiguity
-    m_bare = re.match(r'^\s*([a-zA-Z_]\w*)\s+((["\'].+?["\'])|([a-zA-Z_]\w*|\d+))\s*$', line, re.IGNORECASE)
-    if m_bare:
-        action_word = m_bare.group(1)
-        arg_val = m_bare.group(2)
-        valid_keywords = {
-            'set', 'store', 'save', 'put', 'get', 'call', 'run', 'execute', 'start', 'return',
-            'import', 'from', 'create', 'define', 'let', 'var', 'if', 'else', 'elif', 'while',
-            'for', 'repeat', 'function', 'func', 'class', 'match', 'switch', 'case', 'default',
-            'try', 'except', 'finally', 'display', 'print', 'show', 'log', 'say', 'output',
-            'write', 'connect', 'include', 'use', 'page', 'theme', 'style', 'animate',
-            'add', 'append', 'push', 'insert', 'place', 'remove', 'sort', 'reverse',
-            'increment', 'decrement', 'convert', 'cast', 'join', 'split', 'trim',
-            'check', 'fetch', 'hash', 'read', 'break', 'continue', 'pass', 'raise', 'throw',
-        }
-        if action_word.lower() not in valid_keywords:
-            suggestion_msg = f"Use 'call {action_word} with {arg_val}' for function calls, or 'display {arg_val}' for output."
-            diagnostics.append(Diagnostic(
-                idx,
-                f"Unknown statement structure '{line}'. Functions must be invoked using 'call'.",
-                level="ERROR",
-                suggestion=suggestion_msg,
-                code_snippet=line
-            ))
-
 def check_smart_indentation_and_structure(lines: list, diagnostics: list):
     """
     Smart structural analyzer:
-    1. Enforces 4-space multiples.
-    2. Maintains an indentation stack to check parent/child block alignment.
-    3. Detects dead code / accidental over-indentation after return statements.
-    4. Detects un-indentation to invalid levels.
+    Exempts raw embedded blocks (js:, css:, html:, python:, sql:) from EnLang 4-space rules.
     """
-    indent_stack = [0]  # Stack of expected block indentation levels
-    block_names = ["<root>"]
+    indent_stack = [0]
     
-    # Un-indent keywords that match parent block level
-    dedent_keywords_regex = r'^\s*(?:else|otherwise|elif|except|finally|end\s+match|end\s+interface|end\s+class)\b'
-    
-    # Function level tracking for dead code detection
     inside_function = False
     function_indent_level = -1
     function_has_returned = False
     function_name = ""
+
+    in_raw_block = False
 
     for idx, raw_line in enumerate(lines, start=1):
         line = raw_line.strip()
         if not line or line.startswith("#") or line.startswith("//"):
             continue
 
+        # Check raw embedded block boundaries
+        if re.match(r'^\s*(?:js|javascript|css|html|python|sql)\s*:\s*$', line, re.IGNORECASE):
+            in_raw_block = True
+            continue
+
+        if re.match(r'^\s*end\s+(?:js|javascript|css|html|python|sql)\b', line, re.IGNORECASE):
+            in_raw_block = False
+            continue
+
+        # Skip EnLang structural rules inside raw JS/CSS/HTML/SQL/Python blocks
+        if in_raw_block:
+            continue
+
         lstripped = raw_line.lstrip()
         current_indent = len(raw_line) - len(lstripped)
 
-        # 1. Basic 4-space rule
+        # 1. EnLang 4-space rule
         if current_indent % 4 != 0:
             suggested_indent = round(current_indent / 4) * 4
             diagnostics.append(Diagnostic(
@@ -219,7 +203,6 @@ def check_smart_indentation_and_structure(lines: list, diagnostics: list):
                 code_snippet=line
             ))
 
-        # Check bracket/string sanity
         check_brackets_and_quotes(idx, line, diagnostics)
         check_syntax_patterns(idx, raw_line, line, diagnostics)
 
@@ -231,7 +214,6 @@ def check_smart_indentation_and_structure(lines: list, diagnostics: list):
             function_indent_level = current_indent
             function_has_returned = False
 
-        # If we un-indented back to or above the function level, function scope ended
         if inside_function and current_indent <= function_indent_level and not m_func:
             inside_function = False
             function_has_returned = False
@@ -241,7 +223,7 @@ def check_smart_indentation_and_structure(lines: list, diagnostics: list):
             if current_indent > function_indent_level:
                 diagnostics.append(Diagnostic(
                     idx,
-                    f"Dead Code / Indentation Error: Statement '{line}' is indented inside function '{function_name}' after a 'return' statement.",
+                    f"Dead Code / Indentation Error: Statement '{line}' is indented inside function '{function_name}' after 'return'.",
                     level="ERROR",
                     suggestion=f"If this is top-level code, unindent to 0 spaces. Otherwise, move it above the 'return' statement inside '{function_name}'.",
                     code_snippet=line
@@ -251,18 +233,15 @@ def check_smart_indentation_and_structure(lines: list, diagnostics: list):
             function_has_returned = True
 
         # 4. Block Stack Alignment
-        # If line is a dedent keyword (else, elif, etc), it expects matching stack top - 4
+        dedent_keywords_regex = r'^\s*(?:else|otherwise|elif|except|finally|end\s+match|end\s+interface|end\s+class)\b'
         is_dedent = bool(re.match(dedent_keywords_regex, line, re.IGNORECASE))
         
         if is_dedent:
-            # Pop deeper blocks
             while len(indent_stack) > 1 and indent_stack[-1] > current_indent:
                 indent_stack.pop()
-                if block_names: block_names.pop()
 
         expected_indent = indent_stack[-1]
 
-        # Check if line's indent matches any valid parent scope
         if current_indent not in indent_stack and current_indent != expected_indent + 4:
             valid_indents_str = ", ".join(str(x) for x in sorted(set(indent_stack)))
             diagnostics.append(Diagnostic(
@@ -273,20 +252,15 @@ def check_smart_indentation_and_structure(lines: list, diagnostics: list):
                 code_snippet=line
             ))
         else:
-            # Update stack to current valid level
             while len(indent_stack) > 1 and current_indent < indent_stack[-1]:
                 indent_stack.pop()
-                if block_names: block_names.pop()
 
-        # 5. Push new block level if line opens a block (ends with ':')
         if line.endswith(":") or re.search(r'\b(?:then|do)\b\s*:?$', line, re.IGNORECASE):
             indent_stack.append(current_indent + 4)
-            block_names.append(line.split()[0])
 
 def _phase3_transpile_compile_check(code: str, file_path: str, diagnostics: list):
     """
     Phase 3: Transpile EnLang source to Python and run compile() dry-run.
-    Catches any deep runtime/transpiler errors missed by static analysis.
     """
     try:
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -326,10 +300,7 @@ def check_syntax(code: str, file_path: str = "main.enlg") -> list:
     diagnostics = []
     lines = code.splitlines()
 
-    # Run Phase 1 & 2: Smart Indentation & Static Pattern Checks
     check_smart_indentation_and_structure(lines, diagnostics)
-
-    # Run Phase 3: Transpile & Python Compile Dry-Run
     _phase3_transpile_compile_check(code, file_path, diagnostics)
 
     return diagnostics
@@ -345,7 +316,7 @@ def check_file(file_path: str):
     diagnostics = check_syntax(code, file_path)
 
     print(f"{CYAN}{'=' * 70}{RESET}")
-    print(f"  {BOLD}EnLang Smart Syntax & Indentation Checker v2.3.0{RESET}  —  {file_path}")
+    print(f"  {BOLD}EnLang Smart Syntax & Indentation Checker v2.4.1{RESET}  —  {file_path}")
     print(f"{CYAN}{'=' * 70}{RESET}")
 
     if not diagnostics:

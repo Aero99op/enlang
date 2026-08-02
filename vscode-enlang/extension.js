@@ -4,6 +4,7 @@ const vscode = require('vscode');
  * Full-Document 2-Pass Smart Structural Diagnostics.
  * Pass 1: Scans top-to-bottom to build exact scope tree (functions, loops, top-level boundaries).
  * Pass 2: Evaluates diagnostics for indentation multiples, block headers, and dead code.
+ * Note: Raw embedded blocks (js:, css:, html:, python:, sql:) are exempted from EnLang rules.
  */
 function updateDiagnostics(document, diagnosticCollection) {
     if (!document || !['enlang', 'enlangf', 'enlangd', 'enlgs', 'enlangdb'].includes(document.languageId)) {
@@ -20,6 +21,7 @@ function updateDiagnostics(document, diagnosticCollection) {
     let functionName = '';
     let functionIndentLevel = -1;
     let functionHasReturned = false;
+    let inRawBlock = false;
 
     for (let i = 0; i < document.lineCount; i++) {
         const line = document.lineAt(i);
@@ -27,6 +29,21 @@ function updateDiagnostics(document, diagnosticCollection) {
         const trimmed = text.trim();
 
         if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('//')) {
+            continue;
+        }
+
+        // Raw embedded block tracking (js:, css:, html:, python:, sql:)
+        if (/^\s*(?:js|javascript|css|html|python|sql)\s*:\s*$/i.test(trimmed)) {
+            inRawBlock = true;
+            continue;
+        }
+
+        if (/^\s*end\s+(?:js|javascript|css|html|python|sql)\b/i.test(trimmed)) {
+            inRawBlock = false;
+            continue;
+        }
+
+        if (inRawBlock) {
             continue;
         }
 
@@ -109,7 +126,7 @@ function updateDiagnostics(document, diagnosticCollection) {
 }
 
 function activate(context) {
-    console.log('EnLang VS Code Extension v2.4.0 (Formatter Disabled) active!');
+    console.log('EnLang VS Code Extension v2.4.1 (Embedded Raw Blocks Exempted) active!');
 
     const diagnosticCollection = vscode.languages.createDiagnosticCollection('enlang-diagnostics');
     context.subscriptions.push(diagnosticCollection);
