@@ -994,6 +994,52 @@ def translate_script_line(line: str) -> str:
         ms, fn = clean_js_expression(m.group(1)), m.group(2)
         return f'print({repr("setInterval(" + fn + ", " + ms + ");")})'
 
+    # ── NODE.JS SERVER-SIDE BACKEND RULES (.enlgsb) ───────────────────────────
+    # Import module: import module <pkg> as <var>
+    m = re.match(r'^import\s+(?:module|package|library)\s+(.+?)\s+as\s+([a-zA-Z_$][\w$]*)$', raw, re.IGNORECASE)
+    if m:
+        pkg, var = _strip_quotes(m.group(1)), m.group(2)
+        return f'print({repr("const " + var + " = require(\"" + pkg + "\");")})'
+
+    # Start Backend Express Server: start backend server on port <port>
+    m = re.match(r'^start\s+(?:backend\s+)?server\s+on\s+port\s+(.+)$', raw, re.IGNORECASE)
+    if m:
+        port = clean_js_expression(m.group(1))
+        return f'print({repr("const express = require(\"express\"); const app = express(); app.use(express.json()); app.listen(" + port + ", () => console.log(\"🚀 EnLang Node Server running on port \" + " + port + "));")})'
+
+    # API Route Definition: create api route <path> with method <method>:
+    m = re.match(r'^create\s+(?:api\s+)?route\s+(.+?)\s+with\s+method\s+(GET|POST|PUT|DELETE|PATCH)\s*:?\s*$', raw, re.IGNORECASE)
+    if m:
+        path = _strip_quotes(m.group(1))
+        method = m.group(2).lower()
+        return f'print({repr("app." + method + "(\"" + path + "\", (req, res) => {")})'
+
+    # Get request body parameter: get request body parameter <key> and store in <var>
+    m = re.match(r'^get\s+request\s+body\s+(?:parameter\s+)?(.+?)\s+(?:and\s+store\s+in|into)\s+([a-zA-Z_$][\w$]*)$', raw, re.IGNORECASE)
+    if m:
+        key, var = _strip_quotes(m.group(1)), m.group(2)
+        return f'print({repr("const " + var + " = req.body." + key + ";")})'
+
+    # Get request query parameter: get request query parameter <key> and store in <var>
+    m = re.match(r'^get\s+request\s+query\s+(?:parameter\s+)?(.+?)\s+(?:and\s+store\s+in|into)\s+([a-zA-Z_$][\w$]*)$', raw, re.IGNORECASE)
+    if m:
+        key, var = _strip_quotes(m.group(1)), m.group(2)
+        return f'print({repr("const " + var + " = req.query." + key + ";")})'
+
+    # Return JSON Response: return json response with <data>
+    m = re.match(r'^return\s+json\s+(?:response\s+)?with\s+(.+)$', raw, re.IGNORECASE)
+    if m:
+        data = clean_js_expression(m.group(1))
+        return f'print({repr("res.json(" + data + ");")})'
+
+    # Node SQLite connection: connect to sqlite database <file> as <db>
+    m = re.match(r'^connect\s+to\s+sqlite\s+database\s+(.+?)\s+as\s+([a-zA-Z_$][\w$]*)$', raw, re.IGNORECASE)
+    if m:
+        db_file = _strip_quotes(m.group(1))
+        db_var = m.group(2)
+        return f'print({repr("const sqlite3 = require(\"sqlite3\").verbose(); const " + db_var + " = new sqlite3.Database(\"" + db_file + "\");")})'
+
+
     # If condition (natural English)
     m = re.match(r'^(?:if|else\s+if|elif)\s+(.+?)(?:\s+(?:then|do))?\s*:?\s*$', raw, re.IGNORECASE)
     if m:
