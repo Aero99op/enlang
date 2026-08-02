@@ -7,7 +7,7 @@ const vscode = require('vscode');
  * Note: Raw embedded blocks (js:, css:, html:, python:, sql:) are exempted from EnLang rules.
  */
 function updateDiagnostics(document, diagnosticCollection) {
-    if (!document || !['enlang', 'enlangf', 'enlangd', 'enlgs', 'enlangdb'].includes(document.languageId)) {
+    if (!document || !['enlang', 'enlangf', 'enlangd', 'enlgs', 'enlgsb', 'enlangdb'].includes(document.languageId)) {
         return;
     }
 
@@ -146,7 +146,7 @@ function activate(context) {
 
     // Quick-Fix Actions for Indentation & Colons (Available via Lightbulb 💡)
     const quickFixProvider = vscode.languages.registerCodeActionsProvider(
-        ['enlang', 'enlangf', 'enlangd', 'enlgs', 'enlangdb'],
+        ['enlang', 'enlangf', 'enlangd', 'enlgs', 'enlgsb', 'enlangdb'],
         {
             provideCodeActions(document, range, context) {
                 const actions = [];

@@ -138,7 +138,7 @@ class EnLangTranspiler:
             target = "html"
         elif ext == ".enlgd":
             target = "css"
-        elif ext == ".enlgs":
+        elif ext in (".enlgs", ".enlgsb"):
             target = "js"
         elif ext == ".enlgdb":
             target = "sql"

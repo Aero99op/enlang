@@ -2,7 +2,7 @@
   "name": "enlang",
   "displayName": "EnLang — Natural English Language Support",
   "description": "Official VS Code extension for EnLang: Syntax Highlighting, Colorization, Snippets & Tooling for .enlg, .enlgf, .enlgd, .enlgs, .enlgdb files.",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "publisher": "Enlang1234",
   "license": "MIT",
   "homepage": "https://github.com/Aero99op/enlang",
@@ -37,7 +37,8 @@
     "onLanguage:enlang",
     "onLanguage:enlangf",
     "onLanguage:enlangd",
-    "onLanguage:enlags",
+    "onLanguage:enlgs",
+    "onLanguage:enlgsb",
     "onLanguage:enlangdb"
   ],
   "contributes": {
@@ -64,6 +65,12 @@
         "id": "enlgs",
         "aliases": ["EnLang Script", "enlgs"],
         "extensions": [".enlgs"],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "enlgsb",
+        "aliases": ["EnLang Script Backend", "enlgsb"],
+        "extensions": [".enlgsb"],
         "configuration": "./language-configuration.json"
       },
       {
@@ -95,6 +102,11 @@
         "path": "./syntaxes/enlang.tmLanguage.json"
       },
       {
+        "language": "enlgsb",
+        "scopeName": "source.enlgsb",
+        "path": "./syntaxes/enlang.tmLanguage.json"
+      },
+      {
         "language": "enlangdb",
         "scopeName": "source.enlgdb",
         "path": "./syntaxes/enlang.tmLanguage.json"
@@ -115,6 +127,10 @@
       },
       {
         "language": "enlgs",
+        "path": "./snippets/enlang.code-snippets"
+      },
+      {
+        "language": "enlgsb",
         "path": "./snippets/enlang.code-snippets"
       },
       {

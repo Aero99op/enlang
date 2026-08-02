@@ -193,8 +193,8 @@ def start_enlang_server(port=8000, directory="."):
                         continue
                     html_body += line + "\n"
 
-            # 3. JS from *.enlgs files
-            for f in sorted(glob.glob(os.path.join(cwd, "*.enlgs"))):
+            # 3. JS Client & Server Scripts from *.enlgs and *.enlgsb files
+            for f in sorted(glob.glob(os.path.join(cwd, "*.enlgs"))) + sorted(glob.glob(os.path.join(cwd, "*.enlgsb"))):
                 result = _run_enlg_file(f)
                 js_output += result + "\n"
 

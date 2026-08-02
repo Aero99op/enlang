@@ -177,11 +177,11 @@ def check_smart_indentation_and_structure(lines: list, diagnostics: list):
             continue
 
         # Check raw embedded block boundaries
-        if re.match(r'^\s*(?:js|javascript|css|html|python|sql)\s*:\s*$', line, re.IGNORECASE):
+        if re.match(r'^\s*(?:js|javascript|node|backend|css|html|python|sql)\s*:\s*$', line, re.IGNORECASE):
             in_raw_block = True
             continue
 
-        if re.match(r'^\s*end\s+(?:js|javascript|css|html|python|sql)\b', line, re.IGNORECASE):
+        if re.match(r'^\s*end\s+(?:js|javascript|node|backend|css|html|python|sql)\b', line, re.IGNORECASE):
             in_raw_block = False
             continue
 

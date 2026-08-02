@@ -1,0 +1,50 @@
+# server.enlgsb — Node.js / Express-style Server-side Backend Script in EnLang
+
+node:
+const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+const app = express();
+const PORT = process.env.PORT || 8000;
+
+app.use(express.json());
+app.use(express.static('.'));
+
+// Initialize SQLite Database Connection
+const db = new sqlite3.Database('./app.db', (err) => {
+  if (err) console.error('Database connection failed:', err.message);
+  else console.log('Connected to SQLite Database via .enlgsb Backend!');
+});
+
+// Create UserRecords Table if not exists
+db.run(`CREATE TABLE IF NOT EXISTS UserRecords (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  age INTEGER
+)`);
+
+// API Endpoint: Get All Users
+app.get('/api/users', (req, res) => {
+  db.all('SELECT * FROM UserRecords ORDER BY id DESC', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ users: rows });
+  });
+});
+
+// API Endpoint: Create New User
+app.post('/api/users', (req, res) => {
+  const { name, email, age } = req.body;
+  if (!name || !email) {
+    return res.status(400).json({ error: 'Name and Email are required!' });
+  }
+
+  const sql = 'INSERT INTO UserRecords (name, email, age) VALUES (?, ?, ?)';
+  db.run(sql, [name, email, age], function (err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true, message: 'User added to Database!', id: this.lastID });
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Node.js EnLang Server (.enlgsb) running at http://localhost:${PORT}/`);
+});
